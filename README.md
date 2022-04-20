@@ -6,5 +6,3 @@ I work automation with powershell scripts, but I'm currently learning web app de
 thisisgenaro/thisisgenaro is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 You can click the Preview link to take a look at your changes.
 --->
-# web-resume
-My online resume
