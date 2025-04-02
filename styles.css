@@ -1,0 +1,79 @@
+/*-- GENERAL SETUP --*/
+
+ul
+{
+    list-style: none;
+    padding: 0px;
+    margin: 0px;
+}
+
+body 
+{
+    display: flex;
+    flex-direction: column;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.main
+{
+    width: 80%;
+    padding: 40px 100px;
+    display: flex;
+    flex-direction: column;
+}
+
+/*-- HEADER CONTENT --*/
+
+.header
+{
+    background-color: #FEFEFE;
+    display: flex;
+    align-items: center;
+}
+
+.main.header
+{
+    gap: 30px;
+}
+
+.header.social
+{
+    flex-direction: column;
+}
+
+#social-links
+{
+    flex: 1 0 auto;
+}
+
+.header.name
+{
+    gap: 30px;
+    font-size: 56px;
+    justify-content: center;
+}
+
+.personal.data
+{
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.personal.item
+{
+    flex: 1 0 auto;
+    text-align: center;
+}
+
+.name
+{
+    font-family: 'Times New Roman', Times, serif;
+    flex-wrap: wrap;
+}
+
+.first
+{
+    color: #AAA;
+}
