@@ -1,5 +1,6 @@
 
 # Genaro Hernandez
+IT Infrastructure Specialist
 
 - <genaro.hernandez@outlook.com>
 - 809.769.5621
