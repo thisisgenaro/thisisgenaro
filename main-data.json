@@ -1,7 +1,14 @@
 {
     "Experience" : [
+   {
+      "startdate":"2023",
+      "enddate":"Current",
+      "role":"SERVER ADMINISTRATOR",
+      "company":"Junta Central Electoral",
+      "description":"Manage, maintain and administer servers, virtualization hosts and other network appliances to guarantee and optimize the delivery of IT services. Implementation of security baselines and solution design."
+   },
     {
-       "timespan":"2021 - Current",
+       "timespan":"2021 - 2023",
        "role":"LEAD IT INFRASTRUCTURE & CYBERSECURITY ENGINEER",
        "company":"DPWorld Caucedo",
        "description":"Responsible for planning, managing and implementing IT Infrastructure resources and their usage through all the port and logistics solutions offered in the terminal, including networks, servers, high availability, site redundancy, UPS, cloud, and more."
