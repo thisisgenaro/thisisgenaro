@@ -4,7 +4,6 @@ IT Infrastructure Specialist
 
 - <genaro.hernandez@outlook.com>
 - 809.769.5621
-- 402-2011528-7
 - Santo Domingo 🇩🇴
 
 ## ThisIsGenaro
