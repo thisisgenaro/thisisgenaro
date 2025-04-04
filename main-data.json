@@ -1,8 +1,7 @@
 {
     "Experience" : [
    {
-      "startdate":"2023",
-      "enddate":"Current",
+      "timespan":"2023 - Current",
       "role":"SERVER ADMINISTRATOR",
       "company":"Junta Central Electoral",
       "description":"Manage, maintain and administer servers, virtualization hosts and other network appliances to guarantee and optimize the delivery of IT services. Implementation of security baselines and solution design."
