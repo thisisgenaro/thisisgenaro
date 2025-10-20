@@ -16,7 +16,7 @@ const ctx = canvas.getContext("2d");
 
 let particles = [];
 const particleCount = 80;
-const color = "rgba(62, 184, 165, 0.6)"; // muted turquoise glow
+const color = "rgba(46, 139, 192, 0.6)"; // Electric Blue
 
 function resizeCanvas() {
   canvas.width = window.innerWidth;
