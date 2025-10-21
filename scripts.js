@@ -99,7 +99,6 @@ new Chart(chart, {
     }]
   },
   options: {
-    indexAxis: 'y',
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
