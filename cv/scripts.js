@@ -38,7 +38,7 @@ function writeExperience(experience)
     var description = experience.description;
 
     var HTMLOutput = document.createElement('li');
-    HTMLOutput.classList.add('experience','item');
+    HTMLOutput.classList.add('experience','item','skill-card');
 
     var content = document.createElement('div');
     content.setAttribute('class','content');
@@ -81,7 +81,7 @@ function writeEducation(education)
         var mention = education.specialty;
     
         var HTMLOutput = document.createElement('li');
-        HTMLOutput.classList.add('education','item');
+        HTMLOutput.classList.add('education','item','task-item');
     
         var content = document.createElement('div');
         content.setAttribute('class','content');
