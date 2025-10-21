@@ -76,3 +76,42 @@ function animateParticles() {
 
 initParticles();
 animateParticles();
+
+window.addEventListener('load', function () {
+  const chart = new CanvasJS.Chart("skillsChart", {
+    animationEnabled: true,
+    backgroundColor: "transparent",
+    axisX: {
+      lineThickness: 0,
+      tickLength: 0,
+      labelFontColor: "#e0e0e0",
+      labelFontSize: 14,
+      labelFontFamily: "Montserrat",
+    },
+    axisY: {
+      lineThickness: 0,
+      gridThickness: 0,
+      tickLength: 0,
+      labelFormatter: () => " ",
+    },
+    data: [{
+      type: "bar",
+      color: "#00C49A", // default teal color
+      indexLabelFontColor: "#e0e0e0",
+      indexLabelFontFamily: "Montserrat",
+      indexLabelFontSize: 14,
+      indexLabelPlacement: "outside",
+      indexLabelFontWeight: "bold",
+      indexLabel: "{y}%",
+      dataPoints: [
+        { y: 92, label: "Windows Server", color: "#00C49A" },
+        { y: 86, label: "Networking", color: "#0077B6" },
+        { y: 80, label: "Azure / Cloud", color: "#00B4D8" },
+        { y: 78, label: "Automation / PowerShell", color: "#0096C7" },
+        { y: 75, label: "Monitoring & SRE", color: "#0077B6" }
+      ]
+    }]
+  });
+
+  chart.render();
+});
