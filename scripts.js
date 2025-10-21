@@ -109,11 +109,11 @@ new Chart(chart, {
     scales: {
       x: {
         grid: { display: false },
-        ticks: { color: '#e0e0e0', font: { family: 'Montserrat' } }
+        ticks: { display: false }
       },
       y: {
         grid: { display: false },
-        ticks: { display: false },
+        ticks: { color: '#e0e0e0', font: { family: 'Montserrat' } },
         border: { display: false }
       }
     }
