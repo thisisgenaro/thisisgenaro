@@ -37,11 +37,8 @@ function writeExperience(experience)
     var company = experience.company;
     var description = experience.description;
 
-    var HTMLOutput = document.createElement('li');
-    HTMLOutput.classList.add('experience','item','skill-card');
-
     var content = document.createElement('div');
-    content.setAttribute('class','content');
+    content.setAttribute('class','skill-card');
 
     var roleHTML = document.createElement('h3');
     roleHTML.innerText = role;
