@@ -77,14 +77,11 @@ function writeEducation(education)
         var degree = education.degree;
         var school = education.school;
         var mention = education.specialty;
-    
-        var HTMLOutput = document.createElement('div');
-        HTMLOutput.classList.add('education','item','skill-card');
-    
+        
         var content = document.createElement('div');
-        content.setAttribute('class','content');
+        content.setAttribute('class','skill-card');
     
-        var degreeHTML = document.createElement('h2');
+        var degreeHTML = document.createElement('h3');
         degreeHTML.innerText = degree;
         content.appendChild(degreeHTML);
         content.appendChild(document.createElement('br'));
@@ -104,7 +101,7 @@ function writeEducation(education)
         content.appendChild(document.createElement('br'));
         content.innerHTML += school;
     
-        HTMLOutput.appendChild(content);
+        var HTMLOutput = content;
         document.getElementById("education").appendChild(HTMLOutput);
 
 }
