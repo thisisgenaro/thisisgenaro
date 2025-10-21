@@ -48,8 +48,9 @@ function writeExperience(experience)
     var companyHTML = document.createElement('em');
     companyHTML.innerText = company;
     content.appendChild(companyHTML);
+    content.appendChild(document.createElement('br'));
 
-    var timespanHTML = document.createElement('br');
+    var timespanHTML = document.createElement('span');
     timespanHTML.innerText = timespan;
     content.appendChild(timespanHTML);
     content.appendChild(document.createElement('br'));
