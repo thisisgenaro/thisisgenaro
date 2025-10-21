@@ -243,7 +243,7 @@ section.visible {
 #skillsBarChart {
   width: 100%;
   max-width: 700px;
-  height: 320px;
+  max-height: 700px;
   display: block;
   margin: 0 auto;
 }
