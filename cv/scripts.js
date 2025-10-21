@@ -43,7 +43,7 @@ function writeExperience(experience)
     var content = document.createElement('div');
     content.setAttribute('class','content');
 
-    var roleHTML = document.createElement('h2');
+    var roleHTML = document.createElement('h3');
     roleHTML.innerText = role;
     content.appendChild(roleHTML);
     content.appendChild(document.createElement('br'));
