@@ -77,6 +77,17 @@ function animateParticles() {
 initParticles();
 animateParticles();
 
+document.addEventListener('DOMContentLoaded', () => {
+  const toggle = document.getElementById('menu-toggle');
+  const nav = document.querySelector('header nav');
+
+  toggle.addEventListener('click', () => {
+    nav.classList.toggle('active');
+    toggle.classList.toggle('active');
+  });
+});
+
+
 const chart = document.getElementById('skillsBarChart');
 
 new Chart(chart, {
