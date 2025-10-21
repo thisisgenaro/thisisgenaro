@@ -233,12 +233,14 @@ section.visible {
   text-align: center;
 }
 
+/*
 .skills-section h2 {
   color: var(--teal);
   font-size: 1.6rem;
   margin-bottom: 1.5rem;
   letter-spacing: 0.5px;
 }
+*/
 
 #skillsBarChart {
   width: 100%;
