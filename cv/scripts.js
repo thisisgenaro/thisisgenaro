@@ -78,8 +78,8 @@ function writeEducation(education)
         var school = education.school;
         var mention = education.specialty;
     
-        var HTMLOutput = document.createElement('li');
-        HTMLOutput.classList.add('education','item','task-item');
+        var HTMLOutput = document.createElement('div');
+        HTMLOutput.classList.add('education','item','skill-card');
     
         var content = document.createElement('div');
         content.setAttribute('class','content');
