@@ -54,7 +54,7 @@
 
 <section id="skills" class="skills-section container">
   <h2>Technical Skills</h2>
-  <div id="skillsChart" style="height: 360px; width: 100%;">
+  <canvas id="skillsBarChart" height="300"></canvas>
     
   </div>
 </section>
@@ -83,7 +83,50 @@
     <footer class="footer">
     <p>© 2025 Genaro Hernández — All Rights Reserved.</p>
   </footer>
-  <script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const ctx = document.getElementById('skillsBarChart');
+
+new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: [
+      'Windows Server', 
+      'Networking', 
+      'Azure / Cloud', 
+      'Automation / PowerShell',
+      'Monitoring & SRE'
+    ],
+    datasets: [{
+      data: [92, 86, 80, 78, 75],
+      backgroundColor: [
+        '#00C49A', '#0077B6', '#00B4D8', '#0096C7', '#0077B6'
+      ],
+      borderRadius: 6,
+      barThickness: 28
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: { enabled: true }
+    },
+    scales: {
+      x: {
+        grid: { display: false },
+        ticks: { color: '#e0e0e0', font: { family: 'Montserrat' } }
+      },
+      y: {
+        grid: { display: false },
+        ticks: { display: false },
+        border: { display: false }
+      }
+    }
+  }
+});
+</script>
   <script src="..\scripts.js"></script>
 </body>
 </html>
