@@ -46,10 +46,10 @@ function writeExperience(experience)
     content.appendChild(document.createElement('br'));
 
     var companyHTML = document.createElement('em');
-    companyHTML.innerText = (company + " - ");
+    companyHTML.innerText = company;
     content.appendChild(companyHTML);
 
-    var timespanHTML = document.createElement('span');
+    var timespanHTML = document.createElement('br');
     timespanHTML.innerText = timespan;
     content.appendChild(timespanHTML);
     content.appendChild(document.createElement('br'));
