@@ -63,6 +63,70 @@ body {
   color: var(--accent);
 }
 
+/* Base hidden */
+.menu-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 10px;
+}
+
+.menu-toggle span {
+  width: 25px;
+  height: 3px;
+  background-color: #0cf; /* electric blue accent */
+  margin: 4px 0;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+/* Animate when active (turn into "X") */
+.menu-toggle.active span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.menu-toggle.active span:nth-child(2) {
+  opacity: 0;
+}
+.menu-toggle.active span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* Show on mobile */
+@media (max-width: 768px) {
+  .menu-toggle {
+    display: flex;
+  }
+
+  nav {
+    display: none;
+    flex-direction: column;
+    background: #0a0a0a;
+    position: absolute;
+    top: 60px;
+    right: 20px;
+    width: 200px;
+    border: 1px solid #0cf;
+    border-radius: 8px;
+  }
+
+  nav.active {
+    display: flex;
+  }
+
+  nav a {
+    padding: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+
+  nav a:last-child {
+    border-bottom: none;
+  }
+}
+
 /* Hero Section */
 .hero {
   height: 100vh;
@@ -250,66 +314,3 @@ section.visible {
   margin: 0 auto;
 }
 
-/* Base hidden */
-.menu-toggle {
-  display: none;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  background: none;
-  border: none;
-  padding: 10px;
-}
-
-.menu-toggle span {
-  width: 25px;
-  height: 3px;
-  background-color: #0cf; /* electric blue accent */
-  margin: 4px 0;
-  border-radius: 2px;
-  transition: all 0.3s ease;
-}
-
-/* Animate when active (turn into "X") */
-.menu-toggle.active span:nth-child(1) {
-  transform: translateY(7px) rotate(45deg);
-}
-.menu-toggle.active span:nth-child(2) {
-  opacity: 0;
-}
-.menu-toggle.active span:nth-child(3) {
-  transform: translateY(-7px) rotate(-45deg);
-}
-
-/* Show on mobile */
-@media (max-width: 768px) {
-  .menu-toggle {
-    display: flex;
-  }
-
-  nav {
-    display: none;
-    flex-direction: column;
-    background: #0a0a0a;
-    position: absolute;
-    top: 60px;
-    right: 20px;
-    width: 200px;
-    border: 1px solid #0cf;
-    border-radius: 8px;
-  }
-
-  nav.active {
-    display: flex;
-  }
-
-  nav a {
-    padding: 10px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-  }
-
-  nav a:last-child {
-    border-bottom: none;
-  }
-}
