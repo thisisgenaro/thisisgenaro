@@ -77,15 +77,15 @@ function animateParticles() {
 initParticles();
 animateParticles();
 
-const chart = document.getElementById('skillsBarChart').getContext('2d');
+const chart = document.getElementById('skillsBarChart');
 
 new Chart(chart, {
   type: 'bar',
   data: {
     labels: [
-      'Windows Server',
-      'Networking',
-      'Azure / Cloud',
+      'Windows Server', 
+      'Networking', 
+      'Azure / Cloud', 
       'Automation / PowerShell',
       'Monitoring & SRE'
     ],
@@ -95,15 +95,12 @@ new Chart(chart, {
         '#00C49A', '#0077B6', '#00B4D8', '#0096C7', '#0077B6'
       ],
       borderRadius: 6,
-      barPercentage: 0.6,
-      categoryPercentage: 0.7
+      barThickness: 28
     }]
   },
   options: {
-    indexAxis: 'y', // ⬅️ makes it horizontal
     responsive: true,
-    maintainAspectRatio: false, // allow manual sizing
-    aspectRatio: 2, // optional balance for responsive scaling
+    maintainAspectRatio: false,
     plugins: {
       legend: { display: false },
       tooltip: { enabled: true }
@@ -111,18 +108,11 @@ new Chart(chart, {
     scales: {
       x: {
         grid: { display: false },
-        ticks: {
-          color: '#e0e0e0',
-          font: { family: 'Montserrat' }
-        },
-        border: { display: false }
+        ticks: { color: '#e0e0e0', font: { family: 'Montserrat' } }
       },
       y: {
         grid: { display: false },
-        ticks: {
-          color: '#e0e0e0',
-          font: { family: 'Montserrat' }
-        },
+        ticks: { display: false },
         border: { display: false }
       }
     }
