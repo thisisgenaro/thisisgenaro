@@ -15,8 +15,11 @@ IT Infrastructure Specialist
 
 ## Experience
 
+### NOC MANAGER
+*Junta Central Electoral*, **2026 - Current**
+
 ### SERVERS ADMINISTRATOR
-*Junta Central Electoral*, **2023 - Current**
+*Junta Central Electoral*, **2023 - 2026**
 
 ### LEAD IT INFRASTRUCTURE & CYBERSECURITY ENGINEER
 *DPWorld Dominican Republic*, **2021 - 2023**
