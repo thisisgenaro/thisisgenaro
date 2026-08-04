@@ -1,0 +1,403 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import TopologyBackground from "operational-topology/astro/TopologyBackground";
+import TopologyScene from "operational-topology/astro/TopologyScene";
+import { TOPOLOGY_PAGE_PRESETS } from "operational-topology/presets";
+import { createHexGrid, getGridBounds } from "operational-topology";
+import {
+  GH_LOGO_EDGES,
+  GH_LOGO_NODES,
+  GH_LOGO_ROLE_BY_CELL,
+  getGhLogoFrame
+} from "operational-topology/browser";
+
+const preset = TOPOLOGY_PAGE_PRESETS.underConstruction;
+const logoRadius = 24;
+const logoCells = createHexGrid({
+  radius: logoRadius,
+  columns: 18,
+  rows: 18,
+  originQ: -9,
+  originR: -9,
+});
+const logoBounds = getGridBounds(logoCells, logoRadius);
+const logoCellById = new Map(logoCells.map((cell) => [cell.id, cell]));
+const logoNodes = Array.from(new Map(
+  GH_LOGO_NODES.map((node) => [node.id, node]),
+).values());
+const logoJson = JSON.stringify(logoCells);
+---
+
+<BaseLayout
+  title="Under Construction | Operational Topology"
+  description="A topology-driven construction state powered by the Operational Topology framework."
+>
+  <TopologyBackground class="under-construction-background">
+    <TopologyScene
+      class="under-construction-scene"
+      nodes={[]}
+      {...preset.scene}
+      signalTransitionSpeed={preset.signal.transitionSpeed}
+    />
+
+    <main class="under-construction-page">
+      <div class="under-construction-content">
+        <div class="under-construction-logo-wrap">
+          <svg
+            class="under-construction-logo"
+            viewBox={`${logoBounds.minX} ${logoBounds.minY} ${logoBounds.width} ${logoBounds.height}`}
+            role="img"
+            aria-label="GH topology logo"
+            focusable="false"
+          >
+            <g class="under-construction-connectors" aria-hidden="true">
+              {GH_LOGO_EDGES.map((edge) => {
+                const from = logoCellById.get(edge.from);
+                const to = logoCellById.get(edge.to);
+                if (!from || !to) return null;
+                return (
+                  <line
+                    class:list={["under-construction-connector", `role-${edge.role}`]}
+                    x1={from.center.x}
+                    y1={from.center.y}
+                    x2={to.center.x}
+                    y2={to.center.y}
+                    data-logo-from={edge.from}
+                    data-logo-to={edge.to}
+                    data-logo-edge-role={edge.role}
+                  />
+                );
+              })}
+            </g>
+            <g class="under-construction-cells">
+              {logoNodes.map((node) => {
+                const cell = logoCellById.get(node.id);
+                if (!cell) return null;
+                return (
+                  <path
+                    class:list={["under-construction-hex", `role-${node.role}`]}
+                    d={cell.path}
+                    data-cell-id={cell.id}
+                    data-logo-role={GH_LOGO_ROLE_BY_CELL[cell.id]}
+                    data-cell-state="idle"
+                  />
+                );
+              })}
+            </g>
+            <g class="under-construction-cores" aria-hidden="true">
+              {logoNodes.map((node) => {
+                const cell = logoCellById.get(node.id);
+                if (!cell) return null;
+                return (
+                  <circle
+                    class:list={["under-construction-core", `role-${node.role}`]}
+                    cx={cell.center.x}
+                    cy={cell.center.y}
+                    r={logoRadius * 0.18}
+                    data-cell-id={cell.id}
+                    data-logo-role={GH_LOGO_ROLE_BY_CELL[cell.id]}
+                    data-cell-state="idle"
+                  />
+                );
+              })}
+            </g>
+          </svg>
+        </div>
+
+        <article class="under-construction-card surface" aria-labelledby="under-construction-title">
+          <p class="eyebrow">thisisgenaro.com</p>
+          <h1 id="under-construction-title">Under Construction</h1>
+          <p>A new world is being assembled.</p>
+        </article>
+      </div>
+    </main>
+  </TopologyBackground>
+
+  <script type="application/json" id="under-construction-logo-data" set:html={logoJson}></script>
+
+  <script>
+    import { getGhLogoFrame } from "operational-topology/browser";
+
+    const root = document.querySelector(".under-construction-page");
+    const data = document.getElementById("under-construction-logo-data");
+    const cells = data ? JSON.parse(data.textContent || "[]") : [];
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const elements = new Map();
+
+    root?.querySelectorAll("[data-cell-id]").forEach((element) => {
+      const id = element.getAttribute("data-cell-id");
+      if (!id) return;
+      const group = elements.get(id) ?? [];
+      group.push(element);
+      elements.set(id, group);
+    });
+
+    const connectors = Array.from(root?.querySelectorAll("[data-logo-from][data-logo-to]") ?? []);
+    const startedAt = performance.now();
+
+    function render(now) {
+      const elapsed = reducedMotion.matches ? 4600 : now - startedAt;
+      const frame = getGhLogoFrame(cells, elapsed, "border-reveal");
+      const stateMap = new Map(frame.states.map((state) => [state.id, state]));
+
+      for (const [id, group] of elements.entries()) {
+        const state = stateMap.get(id) ?? { state: "idle", intensity: 0.05 };
+        for (const element of group) {
+          element.dataset.cellState = state.state;
+          element.style.setProperty("--logo-intensity", String(state.intensity));
+          element.classList.toggle("is-origin", state.state === "origin");
+          element.classList.toggle("is-propagating", state.state === "propagating");
+          element.classList.toggle("is-receiving", state.state === "receiving");
+          element.classList.toggle("is-resolved", state.state === "resolved");
+        }
+      }
+
+      for (const connector of connectors) {
+        const from = stateMap.get(connector.getAttribute("data-logo-from") || "")?.state;
+        const to = stateMap.get(connector.getAttribute("data-logo-to") || "")?.state;
+        connector.classList.toggle(
+          "is-active",
+          from === "origin" || from === "propagating" || from === "receiving"
+            || to === "origin" || to === "propagating" || to === "receiving",
+        );
+        connector.classList.toggle("is-settled", from === "resolved" && to === "resolved");
+        const fromVisible = from === "origin" || from === "propagating" || from === "receiving" || from === "resolved";
+        const toVisible = to === "origin" || to === "propagating" || to === "receiving" || to === "resolved";
+        connector.classList.toggle("is-partial", (fromVisible || toVisible) && !(from === "resolved" && to === "resolved"));
+      }
+
+      if (!reducedMotion.matches && frame.phase !== "settled") {
+        window.requestAnimationFrame(render);
+      }
+    }
+
+    window.requestAnimationFrame(render);
+  </script>
+</BaseLayout>
+
+<style>
+  .under-construction-background {
+    min-height: 100svh;
+  }
+
+  .under-construction-scene {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    min-height: 100svh;
+  }
+
+  .under-construction-page {
+    position: relative;
+    z-index: 4;
+    min-height: 100svh;
+    display: grid;
+    place-items: center;
+    padding: clamp(1.5rem, 5vw, 4rem);
+    pointer-events: none;
+  }
+
+  .under-construction-content {
+    display: flex;
+    width: min(100%, 620px);
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(0.5rem, 1.5vw, 1rem);
+    transform: translateY(-2vh);
+  }
+
+  .under-construction-logo-wrap {
+    width: min(78vw, 520px);
+    aspect-ratio: 1;
+    filter: drop-shadow(0 0 24px color-mix(in srgb, var(--theme-accent) 18%, transparent));
+  }
+
+  .under-construction-logo {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .under-construction-hex {
+    fill: color-mix(in srgb, var(--theme-accent) 4%, transparent);
+    stroke: color-mix(in srgb, var(--theme-accent) 72%, white 28%);
+    stroke-width: 1.4;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+    opacity: 0;
+    transition: opacity 180ms ease, stroke 180ms ease, fill 180ms ease, filter 180ms ease;
+  }
+
+  .under-construction-hex.is-resolved {
+    fill: color-mix(in srgb, var(--theme-accent) 8%, transparent);
+    opacity: 0.82;
+    filter: drop-shadow(0 0 5px color-mix(in srgb, var(--theme-accent) 26%, transparent));
+  }
+
+  .under-construction-hex.is-origin,
+  .under-construction-hex.is-propagating,
+  .under-construction-hex.is-receiving {
+    fill: color-mix(in srgb, var(--theme-accent-strong) 28%, transparent);
+    stroke: color-mix(in srgb, var(--theme-focus) 72%, white 28%);
+    stroke-width: 2.2;
+    opacity: 1;
+    filter: drop-shadow(0 0 11px color-mix(in srgb, var(--theme-accent) 62%, transparent));
+  }
+
+  .under-construction-connector {
+    stroke: color-mix(in srgb, var(--theme-accent) 48%, transparent);
+    stroke-width: 1.1;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+    opacity: 0;
+    transition: stroke 180ms ease, stroke-width 180ms ease, opacity 180ms ease, filter 180ms ease;
+  }
+
+  .under-construction-connector.is-partial {
+    stroke: color-mix(in srgb, var(--theme-accent) 58%, transparent);
+    opacity: 0.34;
+  }
+
+  .under-construction-connector.role-g,
+  .under-construction-connector.role-h {
+    stroke: color-mix(in srgb, var(--theme-text-primary) 72%, transparent);
+  }
+
+  .under-construction-connector.is-settled {
+    stroke: color-mix(in srgb, var(--theme-accent) 66%, transparent);
+    opacity: 0.48;
+  }
+
+  .under-construction-connector.is-active {
+    stroke: var(--theme-focus);
+    stroke-width: 2.2;
+    opacity: 0.96;
+    filter: drop-shadow(0 0 7px color-mix(in srgb, var(--theme-accent) 58%, transparent));
+  }
+
+  .under-construction-hex.role-g,
+  .under-construction-hex.role-h {
+    stroke: var(--theme-text-primary);
+  }
+
+  .under-construction-hex.role-g.is-origin,
+  .under-construction-hex.role-g.is-propagating,
+  .under-construction-hex.role-g.is-receiving,
+  .under-construction-hex.role-h.is-origin,
+  .under-construction-hex.role-h.is-propagating,
+  .under-construction-hex.role-h.is-receiving {
+    stroke: var(--theme-text-primary);
+  }
+
+  .under-construction-core {
+    fill: color-mix(in srgb, var(--theme-accent) 46%, transparent);
+    stroke: color-mix(in srgb, var(--theme-accent) 80%, white 20%);
+    stroke-width: 1;
+    opacity: 0;
+    transition: opacity 180ms ease, fill 180ms ease, filter 180ms ease;
+  }
+
+  .under-construction-core.role-g,
+  .under-construction-core.role-h {
+    fill: var(--theme-text-primary);
+    stroke: var(--theme-text-primary);
+  }
+
+
+  .under-construction-core.is-resolved {
+    fill: var(--theme-accent);
+    opacity: 0.78;
+  }
+
+  .under-construction-core.is-origin,
+  .under-construction-core.is-propagating,
+  .under-construction-core.is-receiving {
+    fill: var(--theme-focus);
+    opacity: 1;
+    filter: drop-shadow(0 0 8px color-mix(in srgb, var(--theme-accent) 75%, transparent));
+  }
+
+  .under-construction-core.role-g,
+  .under-construction-core.role-h {
+    fill: var(--theme-text-primary);
+    stroke: var(--theme-text-primary);
+  }
+
+  .under-construction-core.role-g.is-origin,
+  .under-construction-core.role-g.is-propagating,
+  .under-construction-core.role-g.is-receiving,
+  .under-construction-core.role-h.is-origin,
+  .under-construction-core.role-h.is-propagating,
+  .under-construction-core.role-h.is-receiving {
+    fill: var(--theme-text-primary);
+    stroke: var(--theme-text-primary);
+  }
+
+  .under-construction-connector.role-g,
+  .under-construction-connector.role-h {
+    stroke: var(--theme-text-primary);
+  }
+
+  .under-construction-card {
+    width: min(100%, 380px);
+    padding: 1rem 1.2rem 1.15rem;
+    text-align: center;
+    pointer-events: auto;
+    background: color-mix(in srgb, var(--theme-surface) 84%, transparent);
+    border-color: color-mix(in srgb, var(--theme-accent) 28%, var(--theme-line));
+    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
+  }
+
+  .under-construction-card .eyebrow {
+    margin-bottom: 0.55rem;
+    font-size: 0.63rem;
+  }
+
+  .under-construction-card h1 {
+    margin-bottom: 0.3rem;
+    font-size: clamp(1.25rem, 3vw, 1.8rem);
+  }
+
+  .under-construction-card p:last-child {
+    margin: 0;
+    color: var(--theme-text-secondary);
+    font-size: 0.88rem;
+  }
+
+  @media (max-width: 640px) {
+    .under-construction-page {
+      padding: 1rem;
+    }
+
+    .under-construction-content {
+      transform: translateY(-1vh);
+    }
+
+    .under-construction-logo-wrap {
+      width: min(94vw, 460px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .under-construction-hex,
+    .under-construction-connector,
+  .under-construction-hex.role-g,
+  .under-construction-hex.role-h {
+    stroke: var(--theme-text-primary);
+  }
+
+  .under-construction-hex.role-g.is-origin,
+  .under-construction-hex.role-g.is-propagating,
+  .under-construction-hex.role-g.is-receiving,
+  .under-construction-hex.role-h.is-origin,
+  .under-construction-hex.role-h.is-propagating,
+  .under-construction-hex.role-h.is-receiving {
+    stroke: var(--theme-text-primary);
+  }
+
+    .under-construction-core {
+      transition: none;
+    }
+  }
+</style>

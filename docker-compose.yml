@@ -1,0 +1,6 @@
+services:
+    under-construction:
+      build: .
+      ports:
+        - "8880:80"
+      restart: unless-stopped

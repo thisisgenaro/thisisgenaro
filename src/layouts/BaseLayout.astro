@@ -1,0 +1,58 @@
+---import ThemeSwitcher from "operational-topology/astro/ThemeSwitcher";
+import {
+  contrastStorageKey,
+  colorVisionStorageKey,
+  defaultTheme,
+  glowStorageKey,
+  themeNames,
+  themeStorageKey,
+} from "operational-topology";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = "Operational Topology",
+  description = "Topology-driven portfolio and knowledge system.",
+} = Astro.props;
+
+const themeBootstrap =
+  "(() => {" +
+  "const themes=" + JSON.stringify(themeNames) + ";" +
+  "const fallback=" + JSON.stringify(defaultTheme) + ";" +
+  "try {" +
+  "const stored=localStorage.getItem(" + JSON.stringify(themeStorageKey) + ");" +
+  "document.documentElement.dataset.theme=themes.includes(stored)?stored:fallback;" +
+  "document.documentElement.dataset.glow=localStorage.getItem(" + JSON.stringify(glowStorageKey) + ")==='true'?'reduced':'standard';" +
+  "document.documentElement.dataset.contrast=localStorage.getItem(" + JSON.stringify(contrastStorageKey) + ")==='true'?'high':'standard';" +
+  "document.documentElement.dataset.colorVision=localStorage.getItem(" + JSON.stringify(colorVisionStorageKey) + ")==='true'?'safe':'standard';" +
+  "} catch {document.documentElement.dataset.theme=fallback;document.documentElement.dataset.glow='standard';document.documentElement.dataset.contrast='standard';document.documentElement.dataset.colorVision='standard';}" +
+  "})();";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <script is:inline set:html={themeBootstrap}></script>
+    <title>{title}</title>
+    <slot name="head" />
+  </head>
+  <body>
+    <slot />
+    <ThemeSwitcher />
+    <script>
+      if (import.meta.env.DEV) {
+        import("../topology/DeveloperAPI").then(({ installDeveloperAPI }) => {
+          installDeveloperAPI();
+        });
+      }
+    </script>
+  </body>
+</html>
