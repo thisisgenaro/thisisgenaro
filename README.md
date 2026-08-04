@@ -15,7 +15,7 @@ IT Infrastructure Specialist
 
 ## Experience
 
-### NOC MANAGER
+### NOC TEAM LEAD
 *Junta Central Electoral*, **2026 - Current**
 
 ### SERVERS ADMINISTRATOR
