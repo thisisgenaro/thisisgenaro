@@ -1,4 +1,5 @@
----import ThemeSwitcher from "operational-topology/astro/ThemeSwitcher";
+---
+import ThemeSwitcher from "operational-topology/astro/ThemeSwitcher";
 import {
   contrastStorageKey,
   colorVisionStorageKey,
@@ -30,6 +31,8 @@ const themeBootstrap =
   "document.documentElement.dataset.colorVision=localStorage.getItem(" + JSON.stringify(colorVisionStorageKey) + ")==='true'?'safe':'standard';" +
   "} catch {document.documentElement.dataset.theme=fallback;document.documentElement.dataset.glow='standard';document.documentElement.dataset.contrast='standard';document.documentElement.dataset.colorVision='standard';}" +
   "})();";
+
+export const defaultTheme: ThemeName = "midnight-electric";
 ---
 
 <!doctype html>
