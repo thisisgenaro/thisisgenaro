@@ -31,6 +31,8 @@ const themeBootstrap =
   "document.documentElement.dataset.colorVision=localStorage.getItem(" + JSON.stringify(colorVisionStorageKey) + ")==='true'?'safe':'standard';" +
   "} catch {document.documentElement.dataset.theme=fallback;document.documentElement.dataset.glow='standard';document.documentElement.dataset.contrast='standard';document.documentElement.dataset.colorVision='standard';}" +
   "})();";
+
+export const defaultTheme: ThemeName = "imperial-gold";
 ---
 
 <!doctype html>

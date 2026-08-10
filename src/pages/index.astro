@@ -21,6 +21,14 @@ const logoCells = createHexGrid({
   originR: -9,
 });
 const logoBounds = getGridBounds(logoCells, logoRadius);
+
+const logoViewBox = [
+    -logoBounds.width / 2,
+    -logoBounds.height / 2,
+    logoBounds.width,
+    logoBounds.height,
+  ].join(" ");
+
 const logoCellById = new Map(logoCells.map((cell) => [cell.id, cell]));
 const logoNodes = Array.from(new Map(
   GH_LOGO_NODES.map((node) => [node.id, node]),
@@ -45,7 +53,7 @@ const logoJson = JSON.stringify(logoCells);
         <div class="under-construction-logo-wrap">
           <svg
             class="under-construction-logo"
-            viewBox={`${logoBounds.minX} ${logoBounds.minY} ${logoBounds.width} ${logoBounds.height}`}
+            viewBox={logoViewBox}
             role="img"
             aria-label="GH topology logo"
             focusable="false"
