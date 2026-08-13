@@ -52,6 +52,7 @@ const latestIncident = {
 
     <section class="home__hero">
       <article class="home__lead" aria-labelledby="home-lead-title">
+        <p class="home__hero-name">Genaro Hernandez</p>
         <p class="eyebrow">IT Infrastructure &amp; Cloud Specialist</p>
         <h1 class="home__headline" id="home-lead-title">
           <span>Design</span>
@@ -191,6 +192,14 @@ const latestIncident = {
     min-height: 18.5rem;
   }
 
+  .home__hero-name {
+    margin: 0;
+    color: var(--text);
+    font-family: var(--font-title);
+    font-size: clamp(1.1rem, 1.4vw, 1.35rem);
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+  }
 
   .home__headline {
     margin: 0;
