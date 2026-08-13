@@ -70,10 +70,18 @@ const themeBootstrap =
   <body>
     <div class="shell">
       <header class="shell__header surface surface-pad">
-        <div class="shell__brand-row">
+        <div class="shell__primary-row">
           <a class="shell__brand" href="/" aria-label="Home">
             <img class="shell__brand-image" src="/gh-logo.png" alt="" />
           </a>
+
+          <nav class="shell__links" id="site-primary-nav" aria-label="Primary">
+            {navItems.map((item) => (
+              <a href={item.href} aria-current={isActive(item.href) ? "page" : undefined} class:list={{ "is-active": isActive(item.href) }}>
+                {item.label}
+              </a>
+            ))}
+          </nav>
         </div>
 
         <button class="shell__menu-toggle" type="button" aria-expanded="false" aria-controls="site-primary-nav">
@@ -84,14 +92,6 @@ const themeBootstrap =
           </span>
           <span class="shell__menu-label">Menu</span>
         </button>
-
-        <nav class="shell__links" id="site-primary-nav" aria-label="Primary">
-          {navItems.map((item) => (
-            <a href={item.href} aria-current={isActive(item.href) ? "page" : undefined} class:list={{ "is-active": isActive(item.href) }}>
-              {item.label}
-            </a>
-          ))}
-        </nav>
       </header>
 
       <slot />
@@ -149,11 +149,13 @@ const themeBootstrap =
     box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
   }
 
-  .shell__brand-row {
+  .shell__primary-row {
     display: flex;
     align-items: center;
-    gap: 0.8rem;
+    justify-content: flex-start;
+    gap: 1rem;
     min-width: 0;
+    flex: 1 1 auto;
   }
 
   .shell__brand {
@@ -211,7 +213,7 @@ const themeBootstrap =
 
   .shell__links {
     align-items: center;
-    justify-content: flex-end;
+    justify-content: flex-start;
     display: flex;
     flex-wrap: wrap;
     gap: 0.55rem;
@@ -265,7 +267,7 @@ const themeBootstrap =
       padding-inline: 0.9rem;
     }
 
-    .shell__brand-row {
+    .shell__primary-row {
       width: auto;
       align-items: center;
       flex: 1 1 auto;
@@ -282,10 +284,10 @@ const themeBootstrap =
       padding-top: 0;
     }
 
-    .shell__brand-row {
+    .shell__primary-row {
       align-items: center;
+      gap: 0.85rem;
     }
-
 
     .shell__menu-toggle {
       display: inline-flex;
