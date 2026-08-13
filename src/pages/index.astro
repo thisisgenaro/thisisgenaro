@@ -140,6 +140,18 @@ const navItems = [
         <a class="home__card-link" href={latestIncident.href}>Open incident</a>
       </article>
     </section>
+
+    <footer class="home__footer surface surface-pad">
+      <div class="home__footer-copy">
+        <p class="home__footer-name">Genaro Hernandez</p>
+        <p class="home__footer-body">Design, automate, keep things running. Writing, incidents, and operational notes live here.</p>
+      </div>
+      <div class="home__footer-links" aria-label="Footer">
+        <a href="/about">About</a>
+        <a href="/about/cv">CV</a>
+        <a href="/journal">Journal</a>
+      </div>
+    </footer>
   </main>
 </BaseLayout>
 
@@ -387,6 +399,56 @@ const navItems = [
     margin-top: 1rem;
   }
 
+  .home__footer {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .home__footer-copy {
+    max-width: 30rem;
+  }
+
+  .home__footer-name {
+    margin: 0;
+    color: var(--text);
+    font-family: var(--font-title);
+    font-size: 1rem;
+    letter-spacing: -0.03em;
+  }
+
+  .home__footer-body {
+    margin: 0.4rem 0 0;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .home__footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.85rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .home__footer-links a {
+    color: var(--text);
+    border-bottom: 1px solid transparent;
+    transition: border-color 180ms ease, color 180ms ease, transform 180ms ease;
+  }
+
+  .home__footer-links a:hover,
+  .home__footer-links a:focus-visible {
+    color: var(--accent);
+    border-bottom-color: color-mix(in srgb, var(--accent) 80%, transparent);
+    transform: translateY(-1px);
+  }
+
   .home__card {
     display: grid;
     gap: 0.6rem;
@@ -526,6 +588,15 @@ const navItems = [
       align-items: flex-start;
       flex-direction: column;
       gap: 0.45rem;
+    }
+
+    .home__footer {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .home__footer-links {
+      justify-content: flex-start;
     }
 
     .home__headline {
