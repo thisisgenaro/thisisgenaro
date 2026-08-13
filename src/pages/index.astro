@@ -111,13 +111,16 @@ const latestIncident = {
 
     <footer class="home__footer surface surface-pad">
       <div class="home__footer-copy">
+        <p class="home__footer-label">This Is Genaro</p>
         <p class="home__footer-name">Genaro Hernandez</p>
-        <p class="home__footer-body">Design, automate, keep things running. Writing, incidents, and operational notes live here.</p>
+        <p class="home__footer-body">Personal site, writing, and operational notes. Built to stay readable while the work changes.</p>
       </div>
       <div class="home__footer-links" aria-label="Footer">
+        <span class="home__footer-links-label">Explore</span>
         <a href="/about">About</a>
         <a href="/about/cv">CV</a>
         <a href="/journal">Journal</a>
+        <a href="/incidents">Incidents</a>
       </div>
     </footer>
   </main>
@@ -277,45 +280,65 @@ const latestIncident = {
 
 
   .home__footer {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.7fr);
+    align-items: start;
+    gap: 1.5rem;
     margin-top: 1rem;
+    border-top: 1px solid color-mix(in srgb, var(--line-strong) 70%, transparent);
+    padding-top: 1.1rem;
   }
 
   .home__footer-copy {
     max-width: 30rem;
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .home__footer-label {
+    margin: 0;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
   }
 
   .home__footer-name {
     margin: 0;
     color: var(--text);
     font-family: var(--font-title);
-    font-size: 1rem;
+    font-size: 1.05rem;
     letter-spacing: -0.03em;
   }
 
   .home__footer-body {
-    margin: 0.4rem 0 0;
+    margin: 0.2rem 0 0;
     color: var(--muted);
-    line-height: 1.6;
+    line-height: 1.65;
+    max-width: 34ch;
   }
 
   .home__footer-links {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-end;
-    gap: 0.85rem;
+    display: grid;
+    justify-content: start;
+    gap: 0.45rem;
     font-family: var(--font-mono);
     font-size: 0.72rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
   }
 
+  .home__footer-links-label {
+    color: var(--muted);
+    font-weight: 700;
+  }
+
   .home__footer-links a {
     color: var(--text);
     border-bottom: 1px solid transparent;
+    width: fit-content;
     transition: border-color 180ms ease, color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
   }
 
@@ -512,13 +535,17 @@ const latestIncident = {
     }
 
     .home__footer {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 0.75rem;
+      grid-template-columns: 1fr;
+      gap: 0.9rem;
+      padding-top: 0.95rem;
+    }
+
+    .home__footer-body {
+      max-width: none;
     }
 
     .home__footer-links {
-      justify-content: flex-start;
+      gap: 0.35rem;
     }
 
     .home__headline {
