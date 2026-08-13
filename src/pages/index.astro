@@ -1,411 +1,488 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import TopologyBackground from "operational-topology/astro/TopologyBackground";
 import TopologyScene from "operational-topology/astro/TopologyScene";
-import { TOPOLOGY_PAGE_PRESETS } from "operational-topology/presets";
-import { createHexGrid, getGridBounds } from "operational-topology";
-import {
-  GH_LOGO_EDGES,
-  GH_LOGO_NODES,
-  GH_LOGO_ROLE_BY_CELL,
-  getGhLogoFrame
-} from "operational-topology/browser";
+import { createTopologyScenePreset } from "operational-topology/presets";
 
-const preset = TOPOLOGY_PAGE_PRESETS.underConstruction;
-const logoRadius = 24;
-const logoCells = createHexGrid({
-  radius: logoRadius,
-  columns: 18,
-  rows: 18,
-  originQ: -9,
-  originR: -9,
+const dormantScene = createTopologyScenePreset({
+  layout: "viewport-fit",
+  topologyLayout: "ring",
+  showGridNodes: false,
+  gridActivity: true,
+  ambientSignals: false,
 });
-const logoBounds = getGridBounds(logoCells, logoRadius);
 
-const logoViewBox = [
-    -logoBounds.width / 2,
-    -logoBounds.height / 2,
-    logoBounds.width,
-    logoBounds.height,
-  ].join(" ");
 
-const logoCellById = new Map(logoCells.map((cell) => [cell.id, cell]));
-const logoNodes = Array.from(new Map(
-  GH_LOGO_NODES.map((node) => [node.id, node]),
-).values());
-const logoJson = JSON.stringify(logoCells);
+const latestJournal = {
+  id: "JRNL-001",
+  title: "Keeping the operating model readable",
+  date: "2026-08-13",
+  excerpt:
+    "A practical site works better when structure stays visible without making the page feel like a dashboard demo.",
+  href: "/journal",
+};
+
+const latestIncident = {
+  id: "INC-0027",
+  title: "Signal route failure",
+  date: "2026-08-11",
+  summary:
+    "A topology route lost clarity during a transition and needed a bounded camera frame to remain legible.",
+  status: "INVESTIGATING",
+  href: "/incidents",
+};
 ---
 
 <BaseLayout
-  title="Under Construction | Operational Topology"
-  description="A topology-driven construction state powered by the Operational Topology framework."
+  title="thisisgenaro.com | Genaro Hernandez"
+  description="Genaro Hernandez builds resilient infrastructure, writes about the work, and documents incidents with clarity."
 >
-  <TopologyBackground class="under-construction-background">
-    <TopologyScene
-      class="under-construction-scene"
-      nodes={[]}
-      {...preset.scene}
-      signalTransitionSpeed={preset.signal.transitionSpeed}
-    />
+  <main class="home">
+    <div class="home__world" aria-hidden="true">
+      <TopologyScene
+        class="home__world-scene"
+        nodes={[]}
+        edges={[]}
+        {...dormantScene}
+        signalTransitionSpeed={0.9}
+      />
+      <div class="home__world-vignette"></div>
+    </div>
 
-    <main class="under-construction-page">
-      <div class="under-construction-content">
-        <div class="under-construction-logo-wrap">
-          <svg
-            class="under-construction-logo"
-            viewBox={logoViewBox}
-            role="img"
-            aria-label="GH topology logo"
-            focusable="false"
-          >
-            <g class="under-construction-connectors" aria-hidden="true">
-              {GH_LOGO_EDGES.map((edge) => {
-                const from = logoCellById.get(edge.from);
-                const to = logoCellById.get(edge.to);
-                if (!from || !to) return null;
-                return (
-                  <line
-                    class:list={["under-construction-connector", `role-${edge.role}`]}
-                    x1={from.center.x}
-                    y1={from.center.y}
-                    x2={to.center.x}
-                    y2={to.center.y}
-                    data-logo-from={edge.from}
-                    data-logo-to={edge.to}
-                    data-logo-edge-role={edge.role}
-                  />
-                );
-              })}
-            </g>
-            <g class="under-construction-cells">
-              {logoNodes.map((node) => {
-                const cell = logoCellById.get(node.id);
-                if (!cell) return null;
-                return (
-                  <path
-                    class:list={["under-construction-hex", `role-${node.role}`]}
-                    d={cell.path}
-                    data-cell-id={cell.id}
-                    data-logo-role={GH_LOGO_ROLE_BY_CELL[cell.id]}
-                    data-cell-state="idle"
-                  />
-                );
-              })}
-            </g>
-            <g class="under-construction-cores" aria-hidden="true">
-              {logoNodes.map((node) => {
-                const cell = logoCellById.get(node.id);
-                if (!cell) return null;
-                return (
-                  <circle
-                    class:list={["under-construction-core", `role-${node.role}`]}
-                    cx={cell.center.x}
-                    cy={cell.center.y}
-                    r={logoRadius * 0.18}
-                    data-cell-id={cell.id}
-                    data-logo-role={GH_LOGO_ROLE_BY_CELL[cell.id]}
-                    data-cell-state="idle"
-                  />
-                );
-              })}
-            </g>
-          </svg>
+    <header class="home__nav surface surface-pad">
+      <a class="home__brand" href="/" aria-label="Home"><img class="home__brand-image" src="/gh-logo.png" alt="" /></a>
+
+      <button class="home__menu-toggle" type="button" aria-expanded="false" aria-controls="home-primary-nav">
+        <span class="home__menu-icon" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </span>
+        <span class="home__menu-label">Menu</span>
+      </button>
+
+      <nav class="home__links" id="home-primary-nav" aria-label="Primary">
+        <a href="/">HOME</a>
+        <a href="/journal">JOURNAL</a>
+        <a href="/incidents">INCIDENTS</a>
+        <a href="/about">ABOUT</a>
+        <a href="/about/cv">CV</a>
+      </nav>
+    </header>
+
+    <section class="home__hero">
+      <article class="home__lead surface surface-pad">
+        <p class="eyebrow">PERSISTENT WORLD</p>
+        <h1 class="home__headline">
+          <span>Genaro</span>
+          <span>Hernandez</span>
+        </h1>
+        <p class="home__lede">
+          I design and build systems for people to understand complex things.
+        </p>
+
+        <div class="home__meta">
+          <div>
+            <span class="meta">Focus</span>
+            <p>Infrastructure, automation, observability, and operational clarity.</p>
+          </div>
+          <div>
+            <span class="meta">Mode</span>
+            <p>Quietly technical. Editorial when writing. Operational when things break.</p>
+          </div>
         </div>
+      </article>
 
-        <article class="under-construction-card surface" aria-labelledby="under-construction-title">
-          <p class="eyebrow">thisisgenaro.com</p>
-          <h1 id="under-construction-title">Under Construction</h1>
-          <p>A new world is being assembled.</p>
-        </article>
-      </div>
-    </main>
-  </TopologyBackground>
+      <aside class="home__inspector surface surface-pad" aria-labelledby="inspector-title">
+        <div class="section-label">
+          <h2 id="inspector-title">Site State</h2>
+          <span class="meta">Grid alive</span>
+        </div>
+        <p class="home__inspector-body">
+          The grid stays mounted and quiet. Content leads while the spatial layer remains available in the background.
+        </p>
+        <div class="chip-row">
+          <span class="chip">Persistent grid</span>
+          <span class="chip">Shared scene</span>
+          <span class="chip">Editorial content</span>
+          <span class="chip">Scene reuse</span>
+        </div>
+      </aside>
+    </section>
 
-  <script type="application/json" id="under-construction-logo-data" set:html={logoJson}></script>
+    <section class="home__latest-grid">
+      <article class="home__card surface surface-pad">
+        <div class="section-label">
+          <h2>Journal</h2>
+        </div>
+        <p class="home__card-id mono">{latestJournal.id}</p>
+        <h3>{latestJournal.title}</h3>
+        <p class="home__card-date">{latestJournal.date}</p>
+        <p class="home__card-body">{latestJournal.excerpt}</p>
+        <a class="home__card-link" href={latestJournal.href}>Read entry</a>
+      </article>
 
-  <script>
-    import { getGhLogoFrame } from "operational-topology/browser";
-
-    const root = document.querySelector(".under-construction-page");
-    const data = document.getElementById("under-construction-logo-data");
-    const cells = data ? JSON.parse(data.textContent || "[]") : [];
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const elements = new Map();
-
-    root?.querySelectorAll("[data-cell-id]").forEach((element) => {
-      const id = element.getAttribute("data-cell-id");
-      if (!id) return;
-      const group = elements.get(id) ?? [];
-      group.push(element);
-      elements.set(id, group);
-    });
-
-    const connectors = Array.from(root?.querySelectorAll("[data-logo-from][data-logo-to]") ?? []);
-    const startedAt = performance.now();
-
-    function render(now) {
-      const elapsed = reducedMotion.matches ? 4600 : now - startedAt;
-      const frame = getGhLogoFrame(cells, elapsed, "border-reveal");
-      const stateMap = new Map(frame.states.map((state) => [state.id, state]));
-
-      for (const [id, group] of elements.entries()) {
-        const state = stateMap.get(id) ?? { state: "idle", intensity: 0.05 };
-        for (const element of group) {
-          element.dataset.cellState = state.state;
-          element.style.setProperty("--logo-intensity", String(state.intensity));
-          element.classList.toggle("is-origin", state.state === "origin");
-          element.classList.toggle("is-propagating", state.state === "propagating");
-          element.classList.toggle("is-receiving", state.state === "receiving");
-          element.classList.toggle("is-resolved", state.state === "resolved");
-        }
-      }
-
-      for (const connector of connectors) {
-        const from = stateMap.get(connector.getAttribute("data-logo-from") || "")?.state;
-        const to = stateMap.get(connector.getAttribute("data-logo-to") || "")?.state;
-        connector.classList.toggle(
-          "is-active",
-          from === "origin" || from === "propagating" || from === "receiving"
-            || to === "origin" || to === "propagating" || to === "receiving",
-        );
-        connector.classList.toggle("is-settled", from === "resolved" && to === "resolved");
-        const fromVisible = from === "origin" || from === "propagating" || from === "receiving" || from === "resolved";
-        const toVisible = to === "origin" || to === "propagating" || to === "receiving" || to === "resolved";
-        connector.classList.toggle("is-partial", (fromVisible || toVisible) && !(from === "resolved" && to === "resolved"));
-      }
-
-      if (!reducedMotion.matches && frame.phase !== "settled") {
-        window.requestAnimationFrame(render);
-      }
-    }
-
-    window.requestAnimationFrame(render);
-  </script>
+      <article class="home__card surface surface-pad">
+        <div class="section-label">
+          <h2>Incident</h2>
+        </div>
+        <p class="home__card-id mono">{latestIncident.id}</p>
+        <h3>{latestIncident.title}</h3>
+        <div class="home__status-row">
+          <p class="home__card-date">{latestIncident.date}</p>
+          <span class="home__status-pill">{latestIncident.status}</span>
+        </div>
+        <p class="home__card-body">{latestIncident.summary}</p>
+        <a class="home__card-link" href={latestIncident.href}>Open incident library</a>
+      </article>
+    </section>
+  </main>
 </BaseLayout>
 
 <style>
-  .under-construction-background {
-    min-height: 100svh;
+  .home {
+    position: relative;
+    width: min(calc(100% - 2rem), var(--content-width));
+    margin: 0 auto;
+    padding: 1rem 0 2rem;
   }
 
-  .under-construction-scene {
+  .home__world {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.18;
+    filter: saturate(0.85);
+  }
+
+  .home__world-scene {
     position: absolute;
     inset: 0;
-    z-index: 0;
-    min-height: 100svh;
   }
 
-  .under-construction-page {
-    position: relative;
-    z-index: 4;
-    min-height: 100svh;
-    display: grid;
-    place-items: center;
-    padding: clamp(1.5rem, 5vw, 4rem);
-    pointer-events: none;
+  .home__world-vignette {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 50% 20%, rgba(242, 169, 0, 0.06), transparent 22%),
+      linear-gradient(180deg, rgba(1, 4, 6, 0.08), rgba(1, 4, 6, 0.55));
   }
 
-  .under-construction-content {
+  .home__nav {
     display: flex;
-    width: min(100%, 620px);
-    flex-direction: column;
     align-items: center;
-    gap: clamp(0.5rem, 1.5vw, 1rem);
-    transform: translateY(-2vh);
+    justify-content: space-between;
+    gap: 1rem;
+    border-radius: var(--radius-xl);
+    padding-inline: 1rem;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--surface-2) 92%, transparent), color-mix(in srgb, var(--surface) 78%, transparent));
+    border-color: color-mix(in srgb, var(--line-strong) 72%, transparent);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.24);
+    margin-bottom: 1rem;
   }
 
-  .under-construction-logo-wrap {
-    width: min(78vw, 520px);
+  .home__brand {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 3.6rem;
     aspect-ratio: 1;
-    filter: drop-shadow(0 0 24px color-mix(in srgb, var(--theme-accent) 18%, transparent));
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
   }
 
-  .under-construction-logo {
-    display: block;
+  .home__brand-image {
     width: 100%;
     height: 100%;
-    overflow: visible;
+    object-fit: contain;
   }
 
-  .under-construction-hex {
-    fill: color-mix(in srgb, var(--theme-accent) 4%, transparent);
-    stroke: color-mix(in srgb, var(--theme-accent) 72%, white 28%);
-    stroke-width: 1.4;
-    stroke-linejoin: round;
-    vector-effect: non-scaling-stroke;
-    opacity: 0;
-    transition: opacity 180ms ease, stroke 180ms ease, fill 180ms ease, filter 180ms ease;
+  .home__menu-toggle {
+    display: none;
+    align-items: center;
+    gap: 0.55rem;
+    min-height: 2.3rem;
+    padding: 0.38rem 0.7rem;
+    border: 1px solid color-mix(in srgb, var(--line-strong) 55%, transparent);
+    border-radius: 0.55rem;
+    background: transparent;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    transition: border-color 180ms ease, background 180ms ease, transform 180ms ease;
   }
 
-  .under-construction-hex.is-resolved {
-    fill: color-mix(in srgb, var(--theme-accent) 8%, transparent);
-    opacity: 0.82;
-    filter: drop-shadow(0 0 5px color-mix(in srgb, var(--theme-accent) 26%, transparent));
+  .home__menu-icon {
+    display: grid;
+    gap: 0.22rem;
+    width: 1rem;
   }
 
-  .under-construction-hex.is-origin,
-  .under-construction-hex.is-propagating,
-  .under-construction-hex.is-receiving {
-    fill: color-mix(in srgb, var(--theme-accent-strong) 28%, transparent);
-    stroke: color-mix(in srgb, var(--theme-focus) 72%, white 28%);
-    stroke-width: 2.2;
-    opacity: 1;
-    filter: drop-shadow(0 0 11px color-mix(in srgb, var(--theme-accent) 62%, transparent));
+  .home__menu-icon span {
+    display: block;
+    width: 100%;
+    height: 1px;
+    background: currentColor;
   }
 
-  .under-construction-connector {
-    stroke: color-mix(in srgb, var(--theme-accent) 48%, transparent);
-    stroke-width: 1.1;
-    stroke-linecap: round;
-    vector-effect: non-scaling-stroke;
-    opacity: 0;
-    transition: stroke 180ms ease, stroke-width 180ms ease, opacity 180ms ease, filter 180ms ease;
+  .home__links {
+    align-items: center;
+    justify-content: flex-end;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.14em;
   }
 
-  .under-construction-connector.is-partial {
-    stroke: color-mix(in srgb, var(--theme-accent) 58%, transparent);
-    opacity: 0.34;
+  .home__links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.1rem;
+    padding: 0.2rem 0.05rem;
+    color: var(--text);
+    border-bottom: 1px solid transparent;
+    border-radius: 0;
+    background: transparent;
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    transition: border-color 180ms ease, color 180ms ease, transform 180ms ease;
   }
 
-  .under-construction-connector.role-g,
-  .under-construction-connector.role-h {
-    stroke: color-mix(in srgb, var(--theme-text-primary) 72%, transparent);
+  .home__links a:hover,
+  .home__links a:focus-visible {
+    transform: translateY(-1px);
+    border-bottom-color: color-mix(in srgb, var(--accent) 70%, transparent);
+    color: var(--accent);
   }
 
-  .under-construction-connector.is-settled {
-    stroke: color-mix(in srgb, var(--theme-accent) 66%, transparent);
-    opacity: 0.48;
+  .home__hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
+    gap: 1rem;
+    align-items: start;
   }
 
-  .under-construction-connector.is-active {
-    stroke: var(--theme-focus);
-    stroke-width: 2.2;
-    opacity: 0.96;
-    filter: drop-shadow(0 0 7px color-mix(in srgb, var(--theme-accent) 58%, transparent));
+  .home__lead,
+  .home__inspector,
+  .home__card {
+    border-radius: var(--radius-xl);
+    padding-inline: 1rem;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--surface-2) 92%, transparent), color-mix(in srgb, var(--surface) 78%, transparent));
+    border-color: color-mix(in srgb, var(--line-strong) 72%, transparent);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.24);
   }
 
-  .under-construction-hex.role-g,
-  .under-construction-hex.role-h {
-    stroke: var(--theme-text-primary);
+  .home__lead {
+    display: grid;
+    gap: 1rem;
+    min-height: 24rem;
   }
 
-  .under-construction-hex.role-g.is-origin,
-  .under-construction-hex.role-g.is-propagating,
-  .under-construction-hex.role-g.is-receiving,
-  .under-construction-hex.role-h.is-origin,
-  .under-construction-hex.role-h.is-propagating,
-  .under-construction-hex.role-h.is-receiving {
-    stroke: var(--theme-text-primary);
-  }
-
-  .under-construction-core {
-    fill: color-mix(in srgb, var(--theme-accent) 46%, transparent);
-    stroke: color-mix(in srgb, var(--theme-accent) 80%, white 20%);
-    stroke-width: 1;
-    opacity: 0;
-    transition: opacity 180ms ease, fill 180ms ease, filter 180ms ease;
-  }
-
-  .under-construction-core.role-g,
-  .under-construction-core.role-h {
-    fill: var(--theme-text-primary);
-    stroke: var(--theme-text-primary);
-  }
-
-
-  .under-construction-core.is-resolved {
-    fill: var(--theme-accent);
-    opacity: 0.78;
-  }
-
-  .under-construction-core.is-origin,
-  .under-construction-core.is-propagating,
-  .under-construction-core.is-receiving {
-    fill: var(--theme-focus);
-    opacity: 1;
-    filter: drop-shadow(0 0 8px color-mix(in srgb, var(--theme-accent) 75%, transparent));
-  }
-
-  .under-construction-core.role-g,
-  .under-construction-core.role-h {
-    fill: var(--theme-text-primary);
-    stroke: var(--theme-text-primary);
-  }
-
-  .under-construction-core.role-g.is-origin,
-  .under-construction-core.role-g.is-propagating,
-  .under-construction-core.role-g.is-receiving,
-  .under-construction-core.role-h.is-origin,
-  .under-construction-core.role-h.is-propagating,
-  .under-construction-core.role-h.is-receiving {
-    fill: var(--theme-text-primary);
-    stroke: var(--theme-text-primary);
-  }
-
-  .under-construction-connector.role-g,
-  .under-construction-connector.role-h {
-    stroke: var(--theme-text-primary);
-  }
-
-  .under-construction-card {
-    width: min(100%, 380px);
-    padding: 1rem 1.2rem 1.15rem;
-    text-align: center;
-    pointer-events: auto;
-    background: color-mix(in srgb, var(--theme-surface) 84%, transparent);
-    border-color: color-mix(in srgb, var(--theme-accent) 28%, var(--theme-line));
-    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
-  }
-
-  .under-construction-card .eyebrow {
-    margin-bottom: 0.55rem;
-    font-size: 0.63rem;
-  }
-
-  .under-construction-card h1 {
-    margin-bottom: 0.3rem;
-    font-size: clamp(1.25rem, 3vw, 1.8rem);
-  }
-
-  .under-construction-card p:last-child {
+  .home__headline {
     margin: 0;
-    color: var(--theme-text-secondary);
-    font-size: 0.88rem;
+    display: grid;
+    gap: 0.06em;
+    font-size: clamp(3.1rem, 7vw, 6.8rem);
+    line-height: 0.92;
+    letter-spacing: -0.06em;
   }
 
-  @media (max-width: 640px) {
-    .under-construction-page {
-      padding: 1rem;
+  .home__lede {
+    max-width: 34rem;
+    margin: 0;
+    color: var(--text);
+    font-size: clamp(1.05rem, 1.7vw, 1.25rem);
+    line-height: 1.7;
+  }
+
+  .home__meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: auto;
+  }
+
+  .home__meta p {
+    margin: 0.35rem 0 0;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .home__inspector {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .home__inspector-kicker {
+    margin: 0;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.4rem;
+    padding: 0.45rem 0.8rem;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.02);
+    transition: border-color 180ms ease, background 180ms ease, transform 180ms ease;
+  }
+
+  .home__inspector-body {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+
+  .home__latest-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .home__card {
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .home__card-id,
+  .home__card-date {
+    margin: 0;
+    color: var(--accent);
+  }
+
+  .home__card h3 {
+    margin: 0;
+    font-size: 1.1rem;
+  }
+
+  .home__card-body {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+
+  .home__card-link {
+    margin-top: 0.25rem;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.4rem;
+    padding: 0.45rem 0.8rem;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.02);
+    transition: border-color 180ms ease, background 180ms ease, transform 180ms ease;
+  }
+
+  .home__status-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .home__status-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.8rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    background: color-mix(in srgb, var(--accent-soft) 60%, transparent);
+  }
+
+  @media (max-width: 980px) {
+    .home__hero,
+    .home__latest-grid,
+    .home__meta {
+      grid-template-columns: 1fr;
     }
 
-    .under-construction-content {
-      transform: translateY(-1vh);
-    }
-
-    .under-construction-logo-wrap {
-      width: min(94vw, 460px);
+    .home__nav {
+      align-items: flex-start;
+      flex-direction: column;
     }
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .under-construction-hex,
-    .under-construction-connector,
-  .under-construction-hex.role-g,
-  .under-construction-hex.role-h {
-    stroke: var(--theme-text-primary);
-  }
+  @media (max-width: 680px) {
+    .home {
+      width: min(calc(100% - 1rem), var(--content-width));
+      padding-top: 0.5rem;
+    }
 
-  .under-construction-hex.role-g.is-origin,
-  .under-construction-hex.role-g.is-propagating,
-  .under-construction-hex.role-g.is-receiving,
-  .under-construction-hex.role-h.is-origin,
-  .under-construction-hex.role-h.is-propagating,
-  .under-construction-hex.role-h.is-receiving {
-    stroke: var(--theme-text-primary);
-  }
+    .home__menu-toggle {
+      display: inline-flex;
+      margin-left: auto;
+    }
 
-    .under-construction-core {
-      transition: none;
+    .home__links {
+      display: none;
+      width: 100%;
+      flex-direction: column;
+      gap: 0.65rem;
+      padding-top: 0.25rem;
+    }
+
+    .home__nav.is-open .home__links {
+      display: flex;
+    }
+
+    .home__nav,
+    .home__lead,
+    .home__inspector,
+    .home__card {
+      border-radius: 1rem;
+    }
+
+    .home__headline {
+      font-size: clamp(2.6rem, 15vw, 4.2rem);
     }
   }
 </style>
+
+<script>
+  const nav = document.querySelector<HTMLElement>(".home__nav");
+  const toggle = document.querySelector<HTMLButtonElement>(".home__menu-toggle");
+
+  toggle?.addEventListener("click", () => {
+    const nextOpen = !nav?.classList.contains("is-open");
+    nav?.classList.toggle("is-open", nextOpen);
+    toggle.setAttribute("aria-expanded", String(nextOpen));
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!nav || !toggle || nav.contains(event.target as Node) || toggle.contains(event.target as Node)) return;
+    nav.classList.remove("is-open");
+    toggle.setAttribute("aria-expanded", "false");
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || !nav || !toggle) return;
+    nav.classList.remove("is-open");
+    toggle.setAttribute("aria-expanded", "false");
+  });
+</script>

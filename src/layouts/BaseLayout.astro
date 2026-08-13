@@ -1,13 +1,15 @@
 ---
 import ThemeSwitcher from "operational-topology/astro/ThemeSwitcher";
 import {
-  contrastStorageKey,
   colorVisionStorageKey,
-  defaultTheme,
+  contrastStorageKey,
+  defaultTheme as frameworkDefaultTheme,
   glowStorageKey,
   themeNames,
   themeStorageKey,
 } from "operational-topology";
+
+import "../styles/global.css";
 
 interface Props {
   title?: string;
@@ -15,14 +17,14 @@ interface Props {
 }
 
 const {
-  title = "Operational Topology",
-  description = "Topology-driven portfolio and knowledge system.",
+  title = "thisisgenaro.com",
+  description = "Design, automate, and keep things running.",
 } = Astro.props;
 
 const themeBootstrap =
   "(() => {" +
   "const themes=" + JSON.stringify(themeNames) + ";" +
-  "const fallback=" + JSON.stringify(defaultTheme) + ";" +
+  "const fallback=" + JSON.stringify(frameworkDefaultTheme) + ";" +
   "try {" +
   "const stored=localStorage.getItem(" + JSON.stringify(themeStorageKey) + ");" +
   "document.documentElement.dataset.theme=themes.includes(stored)?stored:fallback;" +
@@ -31,8 +33,6 @@ const themeBootstrap =
   "document.documentElement.dataset.colorVision=localStorage.getItem(" + JSON.stringify(colorVisionStorageKey) + ")==='true'?'safe':'standard';" +
   "} catch {document.documentElement.dataset.theme=fallback;document.documentElement.dataset.glow='standard';document.documentElement.dataset.contrast='standard';document.documentElement.dataset.colorVision='standard';}" +
   "})();";
-
-export const defaultTheme: ThemeName = "imperial-gold";
 ---
 
 <!doctype html>
@@ -41,6 +41,10 @@ export const defaultTheme: ThemeName = "imperial-gold";
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
+    <meta name="theme-color" content="#0b0f14" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <script is:inline set:html={themeBootstrap}></script>
@@ -52,7 +56,7 @@ export const defaultTheme: ThemeName = "imperial-gold";
     <ThemeSwitcher />
     <script>
       if (import.meta.env.DEV) {
-        import("../topology/DeveloperAPI").then(({ installDeveloperAPI }) => {
+        import("operational-topology/browser").then(({ installDeveloperAPI }) => {
           installDeveloperAPI();
         });
       }
