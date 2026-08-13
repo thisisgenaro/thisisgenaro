@@ -289,11 +289,11 @@ const railBootstrap =
   .shell__links a {
     position: relative;
     display: grid;
-    grid-template-columns: 1.4rem minmax(0, 1fr);
+    grid-template-columns: 1.55rem minmax(0, 1fr);
     align-items: center;
-    gap: 0.45rem;
+    gap: 0.55rem;
     min-height: 2.3rem;
-    padding: 0.35rem 0;
+    padding: 0.35rem 0.15rem 0.35rem 0.55rem;
     color: var(--text);
     border-bottom: 1px solid transparent;
     border-radius: 0;
@@ -306,8 +306,8 @@ const railBootstrap =
     align-items: center;
     justify-content: center;
     justify-self: center;
-    width: 1.4rem;
-    height: 1.4rem;
+    width: 1.35rem;
+    height: 1.35rem;
     color: color-mix(in srgb, var(--accent) 78%, var(--amber) 22%);
     transition: color 180ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
   }
@@ -346,6 +346,19 @@ const railBootstrap =
     box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 26%, transparent);
   }
 
+  .shell__links a.is-active::before,
+  .shell__links a[aria-current="page"]::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.35rem;
+    bottom: 0.35rem;
+    width: 0.22rem;
+    border-radius: 999px;
+    background: var(--accent);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--amber) 16%, transparent);
+  }
+
   .shell__links a.is-active .shell__nav-icon,
   .shell__links a[aria-current="page"] .shell__nav-icon {
     color: var(--accent);
@@ -377,10 +390,10 @@ const railBootstrap =
   }
 
   html[data-shell-rail="collapsed"] .shell__links a {
-    grid-template-columns: 1.4rem 0fr;
+    grid-template-columns: 1.55rem 0fr;
     gap: 0;
     justify-items: center;
-    padding-inline: 0;
+    padding-inline: 0.2rem 0.15rem;
   }
 
   html[data-shell-rail="collapsed"] .shell__nav-label {
@@ -448,7 +461,7 @@ const railBootstrap =
 
     .shell__links a {
       width: 100%;
-      grid-template-columns: 1.4rem minmax(0, 1fr);
+      grid-template-columns: 1.55rem minmax(0, 1fr);
       padding: 0.7rem 0;
       border-bottom-color: color-mix(in srgb, var(--line) 88%, transparent);
     }
