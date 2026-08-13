@@ -22,6 +22,7 @@ const {
 } = Astro.props;
 
 const pathname = Astro.url.pathname;
+const railStateStorageKey = "thisisgenaro:shell-rail-collapsed";
 
 const navItems = [
   { href: "/", label: "Home" },
@@ -49,6 +50,15 @@ const themeBootstrap =
   "document.documentElement.dataset.colorVision=localStorage.getItem(" + JSON.stringify(colorVisionStorageKey) + ")==='true'?'safe':'standard';" +
   "} catch {document.documentElement.dataset.theme=fallback;document.documentElement.dataset.glow='standard';document.documentElement.dataset.contrast='standard';document.documentElement.dataset.colorVision='standard';}" +
   "})();";
+
+const railBootstrap =
+  "(() => {" +
+  "const key=" + JSON.stringify(railStateStorageKey) + ";" +
+  "try {" +
+  "const stored=localStorage.getItem(key);" +
+  "document.documentElement.dataset.shellRail=stored==='true'?'collapsed':'expanded';" +
+  "} catch {document.documentElement.dataset.shellRail='expanded';}" +
+  "})();";
 ---
 
 <!doctype html>
@@ -64,37 +74,44 @@ const themeBootstrap =
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <script is:inline set:html={themeBootstrap}></script>
+    <script is:inline set:html={railBootstrap}></script>
     <title>{title}</title>
     <slot name="head" />
   </head>
   <body>
     <div class="shell">
-      <header class="shell__header surface surface-pad">
-        <div class="shell__primary-row">
+      <aside class="shell__rail surface surface-pad" aria-label="Site rail">
+        <div class="shell__rail-top">
           <a class="shell__brand" href="/" aria-label="Home">
             <img class="shell__brand-image" src="/gh-logo.png" alt="" />
           </a>
 
-          <nav class="shell__links" id="site-primary-nav" aria-label="Primary">
-            {navItems.map((item) => (
-              <a href={item.href} aria-current={isActive(item.href) ? "page" : undefined} class:list={{ "is-active": isActive(item.href) }}>
-                {item.label}
-              </a>
-            ))}
-          </nav>
+          <button class="shell__menu-toggle" type="button" aria-expanded="false" aria-controls="site-primary-nav" data-toggle-rail>
+            <span class="shell__menu-icon" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
+            <span class="shell__menu-label">Collapse</span>
+          </button>
         </div>
 
-        <button class="shell__menu-toggle" type="button" aria-expanded="false" aria-controls="site-primary-nav">
-          <span class="shell__menu-icon" aria-hidden="true">
-            <span></span>
-            <span></span>
-            <span></span>
-          </span>
-          <span class="shell__menu-label">Menu</span>
-        </button>
-      </header>
+        <nav class="shell__links" id="site-primary-nav" aria-label="Primary">
+          {navItems.map((item) => (
+            <a href={item.href} aria-current={isActive(item.href) ? "page" : undefined} class:list={{ "is-active": isActive(item.href) }}>
+              {item.label}
+            </a>
+          ))}
+        </nav>
 
-      <slot />
+        <div class="shell__rail-slot">
+          <slot name="rail" />
+        </div>
+      </aside>
+
+      <div class="shell__stage">
+        <slot />
+      </div>
     </div>
     <ThemeSwitcher />
     <script>
@@ -105,57 +122,73 @@ const themeBootstrap =
       }
     </script>
     <script>
-      const nav = document.querySelector<HTMLElement>(".shell__header");
-      const toggle = document.querySelector<HTMLButtonElement>(".shell__menu-toggle");
+      const rail = document.querySelector<HTMLElement>(".shell__rail");
+      const toggle = document.querySelector<HTMLButtonElement>("[data-toggle-rail]");
+      const root = document.documentElement;
+      const storageKey = "thisisgenaro:shell-rail-collapsed";
+
+      const applyState = (collapsed: boolean) => {
+        root.dataset.shellRail = collapsed ? "collapsed" : "expanded";
+        toggle?.setAttribute("aria-expanded", String(!collapsed));
+        if (toggle) {
+          const label = toggle.querySelector<HTMLElement>(".shell__menu-label");
+          if (label) label.textContent = collapsed ? "Expand" : "Collapse";
+        }
+        try {
+          localStorage.setItem(storageKey, collapsed ? "true" : "false");
+        } catch {
+          // Ignore persistence failures.
+        }
+      };
+
+      applyState(root.dataset.shellRail === "collapsed");
 
       toggle?.addEventListener("click", () => {
-        const nextOpen = !nav?.classList.contains("is-open");
-        nav?.classList.toggle("is-open", nextOpen);
-        toggle.setAttribute("aria-expanded", String(nextOpen));
-      });
-
-      document.addEventListener("click", (event) => {
-        if (!nav || !toggle || nav.contains(event.target as Node) || toggle.contains(event.target as Node)) return;
-        nav.classList.remove("is-open");
-        toggle.setAttribute("aria-expanded", "false");
-      });
-
-      document.addEventListener("keydown", (event) => {
-        if (event.key !== "Escape" || !nav || !toggle) return;
-        nav.classList.remove("is-open");
-        toggle.setAttribute("aria-expanded", "false");
+        applyState(root.dataset.shellRail !== "collapsed");
+        rail?.classList.toggle("is-open", root.dataset.shellRail !== "collapsed");
       });
     </script>
   </body>
 </html>
 
 <style>
+  :root {
+    --shell-rail-expanded: 17rem;
+    --shell-rail-collapsed: 5rem;
+  }
+
   .shell {
-    width: min(calc(100% - 2rem), var(--content-wide));
-    margin: 0 auto;
-    padding: 0 0 2rem;
+    display: grid;
+    grid-template-columns: var(--shell-rail-expanded) minmax(0, 1fr);
+    min-height: 100vh;
+    width: 100%;
   }
 
-  .shell__header {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: clamp(0.9rem, 1.6vw, 1.35rem);
-    margin-bottom: 1rem;
-    border-radius: 0;
-    padding-inline: 1rem;
-    background: linear-gradient(180deg, color-mix(in srgb, var(--surface-2) 80%, transparent), color-mix(in srgb, var(--surface) 68%, transparent));
-    border-color: color-mix(in srgb, var(--line-strong) 60%, transparent);
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+  html[data-shell-rail="collapsed"] .shell {
+    grid-template-columns: var(--shell-rail-collapsed) minmax(0, 1fr);
   }
 
-  .shell__primary-row {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
+  .shell__rail {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    display: grid;
     gap: 1rem;
-    min-width: 0;
-    flex: 1 1 auto;
+    min-height: 100vh;
+    height: 100vh;
+    padding: 1rem;
+    border-right: 1px solid color-mix(in srgb, var(--line-strong) 70%, transparent);
+    border-radius: 0;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--surface-2) 84%, transparent), color-mix(in srgb, var(--surface) 72%, transparent));
+    box-shadow: 12px 0 28px rgba(0, 0, 0, 0.16);
+    overflow: hidden auto;
+  }
+
+  .shell__rail-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
   }
 
   .shell__brand {
@@ -163,7 +196,7 @@ const themeBootstrap =
     align-items: center;
     justify-content: center;
     flex: none;
-    width: 3.6rem;
+    width: 3.4rem;
     aspect-ratio: 1;
     padding: 0;
     border: 0;
@@ -178,22 +211,19 @@ const themeBootstrap =
     object-fit: contain;
   }
 
-
-
-
   .shell__menu-toggle {
-    display: none;
+    display: inline-flex;
     align-items: center;
     gap: 0.55rem;
-    min-height: 2.3rem;
+    min-height: 2.2rem;
     margin-left: auto;
-    padding: 0.38rem 0.7rem;
+    padding: 0.34rem 0.68rem;
     border: 1px solid color-mix(in srgb, var(--line-strong) 55%, transparent);
     border-radius: 0;
     background: transparent;
     color: var(--text);
     font-family: var(--font-mono);
-    font-size: 0.68rem;
+    font-size: 0.66rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
     transition: border-color 180ms ease, background 180ms ease, transform 180ms ease, box-shadow 180ms ease;
@@ -213,35 +243,30 @@ const themeBootstrap =
   }
 
   .shell__links {
-    align-items: center;
-    justify-content: flex-start;
-    display: flex;
-    flex-wrap: wrap;
-    gap: clamp(0.6rem, 1vw, 0.95rem);
+    display: grid;
+    gap: 0.2rem;
+    padding-top: 0.15rem;
     font-family: var(--font-mono);
     font-size: 0.74rem;
     letter-spacing: 0.14em;
+    text-transform: uppercase;
   }
 
   .shell__links a {
     display: inline-flex;
     align-items: center;
-    min-height: 2.1rem;
-    padding: 0.2rem 0.1rem;
+    min-height: 2.15rem;
+    padding: 0.35rem 0;
     color: var(--text);
     border-bottom: 1px solid transparent;
     border-radius: 0;
     background: transparent;
-    font-family: var(--font-mono);
-    font-size: 0.74rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
     transition: border-color 180ms ease, color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
   }
 
   .shell__links a:hover,
   .shell__links a:focus-visible {
-    transform: translateY(-1px);
+    transform: translateX(2px);
     border-bottom-color: color-mix(in srgb, var(--accent) 70%, transparent);
     color: var(--accent);
   }
@@ -257,76 +282,88 @@ const themeBootstrap =
   .shell__links a[aria-current="page"] {
     color: var(--accent);
     border-bottom-color: color-mix(in srgb, var(--accent) 85%, transparent);
-    padding-bottom: 0.12rem;
   }
 
-  @media (max-width: 980px) {
-    .shell__header {
-      align-items: center;
-      flex-direction: row;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      padding-inline: 0.9rem;
-    }
-
-    .shell__primary-row {
-      width: auto;
-      align-items: center;
-      flex: 1 1 auto;
-    }
-
-    .shell__menu-toggle {
-      margin-left: auto;
-    }
+  .shell__rail-slot {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid color-mix(in srgb, var(--line-strong) 62%, transparent);
   }
 
-  @media (max-width: 680px) {
+  .shell__stage {
+    min-width: 0;
+    padding: 0 0 2rem;
+  }
+
+  html[data-shell-rail="collapsed"] .shell__rail {
+    padding-inline: 0.85rem;
+  }
+
+  html[data-shell-rail="collapsed"] .shell__links,
+  html[data-shell-rail="collapsed"] .shell__rail-slot {
+    opacity: 0;
+    pointer-events: none;
+    max-height: 0;
+    margin-top: 0;
+    padding-top: 0;
+    overflow: hidden;
+  }
+
+  html[data-shell-rail="collapsed"] .shell__brand {
+    width: 3rem;
+  }
+
+  @media (max-width: 860px) {
     .shell {
-      width: min(calc(100% - 1rem), var(--content-wide));
-      padding-top: 0;
+      grid-template-columns: 1fr;
     }
 
-    .shell__header {
-      align-items: flex-start;
-      gap: 0.6rem;
-      padding-inline: 0.8rem;
+    .shell__rail {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      min-height: auto;
+      height: auto;
+      padding: 0.85rem;
+      border-right: 0;
+      border-bottom: 1px solid color-mix(in srgb, var(--line-strong) 70%, transparent);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
     }
 
-    .shell__primary-row {
-      align-items: center;
-      gap: 0.65rem;
+    html[data-shell-rail="collapsed"] .shell__rail {
+      padding-inline: 0.85rem;
     }
 
-    .shell__brand {
-      width: 3.1rem;
-    }
-
-    .shell__menu-toggle {
-      display: inline-flex;
-      min-height: 2.15rem;
-      margin-left: auto;
-      padding: 0.32rem 0.6rem;
-      align-self: center;
-      font-size: 0.64rem;
+    .shell__rail-slot {
+      display: none;
     }
 
     .shell__links {
       display: none;
       width: 100%;
-      flex-direction: column;
-      gap: 0;
+      gap: 0.15rem;
       padding-top: 0.35rem;
     }
 
     .shell__links a {
       width: 100%;
-      min-height: 2.3rem;
-      padding: 0.72rem 0;
+      padding: 0.7rem 0;
       border-bottom-color: color-mix(in srgb, var(--line) 88%, transparent);
     }
 
-    .shell__header.is-open .shell__links {
-      display: flex;
+    .shell__rail.is-open .shell__links,
+    html[data-shell-rail="expanded"] .shell__links {
+      display: grid;
+    }
+
+    html[data-shell-rail="collapsed"] .shell__links {
+      display: none;
+    }
+
+    .shell__stage {
+      padding-top: 0.75rem;
     }
   }
 </style>
