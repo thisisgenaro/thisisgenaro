@@ -105,14 +105,8 @@ const railBootstrap =
           <a class="shell__brand" href="/" aria-label="Home">
             <img class="shell__brand-image" src="/gh-logo.png" alt="" />
           </a>
-
-          <button class="shell__menu-toggle" type="button" aria-expanded="false" aria-controls="site-primary-nav" data-toggle-rail>
-            <span class="shell__menu-toggle-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75">
-                <path d="M15 18l-6-6 6-6" />
-              </svg>
-            </span>
-            <span class="shell__menu-label">Collapse</span>
+          <button class="shell__menu-toggle" type="button" aria-expanded="false" aria-controls="site-primary-nav" aria-label="Collapse sidebar" data-toggle-rail>
+            <span class="shell__menu-label" aria-hidden="true">&lt;</span>
           </button>
         </div>
 
@@ -157,7 +151,8 @@ const railBootstrap =
         toggle?.setAttribute("aria-expanded", String(!collapsed));
         if (toggle) {
           const label = toggle.querySelector<HTMLElement>(".shell__menu-label");
-          if (label) label.textContent = collapsed ? "Expand" : "Collapse";
+          if (label) label.textContent = collapsed ? ">" : "<";
+          toggle.setAttribute("aria-label", collapsed ? "Expand sidebar" : "Collapse sidebar");
         }
         toggle?.setAttribute("data-collapsed", String(collapsed));
         try {
@@ -242,39 +237,29 @@ const railBootstrap =
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.42rem;
-    min-width: 2.6rem;
-    min-height: 2.2rem;
+    min-width: 2rem;
+    min-height: 2rem;
     margin-left: auto;
-    padding: 0.28rem 0.55rem;
+    padding: 0.2rem 0.45rem;
     border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
-    border-radius: 0.75rem;
+    border-radius: 0.7rem;
     background: color-mix(in srgb, var(--accent-soft) 12%, transparent);
     color: var(--accent);
     font-family: var(--font-mono);
-    font-size: 0.6rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0;
+    text-transform: none;
     transition: border-color 180ms ease, background 180ms ease, transform 180ms ease, box-shadow 180ms ease, color 180ms ease;
   }
 
-  .shell__menu-toggle-icon {
+  .shell__menu-label {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 0.8rem;
-    height: 0.8rem;
-    transition: transform 180ms ease;
-  }
-
-  .shell__menu-toggle-icon svg {
-    width: 100%;
-    height: 100%;
-    transition: transform 180ms ease;
-  }
-
-  .shell__menu-toggle[data-collapsed="true"] .shell__menu-toggle-icon svg {
-    transform: rotate(180deg);
+    min-width: 0.8rem;
+    transform: translateY(-0.02em);
   }
 
   .shell__links {
