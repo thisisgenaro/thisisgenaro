@@ -88,6 +88,7 @@ const latestIncident = {
       </aside>
 
       <article class="home__card surface surface-pad home__card--journal">
+        <p class="home__card-label">Latest Journal</p>
         <p class="home__card-id mono">{latestJournal.id}</p>
         <h3>{latestJournal.title}</h3>
         <p class="home__card-date">{latestJournal.date}</p>
@@ -96,6 +97,7 @@ const latestIncident = {
       </article>
 
       <article class="home__card surface surface-pad home__card--incident">
+        <p class="home__card-label">Latest Incident</p>
         <p class="home__card-id mono">{latestIncident.id}</p>
         <h3>{latestIncident.title}</h3>
         <div class="home__status-row">
@@ -246,7 +248,7 @@ const latestIncident = {
 
   .home__inspector {
     display: grid;
-    gap: 0.65rem;
+    gap: 0.8rem;
   }
 
   .home__inspector-kicker {
@@ -326,7 +328,8 @@ const latestIncident = {
 
   .home__card {
     display: grid;
-    gap: 0.6rem;
+    gap: 0.5rem;
+    align-content: start;
   }
 
   .home__lead:hover,
@@ -346,19 +349,30 @@ const latestIncident = {
     box-shadow: none;
   }
 
+  .home__card-label,
   .home__card-id,
   .home__card-date {
     margin: 0;
     color: var(--muted);
   }
 
+  .home__card-label {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
   .home__card h3 {
     margin: 0;
-    font-size: 1.15rem;
+    font-size: 1.08rem;
   }
 
   .home__card-body {
     margin: 0;
+    max-width: 28ch;
     color: var(--muted);
     line-height: 1.65;
   }
@@ -390,6 +404,25 @@ const latestIncident = {
   .home__card--journal,
   .home__card--incident {
     min-height: 100%;
+    position: relative;
+  }
+
+  .home__card--journal::before,
+  .home__card--incident::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    height: 2px;
+    opacity: 0.9;
+  }
+
+  .home__card--journal::before {
+    background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 70%, transparent), transparent);
+  }
+
+  .home__card--incident::before {
+    background: linear-gradient(90deg, color-mix(in srgb, var(--blue) 72%, transparent), transparent);
   }
 
   .home__status-pill {
