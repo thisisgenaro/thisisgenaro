@@ -50,39 +50,39 @@ const latestIncident = {
     </div>
 
 
-    <section class="home__content">
-      <div class="home__feature-column">
-        <article class="home__lead" aria-labelledby="home-lead-title">
-          <p class="eyebrow">IT Infrastructure &amp; Cloud Specialist</p>
-          <h1 class="home__headline" id="home-lead-title">
-            <span>Design</span>
-            <span>Automate</span>
-            <span class="home__headline-accent">Keep things running.</span>
-          </h1>
-          <p class="home__lede">
-            I help organizations build resilient infrastructure, gain visibility across their systems and resolve the incidents that matter.
-          </p>
-          <div class="home__lead-actions button-row">
-            <a class="button primary" href="/journal">Journal</a>
-            <a class="button" href="/about/cv">CV</a>
-          </div>
-        </article>
+    <section class="home__hero">
+      <article class="home__lead" aria-labelledby="home-lead-title">
+        <p class="eyebrow">IT Infrastructure &amp; Cloud Specialist</p>
+        <h1 class="home__headline" id="home-lead-title">
+          <span>Design</span>
+          <span>Automate</span>
+          <span class="home__headline-accent">Keep things running.</span>
+        </h1>
+        <p class="home__lede">
+          I help organizations build resilient infrastructure, gain visibility across their systems and resolve the incidents that matter.
+        </p>
+        <div class="home__lead-actions button-row">
+          <a class="button primary" href="/journal">Journal</a>
+          <a class="button" href="/about/cv">CV</a>
+        </div>
+      </article>
+    </section>
 
-        <aside class="home__inspector surface surface-pad" aria-labelledby="inspector-title">
-          <div class="section-label">
-            <h2 id="inspector-title">Knowledge System</h2>
-          </div>
-          <p class="home__inspector-body">
-            Organizations, incidents, entries, and lessons stay connected through one persistent world.
-          </p>
-          <div class="chip-row">
-            <span class="chip">Shared world</span>
-            <span class="chip">Clear signals</span>
-            <span class="chip">Editorial content</span>
-            <span class="chip">Reusable scenes</span>
-          </div>
-        </aside>
-      </div>
+    <section class="home__content">
+      <aside class="home__inspector surface surface-pad" aria-labelledby="inspector-title">
+        <div class="section-label">
+          <h2 id="inspector-title">Knowledge System</h2>
+        </div>
+        <p class="home__inspector-body">
+          Organizations, incidents, entries, and lessons stay connected through one persistent world.
+        </p>
+        <div class="chip-row">
+          <span class="chip">Shared world</span>
+          <span class="chip">Clear signals</span>
+          <span class="chip">Editorial content</span>
+          <span class="chip">Reusable scenes</span>
+        </div>
+      </aside>
 
       <article class="home__card surface surface-pad home__card--journal">
         <p class="home__card-id mono">{latestJournal.id}</p>
@@ -147,19 +147,26 @@ const latestIncident = {
       linear-gradient(180deg, rgba(1, 4, 6, 0.08), rgba(1, 4, 6, 0.55));
   }
 
+  .home__hero,
   .home__content {
-    display: grid;
     width: min(100%, 78rem);
     margin: 0 auto;
+  }
+
+  .home__hero {
+    margin-bottom: 1rem;
+  }
+
+  .home__hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .home__content {
+    display: grid;
     grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
     gap: 1rem;
     align-items: start;
-  }
-
-  .home__feature-column {
-    display: grid;
-    gap: 1rem;
-    min-width: 0;
   }
 
   .home__lead,
