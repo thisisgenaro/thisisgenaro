@@ -259,7 +259,7 @@ const navItems = [
     font-size: 0.68rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    transition: border-color 180ms ease, background 180ms ease, transform 180ms ease;
+    transition: border-color 180ms ease, background 180ms ease, transform 180ms ease, box-shadow 180ms ease;
   }
 
   .home__menu-icon {
@@ -299,7 +299,7 @@ const navItems = [
     font-size: 0.74rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    transition: border-color 180ms ease, color 180ms ease, transform 180ms ease;
+    transition: border-color 180ms ease, color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
   }
 
   .home__links a:hover,
@@ -307,6 +307,15 @@ const navItems = [
     transform: translateY(-1px);
     border-bottom-color: color-mix(in srgb, var(--accent) 70%, transparent);
     color: var(--accent);
+  }
+
+  .home__brand:focus-visible,
+  .home__menu-toggle:focus-visible,
+  .home__links a:focus-visible,
+  .home__card-link:focus-visible,
+  .home__footer-links a:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--accent) 70%, white);
+    outline-offset: 3px;
   }
 
   .home__links a.is-active,
@@ -324,12 +333,14 @@ const navItems = [
 
   .home__lead,
   .home__inspector,
-  .home__card {
+  .home__card,
+  .home__footer {
     border-radius: var(--radius-xl);
     padding-inline: 1rem;
     background: linear-gradient(180deg, color-mix(in srgb, var(--surface-2) 80%, transparent), color-mix(in srgb, var(--surface) 68%, transparent));
     border-color: color-mix(in srgb, var(--line-strong) 60%, transparent);
     box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
   }
 
   .home__lead {
@@ -439,7 +450,7 @@ const navItems = [
   .home__footer-links a {
     color: var(--text);
     border-bottom: 1px solid transparent;
-    transition: border-color 180ms ease, color 180ms ease, transform 180ms ease;
+    transition: border-color 180ms ease, color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
   }
 
   .home__footer-links a:hover,
@@ -452,6 +463,17 @@ const navItems = [
   .home__card {
     display: grid;
     gap: 0.6rem;
+  }
+
+  .home__lead:hover,
+  .home__inspector:hover,
+  .home__card:hover,
+  .home__footer:hover,
+  .home__card:focus-within,
+  .home__footer:focus-within {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.22);
+    border-color: color-mix(in srgb, var(--line-strong) 78%, transparent);
   }
 
   .home__card-id,
@@ -485,7 +507,7 @@ const navItems = [
     border: 1px solid transparent;
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.02);
-    transition: border-color 180ms ease, background 180ms ease, transform 180ms ease;
+    transition: border-color 180ms ease, background 180ms ease, transform 180ms ease, box-shadow 180ms ease;
   }
 
   .home__status-row {
