@@ -109,7 +109,7 @@ const latestIncident = {
       </article>
     </section>
 
-    <footer class="home__footer surface surface-pad">
+    <footer slot="rail" class="home__footer home__footer--rail surface surface-pad">
       <div class="home__footer-copy">
         <p class="home__footer-label">This Is Genaro</p>
         <p class="home__footer-name">Genaro Hernandez</p>
@@ -162,12 +162,11 @@ const latestIncident = {
   }
 
   .home__hero {
-    margin-bottom: 1rem;
-  }
-
-  .home__hero {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
+    min-height: clamp(22rem, 54svh, 36rem);
+    align-content: center;
+    margin-bottom: 1rem;
   }
 
   .home__content {
@@ -287,6 +286,10 @@ const latestIncident = {
     margin-top: 1rem;
     border-top: 1px solid color-mix(in srgb, var(--line-strong) 70%, transparent);
     padding-top: 1.1rem;
+  }
+
+  .home__footer--rail {
+    margin-top: auto;
   }
 
   .home__footer-copy {
@@ -481,6 +484,7 @@ const latestIncident = {
     }
 
     .home__hero {
+      min-height: 0;
       margin-bottom: 0.8rem;
     }
 
@@ -507,7 +511,8 @@ const latestIncident = {
 
     .home__lead,
     .home__inspector,
-    .home__card {
+    .home__card,
+    .home__footer {
       border-radius: 0.85rem;
     }
 
