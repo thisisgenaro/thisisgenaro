@@ -109,20 +109,7 @@ const latestIncident = {
       </article>
     </section>
 
-    <footer slot="rail" class="home__footer home__footer--rail surface surface-pad">
-      <div class="home__footer-copy">
-        <p class="home__footer-label">This Is Genaro</p>
-        <p class="home__footer-name">Genaro Hernandez</p>
-        <p class="home__footer-body">Personal site, writing, and operational notes. Built to stay readable while the work changes.</p>
-      </div>
-      <div class="home__footer-links" aria-label="Footer">
-        <span class="home__footer-links-label">Explore</span>
-        <a href="/about">About</a>
-        <a href="/about/cv">CV</a>
-        <a href="/journal">Journal</a>
-        <a href="/incidents">Incidents</a>
-      </div>
-    </footer>
+
   </main>
 </BaseLayout>
 
@@ -174,18 +161,6 @@ const latestIncident = {
     grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
     gap: 1rem;
     align-items: start;
-  }
-
-  .home__lead,
-  .home__inspector,
-  .home__card,
-  .home__footer {
-    border-radius: var(--radius-xl);
-    padding-inline: 1rem;
-    background: linear-gradient(180deg, color-mix(in srgb, var(--surface-2) 80%, transparent), color-mix(in srgb, var(--surface) 68%, transparent));
-    border-color: color-mix(in srgb, var(--line-strong) 60%, transparent);
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
-    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
   }
 
   .home__lead {
@@ -278,95 +253,10 @@ const latestIncident = {
   }
 
 
-  .home__footer {
-    display: grid;
-    grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.7fr);
-    align-items: start;
-    gap: 1.5rem;
-    margin-top: 1rem;
-    border-top: 1px solid color-mix(in srgb, var(--line-strong) 70%, transparent);
-    padding-top: 1.1rem;
-  }
-
-  .home__footer--rail {
-    margin-top: auto;
-  }
-
-  .home__footer-copy {
-    max-width: 30rem;
-    display: grid;
-    gap: 0.25rem;
-  }
-
-  .home__footer-label {
-    margin: 0;
-    color: var(--accent);
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-  }
-
-  .home__footer-name {
-    margin: 0;
-    color: var(--text);
-    font-family: var(--font-title);
-    font-size: 1.05rem;
-    letter-spacing: -0.03em;
-  }
-
-  .home__footer-body {
-    margin: 0.2rem 0 0;
-    color: var(--muted);
-    line-height: 1.65;
-    max-width: 34ch;
-  }
-
-  .home__footer-links {
-    display: grid;
-    justify-content: start;
-    gap: 0.45rem;
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-
-  .home__footer-links-label {
-    color: var(--muted);
-    font-weight: 700;
-  }
-
-  .home__footer-links a {
-    color: var(--text);
-    border-bottom: 1px solid transparent;
-    width: fit-content;
-    transition: border-color 180ms ease, color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
-  }
-
-  .home__footer-links a:hover,
-  .home__footer-links a:focus-visible {
-    color: var(--accent);
-    border-bottom-color: color-mix(in srgb, var(--accent) 80%, transparent);
-    transform: translateY(-1px);
-  }
-
   .home__card {
     display: grid;
     gap: 0.5rem;
     align-content: start;
-  }
-
-  .home__lead:hover,
-  .home__inspector:hover,
-  .home__card:hover,
-  .home__footer:hover,
-  .home__card:focus-within,
-  .home__footer:focus-within {
-    transform: translateY(-1px);
-    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.22);
-    border-color: color-mix(in srgb, var(--line-strong) 78%, transparent);
   }
 
   .home__lead:hover,
@@ -509,13 +399,6 @@ const latestIncident = {
       gap: 0.75rem;
     }
 
-    .home__lead,
-    .home__inspector,
-    .home__card,
-    .home__footer {
-      border-radius: 0.85rem;
-    }
-
     .home__card {
       gap: 0.45rem;
     }
@@ -537,20 +420,6 @@ const latestIncident = {
       align-items: flex-start;
       flex-direction: column;
       gap: 0.45rem;
-    }
-
-    .home__footer {
-      grid-template-columns: 1fr;
-      gap: 0.9rem;
-      padding-top: 0.95rem;
-    }
-
-    .home__footer-body {
-      max-width: none;
-    }
-
-    .home__footer-links {
-      gap: 0.35rem;
     }
 
     .home__headline {
