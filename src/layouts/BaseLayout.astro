@@ -28,27 +28,27 @@ const navItems = [
   {
     href: "/",
     label: "Home",
-    iconPath: "M12 4l7 6v10H5V10l7-6zm-3 12h6",
+    iconPath: "M4.5 11.5 12 5l7.5 6.5M7 10.5V19h10v-8.5",
   },
   {
     href: "/journal",
     label: "Journal",
-    iconPath: "M7 4h8a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3zm0 4h8M7 12h8M7 16h5",
+    iconPath: "M7 4h8l2.5 2.5V20H7a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3zm8 0v3h3M8 10h8M8 14h6M8 18h4",
   },
   {
     href: "/incidents",
     label: "Incidents",
-    iconPath: "M12 4l8 14H4L12 4zm0 5.5v4m0 3h.01",
+    iconPath: "M12 4l7.5 13H4.5L12 4zm0 5.5v4m0 3h.01",
   },
   {
     href: "/about",
     label: "About",
-    iconPath: "M12 6a4 4 0 1 1 0 8 4 4 0 0 1 0-8zm-7 14c1.7-3.2 4.1-4.8 7-4.8s5.3 1.6 7 4.8",
+    iconPath: "M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM5.5 20c1.8-3 4.3-4.5 6.5-4.5s4.7 1.5 6.5 4.5",
   },
   {
     href: "/about/cv",
     label: "CV",
-    iconPath: "M7 4h9l4 4v12H7zM11 8h6M11 12h6M11 16h4",
+    iconPath: "M7 4h8l4 4v12H7zM15 4v4h4M10 10h6M10 14h6M10 18h4",
   },
 ];
 
@@ -158,9 +158,8 @@ const railBootstrap =
         if (toggle) {
           const label = toggle.querySelector<HTMLElement>(".shell__menu-label");
           if (label) label.textContent = collapsed ? "Expand" : "Collapse";
-          const icon = toggle.querySelector<SVGElement>(".shell__menu-toggle-icon svg");
-          icon?.setAttribute("style", collapsed ? "transform: rotate(180deg);" : "transform: rotate(0deg);");
         }
+        toggle?.setAttribute("data-collapsed", String(collapsed));
         try {
           localStorage.setItem(storageKey, collapsed ? "true" : "false");
         } catch {
@@ -242,32 +241,39 @@ const railBootstrap =
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.55rem;
-    min-width: 3rem;
-    min-height: 2.4rem;
+    gap: 0.42rem;
+    min-width: 2.6rem;
+    min-height: 2.2rem;
     margin-left: auto;
-    padding: 0.34rem 0.7rem;
-    border: 1px solid color-mix(in srgb, var(--accent) 34%, transparent);
-    border-radius: 999px;
-    background: linear-gradient(180deg, color-mix(in srgb, var(--accent-soft) 42%, transparent), color-mix(in srgb, var(--accent-soft) 16%, transparent));
+    padding: 0.28rem 0.55rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
+    border-radius: 0.75rem;
+    background: color-mix(in srgb, var(--accent-soft) 12%, transparent);
     color: var(--accent);
     font-family: var(--font-mono);
-    font-size: 0.64rem;
-    letter-spacing: 0.14em;
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     transition: border-color 180ms ease, background 180ms ease, transform 180ms ease, box-shadow 180ms ease, color 180ms ease;
   }
 
   .shell__menu-toggle-icon {
     display: inline-flex;
-    width: 0.9rem;
-    height: 0.9rem;
+    align-items: center;
+    justify-content: center;
+    width: 0.8rem;
+    height: 0.8rem;
     transition: transform 180ms ease;
   }
 
   .shell__menu-toggle-icon svg {
     width: 100%;
     height: 100%;
+    transition: transform 180ms ease;
+  }
+
+  .shell__menu-toggle[data-collapsed="true"] .shell__menu-toggle-icon svg {
+    transform: rotate(180deg);
   }
 
   .shell__links {
@@ -283,9 +289,9 @@ const railBootstrap =
   .shell__links a {
     position: relative;
     display: grid;
-    grid-template-columns: 1.1rem minmax(0, 1fr);
+    grid-template-columns: 1.4rem minmax(0, 1fr);
     align-items: center;
-    gap: 0.65rem;
+    gap: 0.45rem;
     min-height: 2.3rem;
     padding: 0.35rem 0;
     color: var(--text);
@@ -299,8 +305,9 @@ const railBootstrap =
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 1.1rem;
-    height: 1.1rem;
+    justify-self: center;
+    width: 1.4rem;
+    height: 1.4rem;
     color: color-mix(in srgb, var(--accent) 78%, var(--amber) 22%);
     transition: color 180ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
   }
@@ -370,7 +377,7 @@ const railBootstrap =
   }
 
   html[data-shell-rail="collapsed"] .shell__links a {
-    grid-template-columns: 1.1rem 0fr;
+    grid-template-columns: 1.4rem 0fr;
     gap: 0;
     justify-items: center;
     padding-inline: 0;
@@ -441,7 +448,7 @@ const railBootstrap =
 
     .shell__links a {
       width: 100%;
-      grid-template-columns: 1.1rem minmax(0, 1fr);
+      grid-template-columns: 1.4rem minmax(0, 1fr);
       padding: 0.7rem 0;
       border-bottom-color: color-mix(in srgb, var(--line) 88%, transparent);
     }
