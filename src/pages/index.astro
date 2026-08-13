@@ -30,6 +30,15 @@ const latestIncident = {
   status: "INVESTIGATING",
   href: "/incidents",
 };
+
+const pathname = Astro.url.pathname;
+const navItems = [
+  { href: "/", label: "Home" },
+  { href: "/journal", label: "Journal" },
+  { href: "/incidents", label: "Incidents" },
+  { href: "/about", label: "About" },
+  { href: "/about/cv", label: "CV" },
+];
 ---
 
 <BaseLayout
@@ -67,11 +76,14 @@ const latestIncident = {
       </button>
 
       <nav class="home__links" id="home-primary-nav" aria-label="Primary">
-        <a href="/">HOME</a>
-        <a href="/journal">JOURNAL</a>
-        <a href="/incidents">INCIDENTS</a>
-        <a href="/about">ABOUT</a>
-        <a href="/about/cv">CV</a>
+        {navItems.map((item) => {
+          const active = pathname === item.href;
+          return (
+            <a href={item.href} aria-current={active ? "page" : undefined} class:list={{ "is-active": active }}>
+              {item.label}
+            </a>
+          );
+        })}
       </nav>
     </header>
 
@@ -279,6 +291,12 @@ const latestIncident = {
     transform: translateY(-1px);
     border-bottom-color: color-mix(in srgb, var(--accent) 70%, transparent);
     color: var(--accent);
+  }
+
+  .home__links a.is-active,
+  .home__links a[aria-current="page"] {
+    color: var(--accent);
+    border-bottom-color: color-mix(in srgb, var(--accent) 85%, transparent);
   }
 
   .home__hero {
