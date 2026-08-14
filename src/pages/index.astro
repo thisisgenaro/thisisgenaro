@@ -87,6 +87,10 @@ const latestIncident = {
         aria-label="Open the site"
         aria-describedby="home-intro-caption"
       >
+        <span class="home__intro-node" aria-hidden="true">
+          <span class="home__intro-node-core"></span>
+          <span class="home__intro-node-label">GH</span>
+        </span>
         <span class="home__intro-caption" id="home-intro-caption">Tap to begin</span>
       </button>
     </div>
@@ -616,17 +620,22 @@ const latestIncident = {
 
     .home__intro-trigger {
       width: min(100%, 18rem);
-      min-height: 4.75rem;
+      min-height: 14rem;
+      padding: 0.75rem;
+    }
+
+    .home__intro-node {
+      width: 8rem;
     }
 
     .home__intro-trigger::before {
-      width: 6rem;
-      height: 6rem;
+      width: 7rem;
+      height: 7rem;
     }
 
     .home__intro-trigger::after {
-      width: 4.5rem;
-      height: 4.5rem;
+      width: 5rem;
+      height: 5rem;
     }
   }
 </style>
