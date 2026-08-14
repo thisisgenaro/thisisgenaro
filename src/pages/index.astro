@@ -2,7 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import TopologyScene from "operational-topology/astro/TopologyScene";
 import { createTopologyScenePreset } from "operational-topology/presets";
-import { getGhLogoFrame } from "operational-topology/labs";
+import { GH_LOGO_ROLE_BY_CELL, getGhLogoFrame } from "operational-topology/labs";
 
 const dormantScene = createTopologyScenePreset({
   layout: "viewport-fit",
@@ -234,8 +234,20 @@ const latestIncident = {
     cursor: default;
   }
 
-  .home__world [data-node-id="intro-logo"] .grid-occupant-image {
-    filter: sepia(0.88) saturate(1.55) hue-rotate(346deg) brightness(0.95) contrast(1.02);
+  .home__world [data-node-id="intro-logo"] .grid-hex.is-logo-border,
+  .home__world [data-node-id="intro-logo"] .grid-node.is-logo-border {
+    stroke: var(--accent);
+    fill: color-mix(in srgb, var(--accent) 14%, transparent);
+    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--accent) 38%, transparent));
+  }
+
+  .home__world [data-node-id="intro-logo"] .grid-hex.is-logo-g,
+  .home__world [data-node-id="intro-logo"] .grid-node.is-logo-g,
+  .home__world [data-node-id="intro-logo"] .grid-hex.is-logo-h,
+  .home__world [data-node-id="intro-logo"] .grid-node.is-logo-h {
+    stroke: #ffffff;
+    fill: color-mix(in srgb, #ffffff 16%, transparent);
+    filter: drop-shadow(0 0 8px color-mix(in srgb, #ffffff 26%, transparent));
   }
 
   .home__world-scene {
@@ -608,7 +620,7 @@ const latestIncident = {
   const logoCellCache = new Map();
 
   const originHoldMs = 2200;
-  const handoffFadeMs = 1200;
+  const handoffFadeMs = 500;
   const logoStartDelayMs = 120;
 
   let introAnimating = false;
@@ -622,6 +634,20 @@ const latestIncident = {
 
   const getLogoCells = () => worldCellsPayload ? JSON.parse(worldCellsPayload.textContent || "[]") : [];
 
+  const applyLogoRoles = (cells) => {
+    for (const cell of cells) {
+      const role = GH_LOGO_ROLE_BY_CELL[cell.id];
+      if (!role) continue;
+      const elements = logoCellCache.get(cell.id);
+      if (!elements) continue;
+      const roleClass = role === "border" ? "is-logo-border" : role === "g" ? "is-logo-g" : "is-logo-h";
+      for (const element of elements) {
+        element.classList.add(roleClass);
+        element.dataset.logoRole = role;
+      }
+    }
+  };
+
   const collectLogoElements = (cells) => {
     if (logoCellCache.size > 0) {
       return logoCellCache;
@@ -633,9 +659,10 @@ const latestIncident = {
       logoCellCache.set(cell.id, elements);
     }
 
+    applyLogoRoles(cells);
+
     return logoCellCache;
   };
-
   const applyLogoFrame = (frame) => {
     for (const state of frame.states) {
       const elements = logoCellCache.get(state.id);
