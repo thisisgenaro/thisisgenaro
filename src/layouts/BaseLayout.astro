@@ -103,6 +103,11 @@ const railBootstrap =
       <aside class="shell__rail surface surface-pad" aria-label="Site rail">
         <div class="shell__rail-top">
           <button class="shell__menu-toggle" type="button" aria-expanded="false" aria-controls="site-primary-nav" aria-label="Collapse sidebar" data-toggle-rail>
+            <span class="shell__menu-toggle-burger" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
             <span class="shell__menu-label" aria-hidden="true">&lt;</span>
           </button>
           <a class="shell__brand" href="/" aria-label="Home">
@@ -258,6 +263,23 @@ const railBootstrap =
     letter-spacing: 0;
     text-transform: none;
     transition: border-color 180ms ease, background 180ms ease, transform 180ms ease, box-shadow 180ms ease, color 180ms ease;
+  }
+
+  .shell__menu-toggle-burger {
+    display: none;
+    width: 0.95rem;
+    gap: 0.14rem;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .shell__menu-toggle-burger span {
+    display: block;
+    width: 100%;
+    height: 1.5px;
+    border-radius: 999px;
+    background: currentColor;
   }
 
   .shell__menu-label {
@@ -438,6 +460,32 @@ const railBootstrap =
       border-right: 0;
       border-bottom: 1px solid color-mix(in srgb, var(--line-strong) 70%, transparent);
       box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+    }
+
+    .shell__rail-top {
+      flex-direction: column;
+      align-items: center;
+      gap: 0.55rem;
+    }
+
+    .shell__brand {
+      order: 0;
+    }
+
+    .shell__menu-toggle {
+      order: 1;
+      width: 2.5rem;
+      min-height: 2.5rem;
+      padding: 0.4rem;
+      border-radius: 0.85rem;
+    }
+
+    .shell__menu-toggle-burger {
+      display: inline-flex;
+    }
+
+    .shell__menu-label {
+      display: none;
     }
 
     html[data-shell-rail="collapsed"] .shell__rail {
