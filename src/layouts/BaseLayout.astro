@@ -1,13 +1,15 @@
 ---
 import ThemeSwitcher from "operational-topology/astro/ThemeSwitcher";
 import {
-  contrastStorageKey,
   colorVisionStorageKey,
-  defaultTheme,
+  contrastStorageKey,
+  defaultTheme as frameworkDefaultTheme,
   glowStorageKey,
   themeNames,
   themeStorageKey,
 } from "operational-topology";
+
+import "../styles/global.css";
 
 interface Props {
   title?: string;
@@ -15,14 +17,51 @@ interface Props {
 }
 
 const {
-  title = "Operational Topology",
-  description = "Topology-driven portfolio and knowledge system.",
+  title = "thisisgenaro.com",
+  description = "Design, automate, and keep things running.",
 } = Astro.props;
+
+const pathname = Astro.url.pathname;
+const railStateStorageKey = "thisisgenaro:shell-rail-collapsed";
+
+const navItems = [
+  {
+    href: "/",
+    label: "Home",
+    iconPath: "M4.5 11.5 12 5l7.5 6.5M7 10.5V19h10v-8.5",
+  },
+  {
+    href: "/journal",
+    label: "Journal",
+    iconPath: "M7 4h8l2.5 2.5V20H7a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3zm8 0v3h3M8 10h8M8 14h6M8 18h4",
+  },
+  {
+    href: "/incidents",
+    label: "Incidents",
+    iconPath: "M12 4l7.5 13H4.5L12 4zm0 5.5v4m0 3h.01",
+  },
+  {
+    href: "/about",
+    label: "About",
+    iconPath: "M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM5.5 20c1.8-3 4.3-4.5 6.5-4.5s4.7 1.5 6.5 4.5",
+  },
+  {
+    href: "/about/cv",
+    label: "CV",
+    iconPath: "M7 4h8l4 4v12H7zM15 4v4h4M10 10h6M10 14h6M10 18h4",
+  },
+];
+
+const isActive = (href: string) => {
+  if (href === "/") return pathname === "/";
+  if (href === "/about") return pathname === "/about";
+  return pathname === href || pathname.startsWith(`${href}/`);
+};
 
 const themeBootstrap =
   "(() => {" +
   "const themes=" + JSON.stringify(themeNames) + ";" +
-  "const fallback=" + JSON.stringify(defaultTheme) + ";" +
+  "const fallback=" + JSON.stringify(frameworkDefaultTheme) + ";" +
   "try {" +
   "const stored=localStorage.getItem(" + JSON.stringify(themeStorageKey) + ");" +
   "document.documentElement.dataset.theme=themes.includes(stored)?stored:fallback;" +
@@ -32,7 +71,14 @@ const themeBootstrap =
   "} catch {document.documentElement.dataset.theme=fallback;document.documentElement.dataset.glow='standard';document.documentElement.dataset.contrast='standard';document.documentElement.dataset.colorVision='standard';}" +
   "})();";
 
-export const defaultTheme: ThemeName = "imperial-gold";
+const railBootstrap =
+  "(() => {" +
+  "const key=" + JSON.stringify(railStateStorageKey) + ";" +
+  "try {" +
+  "const stored=localStorage.getItem(key);" +
+  "document.documentElement.dataset.shellRail=stored==='false'?'expanded':'collapsed';" +
+  "} catch {document.documentElement.dataset.shellRail='collapsed';}" +
+  "})();";
 ---
 
 <!doctype html>
@@ -41,21 +87,469 @@ export const defaultTheme: ThemeName = "imperial-gold";
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
+    <meta name="theme-color" content="#0b0f14" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <script is:inline set:html={themeBootstrap}></script>
+    <script is:inline set:html={railBootstrap}></script>
     <title>{title}</title>
     <slot name="head" />
   </head>
   <body>
-    <slot />
+    <div class="shell">
+      <aside class="shell__rail surface surface-pad" aria-label="Site rail">
+        <div class="shell__rail-top">
+          <button class="shell__menu-toggle" type="button" aria-expanded="false" aria-controls="site-primary-nav" aria-label="Collapse sidebar" data-toggle-rail>
+            <span class="shell__menu-toggle-burger" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
+            <span class="shell__menu-label" aria-hidden="true">&lt;</span>
+          </button>
+          <a class="shell__brand" href="/" aria-label="Home">
+            <img class="shell__brand-image" src="/gh-logo.png" alt="" />
+          </a>
+        </div>
+
+        <nav class="shell__links" id="site-primary-nav" aria-label="Primary">
+          {navItems.map((item) => (
+            <a href={item.href} aria-label={item.label} aria-current={isActive(item.href) ? "page" : undefined} class:list={{ "is-active": isActive(item.href) }} title={item.label}>
+              <span class="shell__nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75">
+                  <path d={item.iconPath} />
+                </svg>
+              </span>
+              <span class="shell__nav-label">{item.label}</span>
+            </a>
+          ))}
+        </nav>
+
+        <div class="shell__rail-slot">
+          <slot name="rail" />
+        </div>
+      </aside>
+
+      <div class="shell__stage">
+        <slot />
+      </div>
+    </div>
     <ThemeSwitcher />
     <script>
       if (import.meta.env.DEV) {
-        import("../topology/DeveloperAPI").then(({ installDeveloperAPI }) => {
+        import("operational-topology/browser").then(({ installDeveloperAPI }) => {
           installDeveloperAPI();
         });
       }
     </script>
+    <script>
+      const rail = document.querySelector<HTMLElement>(".shell__rail");
+      const toggle = document.querySelector<HTMLButtonElement>("[data-toggle-rail]");
+      const root = document.documentElement;
+      const storageKey = "thisisgenaro:shell-rail-collapsed";
+
+      const applyState = (collapsed: boolean) => {
+        root.dataset.shellRail = collapsed ? "collapsed" : "expanded";
+        toggle?.setAttribute("aria-expanded", String(!collapsed));
+        if (toggle) {
+          const label = toggle.querySelector<HTMLElement>(".shell__menu-label");
+          if (label) label.textContent = collapsed ? ">" : "<";
+          toggle.setAttribute("aria-label", collapsed ? "Expand sidebar" : "Collapse sidebar");
+        }
+        toggle?.setAttribute("data-collapsed", String(collapsed));
+        try {
+          localStorage.setItem(storageKey, collapsed ? "true" : "false");
+        } catch {
+          // Ignore persistence failures.
+        }
+      };
+
+      applyState(root.dataset.shellRail !== "expanded");
+
+      toggle?.addEventListener("click", () => {
+        applyState(root.dataset.shellRail !== "collapsed");
+        rail?.classList.toggle("is-open", root.dataset.shellRail !== "collapsed");
+      });
+    </script>
   </body>
 </html>
+
+<style>
+  :root {
+    --shell-rail-expanded: 17rem;
+    --shell-rail-collapsed: 5.25rem;
+  }
+
+  .shell {
+    display: grid;
+    grid-template-columns: var(--shell-rail-expanded) minmax(0, 1fr);
+    min-height: 100vh;
+    width: 100%;
+  }
+
+  html[data-shell-rail="collapsed"] .shell {
+    grid-template-columns: var(--shell-rail-collapsed) minmax(0, 1fr);
+  }
+
+  .shell__rail {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: 100vh;
+    height: 100vh;
+    padding: 1rem;
+    border-right: 1px solid color-mix(in srgb, var(--line-strong) 70%, transparent);
+    border-radius: 0;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--surface-2) 84%, transparent), color-mix(in srgb, var(--surface) 72%, transparent));
+    box-shadow: 12px 0 28px rgba(0, 0, 0, 0.16);
+    overflow: hidden auto;
+  }
+
+  .shell__rail-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  html[data-shell-rail="collapsed"] .shell__rail-top {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .shell__brand {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 3.4rem;
+    aspect-ratio: 1;
+    align-self: center;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .shell__brand-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .shell__menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2rem;
+    min-height: 2rem;
+    padding: 0.2rem 0.45rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
+    border-radius: 0.7rem;
+    background: color-mix(in srgb, var(--accent-soft) 12%, transparent);
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0;
+    text-transform: none;
+    transition: border-color 180ms ease, background 180ms ease, transform 180ms ease, box-shadow 180ms ease, color 180ms ease;
+  }
+
+  .shell__menu-toggle-burger {
+    display: none;
+    width: 0.95rem;
+    gap: 0.14rem;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .shell__menu-toggle-burger span {
+    display: block;
+    width: 100%;
+    height: 1.5px;
+    border-radius: 999px;
+    background: currentColor;
+  }
+
+  .shell__menu-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0.8rem;
+    transform: translateY(-0.02em);
+  }
+
+  .shell__links {
+    display: grid;
+    gap: 0.2rem;
+    padding-top: 0.15rem;
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .shell__links a {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1.55rem minmax(0, 1fr);
+    align-items: center;
+    gap: 0.55rem;
+    min-height: 2.3rem;
+    padding: 0.35rem 0.15rem 0.35rem 0.55rem;
+    color: var(--text);
+    border-bottom: 1px solid transparent;
+    border-radius: 0;
+    background: transparent;
+    transition: border-color 180ms ease, color 180ms ease, transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+  }
+
+  .shell__nav-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    justify-self: center;
+    width: 1.35rem;
+    height: 1.35rem;
+    color: color-mix(in srgb, var(--accent) 78%, var(--amber) 22%);
+    transition: color 180ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  }
+
+  .shell__nav-icon svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .shell__nav-label {
+    min-width: 0;
+    white-space: nowrap;
+    transition: opacity 180ms ease, transform 180ms ease, max-width 180ms ease;
+  }
+
+  .shell__links a:hover,
+  .shell__links a:focus-visible {
+    transform: translateX(2px);
+    border-bottom-color: color-mix(in srgb, var(--accent) 70%, transparent);
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent-soft) 18%, transparent);
+  }
+
+  .shell__brand:focus-visible,
+  .shell__menu-toggle:focus-visible,
+  .shell__links a:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--accent) 70%, white);
+    outline-offset: 3px;
+  }
+
+  .shell__links a.is-active,
+  .shell__links a[aria-current="page"] {
+    color: var(--accent);
+    border-bottom-color: color-mix(in srgb, var(--accent) 85%, transparent);
+    background: color-mix(in srgb, var(--accent-soft) 30%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 26%, transparent);
+  }
+
+  .shell__links a.is-active::before,
+  .shell__links a[aria-current="page"]::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.35rem;
+    bottom: 0.35rem;
+    width: 0.22rem;
+    border-radius: 999px;
+    background: var(--accent);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--amber) 16%, transparent);
+  }
+
+  .shell__links a.is-active .shell__nav-icon,
+  .shell__links a[aria-current="page"] .shell__nav-icon {
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent-soft) 52%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 34%, transparent);
+    border-radius: 0.32rem;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--amber) 12%, transparent);
+  }
+
+  .shell__rail-slot {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid color-mix(in srgb, var(--line-strong) 62%, transparent);
+  }
+
+  .shell__stage {
+    min-width: 0;
+    padding: 0 0 2rem;
+  }
+
+  html[data-home-intro-state="ready"] .shell__rail,
+  html[data-home-intro-state="signal"] .shell__rail,
+  html[data-home-intro-state="logo"] .shell__rail {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-0.5rem);
+  }
+
+
+  html[data-shell-rail="collapsed"] .shell__rail {
+    padding-inline: 0.85rem;
+  }
+
+  html[data-shell-rail="collapsed"] .shell__links {
+    gap: 0.35rem;
+  }
+
+  html[data-shell-rail="collapsed"] .shell__links a {
+    grid-template-columns: 1.55rem 0fr;
+    gap: 0;
+    justify-items: center;
+    padding-inline: 0.2rem 0.15rem;
+  }
+
+  html[data-shell-rail="collapsed"] .shell__nav-label {
+    opacity: 0;
+    max-width: 0;
+    overflow: hidden;
+    transform: translateX(-0.25rem);
+  }
+
+  html[data-shell-rail="collapsed"] .shell__links a.is-active,
+  html[data-shell-rail="collapsed"] .shell__links a[aria-current="page"] {
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent);
+    background: color-mix(in srgb, var(--accent-soft) 44%, transparent);
+  }
+
+  html[data-shell-rail="collapsed"] .shell__links a.is-active .shell__nav-icon,
+  html[data-shell-rail="collapsed"] .shell__links a[aria-current="page"] .shell__nav-icon {
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--amber) 35%, transparent);
+  }
+
+  html[data-shell-rail="collapsed"] .shell__rail-slot {
+    opacity: 0;
+    pointer-events: none;
+    max-height: 0;
+    margin-top: 0;
+    padding-top: 0;
+    overflow: hidden;
+  }
+
+  html[data-shell-rail="collapsed"] .shell__brand {
+    width: 3rem;
+  }
+
+  html[data-shell-rail="collapsed"] .shell__menu-toggle {
+    align-self: center;
+  }
+
+  @media (max-width: 860px) {
+    .shell {
+      grid-template-columns: 1fr;
+    }
+
+    html[data-shell-rail="collapsed"] .shell {
+      grid-template-columns: 1fr;
+    }
+
+    .shell__rail {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 30;
+      min-height: auto;
+      height: auto;
+      padding: 1.1rem 1rem 1rem;
+      border-right: 0;
+      border-bottom: 1px solid color-mix(in srgb, var(--line-strong) 70%, transparent);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+      width: 100%;
+    }
+
+    html[data-home-intro-state="ready"] .shell__rail,
+    html[data-home-intro-state="signal"] .shell__rail,
+    html[data-home-intro-state="logo"] .shell__rail {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-0.35rem);
+    }
+
+    .shell__rail-top {
+      display: grid;
+      grid-template-columns: 3.2rem minmax(0, 1fr) 3.2rem;
+      align-items: center;
+      gap: 0.85rem;
+      min-height: 4.25rem;
+    }
+
+    .shell__brand {
+      position: static;
+      transform: none;
+      justify-self: center;
+      order: 0;
+      width: 3.5rem;
+    }
+
+    .shell__menu-toggle {
+      order: 1;
+      justify-self: end;
+      width: 3.2rem;
+      min-height: 3.2rem;
+      padding: 0.6rem 0.85rem;
+      border-radius: 1rem;
+    }
+
+    .shell__menu-toggle-burger {
+      display: inline-flex;
+    }
+
+    .shell__menu-label {
+      display: none;
+    }
+
+    html[data-shell-rail="collapsed"] .shell__rail {
+      padding-inline: 1rem;
+    }
+
+    .shell__rail-slot {
+      display: none;
+    }
+
+    .shell__links {
+      display: none;
+      width: 100%;
+      gap: 0.15rem;
+      padding-top: 0.35rem;
+    }
+
+    .shell__links a {
+      width: 100%;
+      grid-template-columns: 1.55rem minmax(0, 1fr);
+      padding: 0.7rem 0;
+      border-bottom-color: color-mix(in srgb, var(--line) 88%, transparent);
+    }
+
+    .shell__rail.is-open .shell__links,
+    html[data-shell-rail="expanded"] .shell__links {
+      display: grid;
+    }
+
+    html[data-shell-rail="collapsed"] .shell__links {
+      display: none;
+    }
+
+    .shell__stage {
+      padding-top: 5rem;
+    }
+  }
+</style>

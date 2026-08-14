@@ -1,411 +1,768 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import TopologyBackground from "operational-topology/astro/TopologyBackground";
 import TopologyScene from "operational-topology/astro/TopologyScene";
-import { TOPOLOGY_PAGE_PRESETS } from "operational-topology/presets";
-import { createHexGrid, getGridBounds } from "operational-topology";
-import {
-  GH_LOGO_EDGES,
-  GH_LOGO_NODES,
-  GH_LOGO_ROLE_BY_CELL,
-  getGhLogoFrame
-} from "operational-topology/browser";
+import { createTopologyScenePreset } from "operational-topology/presets";
+import { GH_LOGO_ROLE_BY_CELL, getGhLogoFrame } from "operational-topology/labs";
 
-const preset = TOPOLOGY_PAGE_PRESETS.underConstruction;
-const logoRadius = 24;
-const logoCells = createHexGrid({
-  radius: logoRadius,
-  columns: 18,
-  rows: 18,
-  originQ: -9,
-  originR: -9,
+const dormantScene = createTopologyScenePreset({
+  layout: "viewport-fit",
+  topologyLayout: "ring",
+  radius: 34,
+  showGridNodes: false,
+  gridActivity: true,
+  ambientSignals: false,
 });
-const logoBounds = getGridBounds(logoCells, logoRadius);
 
-const logoViewBox = [
-    -logoBounds.width / 2,
-    -logoBounds.height / 2,
-    logoBounds.width,
-    logoBounds.height,
-  ].join(" ");
+const introLogoNode = [
+  {
+    id: "intro-logo",
+    label: "",
+    image: "/gh-logo.png",
+    imageScale: 0.82,
+    imageAlign: "center",
+    q: 0,
+    r: 0,
+    variant: "root",
+    size: "root",
+    active: true,
+    selected: true,
+  },
+];
 
-const logoCellById = new Map(logoCells.map((cell) => [cell.id, cell]));
-const logoNodes = Array.from(new Map(
-  GH_LOGO_NODES.map((node) => [node.id, node]),
-).values());
-const logoJson = JSON.stringify(logoCells);
+const introBootstrap =
+  "(() => {" +
+  "document.documentElement.dataset.homeIntroState='ready';" +
+  "})();";
+
+const latestJournal = {
+  id: "JRNL-001",
+  title: "Keeping the operating model readable",
+  date: "2026-08-13",
+  excerpt:
+    "A practical site works better when structure stays visible without making the page feel like a dashboard demo.",
+  href: "/journal",
+};
+
+const latestIncident = {
+  id: "INC-0027",
+  title: "Signal route failure",
+  date: "2026-08-11",
+  summary:
+    "A topology route lost clarity during a transition and needed a bounded camera frame to remain legible.",
+  status: "INVESTIGATING",
+  href: "/incidents",
+};
+
 ---
 
+<script is:inline slot="head" set:html={introBootstrap}></script>
+
 <BaseLayout
-  title="Under Construction | Operational Topology"
-  description="A topology-driven construction state powered by the Operational Topology framework."
+  title="thisisgenaro.com | Genaro Hernandez"
+  description="Genaro Hernandez builds resilient infrastructure, writes about the work, and documents incidents with clarity."
 >
-  <TopologyBackground class="under-construction-background">
-    <TopologyScene
-      class="under-construction-scene"
-      nodes={[]}
-      {...preset.scene}
-      signalTransitionSpeed={preset.signal.transitionSpeed}
-    />
+  <main class="home">
+    <div class="home__world" aria-hidden="true">
+      <TopologyScene
+        class="home__world-scene"
+        nodes={introLogoNode}
+        edges={[]}
+        {...dormantScene}
+        showGridNodes={true}
+        signalTransitionSpeed={0.9}
+      />
+      <div class="home__world-vignette"></div>
+    </div>
 
-    <main class="under-construction-page">
-      <div class="under-construction-content">
-        <div class="under-construction-logo-wrap">
-          <svg
-            class="under-construction-logo"
-            viewBox={logoViewBox}
-            role="img"
-            aria-label="GH topology logo"
-            focusable="false"
-          >
-            <g class="under-construction-connectors" aria-hidden="true">
-              {GH_LOGO_EDGES.map((edge) => {
-                const from = logoCellById.get(edge.from);
-                const to = logoCellById.get(edge.to);
-                if (!from || !to) return null;
-                return (
-                  <line
-                    class:list={["under-construction-connector", `role-${edge.role}`]}
-                    x1={from.center.x}
-                    y1={from.center.y}
-                    x2={to.center.x}
-                    y2={to.center.y}
-                    data-logo-from={edge.from}
-                    data-logo-to={edge.to}
-                    data-logo-edge-role={edge.role}
-                  />
-                );
-              })}
-            </g>
-            <g class="under-construction-cells">
-              {logoNodes.map((node) => {
-                const cell = logoCellById.get(node.id);
-                if (!cell) return null;
-                return (
-                  <path
-                    class:list={["under-construction-hex", `role-${node.role}`]}
-                    d={cell.path}
-                    data-cell-id={cell.id}
-                    data-logo-role={GH_LOGO_ROLE_BY_CELL[cell.id]}
-                    data-cell-state="idle"
-                  />
-                );
-              })}
-            </g>
-            <g class="under-construction-cores" aria-hidden="true">
-              {logoNodes.map((node) => {
-                const cell = logoCellById.get(node.id);
-                if (!cell) return null;
-                return (
-                  <circle
-                    class:list={["under-construction-core", `role-${node.role}`]}
-                    cx={cell.center.x}
-                    cy={cell.center.y}
-                    r={logoRadius * 0.18}
-                    data-cell-id={cell.id}
-                    data-logo-role={GH_LOGO_ROLE_BY_CELL[cell.id]}
-                    data-cell-state="idle"
-                  />
-                );
-              })}
-            </g>
-          </svg>
+
+    <section class="home__hero">
+      <article class="home__lead" aria-labelledby="home-lead-title">
+        <div class="home__hero-meta">
+          <p class="home__hero-name">Genaro Hernandez</p>
+          <p class="home__hero-role">IT Infrastructure &amp; Cloud Specialist</p>
         </div>
+        <h1 class="home__headline" id="home-lead-title">
+          <span>Design</span>
+          <span>Automate</span>
+          <span class="home__headline-accent">Keep things running.</span>
+        </h1>
+        <p class="home__lede">
+          I help organizations build resilient infrastructure, gain visibility across their systems and resolve the incidents that matter.
+        </p>
+        <div class="home__lead-actions button-row">
+          <a class="button primary" href="/journal">Journal</a>
+          <a class="button" href="/about/cv">CV</a>
+        </div>
+      </article>
+    </section>
 
-        <article class="under-construction-card surface" aria-labelledby="under-construction-title">
-          <p class="eyebrow">thisisgenaro.com</p>
-          <h1 id="under-construction-title">Under Construction</h1>
-          <p>A new world is being assembled.</p>
-        </article>
-      </div>
-    </main>
-  </TopologyBackground>
+    <section class="home__content">
+      <aside class="home__inspector surface surface-pad" aria-labelledby="inspector-title">
+        <div class="section-label">
+          <h2 id="inspector-title">Knowledge System</h2>
+        </div>
+        <p class="home__inspector-body">
+          Organizations, incidents, entries, and lessons stay connected through one persistent world.
+        </p>
+        <div class="chip-row">
+          <span class="chip">Shared world</span>
+          <span class="chip">Clear signals</span>
+          <span class="chip">Editorial content</span>
+          <span class="chip">Reusable scenes</span>
+        </div>
+      </aside>
 
-  <script type="application/json" id="under-construction-logo-data" set:html={logoJson}></script>
+      <article class="home__card surface surface-pad home__card--journal">
+        <p class="home__card-label">Latest Journal</p>
+        <p class="home__card-id mono">{latestJournal.id}</p>
+        <h3>{latestJournal.title}</h3>
+        <p class="home__card-date">{latestJournal.date}</p>
+        <p class="home__card-body">{latestJournal.excerpt}</p>
+        <a class="home__card-link" href={latestJournal.href}>Read journal</a>
+      </article>
 
-  <script>
-    import { getGhLogoFrame } from "operational-topology/browser";
-
-    const root = document.querySelector(".under-construction-page");
-    const data = document.getElementById("under-construction-logo-data");
-    const cells = data ? JSON.parse(data.textContent || "[]") : [];
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const elements = new Map();
-
-    root?.querySelectorAll("[data-cell-id]").forEach((element) => {
-      const id = element.getAttribute("data-cell-id");
-      if (!id) return;
-      const group = elements.get(id) ?? [];
-      group.push(element);
-      elements.set(id, group);
-    });
-
-    const connectors = Array.from(root?.querySelectorAll("[data-logo-from][data-logo-to]") ?? []);
-    const startedAt = performance.now();
-
-    function render(now) {
-      const elapsed = reducedMotion.matches ? 4600 : now - startedAt;
-      const frame = getGhLogoFrame(cells, elapsed, "border-reveal");
-      const stateMap = new Map(frame.states.map((state) => [state.id, state]));
-
-      for (const [id, group] of elements.entries()) {
-        const state = stateMap.get(id) ?? { state: "idle", intensity: 0.05 };
-        for (const element of group) {
-          element.dataset.cellState = state.state;
-          element.style.setProperty("--logo-intensity", String(state.intensity));
-          element.classList.toggle("is-origin", state.state === "origin");
-          element.classList.toggle("is-propagating", state.state === "propagating");
-          element.classList.toggle("is-receiving", state.state === "receiving");
-          element.classList.toggle("is-resolved", state.state === "resolved");
-        }
-      }
-
-      for (const connector of connectors) {
-        const from = stateMap.get(connector.getAttribute("data-logo-from") || "")?.state;
-        const to = stateMap.get(connector.getAttribute("data-logo-to") || "")?.state;
-        connector.classList.toggle(
-          "is-active",
-          from === "origin" || from === "propagating" || from === "receiving"
-            || to === "origin" || to === "propagating" || to === "receiving",
-        );
-        connector.classList.toggle("is-settled", from === "resolved" && to === "resolved");
-        const fromVisible = from === "origin" || from === "propagating" || from === "receiving" || from === "resolved";
-        const toVisible = to === "origin" || to === "propagating" || to === "receiving" || to === "resolved";
-        connector.classList.toggle("is-partial", (fromVisible || toVisible) && !(from === "resolved" && to === "resolved"));
-      }
-
-      if (!reducedMotion.matches && frame.phase !== "settled") {
-        window.requestAnimationFrame(render);
-      }
-    }
-
-    window.requestAnimationFrame(render);
-  </script>
+      <article class="home__card surface surface-pad home__card--incident">
+        <p class="home__card-label">Latest Incident</p>
+        <p class="home__card-id mono">{latestIncident.id}</p>
+        <h3>{latestIncident.title}</h3>
+        <div class="home__status-row">
+          <p class="home__card-date">{latestIncident.date}</p>
+          <span class="home__status-pill">{latestIncident.status}</span>
+        </div>
+        <p class="home__card-body">{latestIncident.summary}</p>
+        <a class="home__card-link" href={latestIncident.href}>Open incident</a>
+      </article>
+    </section>
+  </main>
 </BaseLayout>
 
 <style>
-  .under-construction-background {
+  .home {
+    position: relative;
+    display: grid;
+    align-content: center;
+    gap: clamp(0.75rem, 2vw, 1.15rem);
     min-height: 100svh;
+    width: 100%;
+    padding: clamp(1rem, 4vh, 2.4rem) 0;
   }
 
-  .under-construction-scene {
-    position: absolute;
+  .home__world {
+    position: fixed;
     inset: 0;
     z-index: 0;
-    min-height: 100svh;
+    pointer-events: auto;
+    opacity: 0.18;
+    filter: saturate(0.85);
+    transition: opacity 280ms ease, filter 280ms ease;
   }
 
-  .under-construction-page {
-    position: relative;
-    z-index: 4;
-    min-height: 100svh;
-    display: grid;
-    place-items: center;
-    padding: clamp(1.5rem, 5vw, 4rem);
+  html[data-home-intro-state="ready"] .home__world,
+  html[data-home-intro-state="signal"] .home__world,
+  html[data-home-intro-state="logo"] .home__world {
+    opacity: 0.64;
+    filter: saturate(1.08) brightness(1.12);
+  }
+
+  html[data-home-intro-state="handoff"] .home__world {
+    opacity: 0.12;
+    filter: saturate(0.72) brightness(0.92);
+  }
+
+  html[data-home-intro-state="done"] .home__world {
+    opacity: 0.18;
+    filter: saturate(0.85);
+  }
+
+  .home__world::before,
+  .home__world::after {
+    content: "";
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    width: 7rem;
+    height: 7rem;
+    translate: -50% -50%;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent);
+    opacity: 0;
     pointer-events: none;
   }
 
-  .under-construction-content {
-    display: flex;
-    width: min(100%, 620px);
-    flex-direction: column;
-    align-items: center;
-    gap: clamp(0.5rem, 1.5vw, 1rem);
-    transform: translateY(-2vh);
+  .home__world::after {
+    width: 5.25rem;
+    height: 5.25rem;
+    border-color: color-mix(in srgb, var(--accent) 20%, transparent);
   }
 
-  .under-construction-logo-wrap {
-    width: min(78vw, 520px);
-    aspect-ratio: 1;
-    filter: drop-shadow(0 0 24px color-mix(in srgb, var(--theme-accent) 18%, transparent));
+  html[data-home-intro-state="signal"] .home__world::before {
+    animation: home-origin-burst 2200ms ease-out forwards;
   }
 
-  .under-construction-logo {
-    display: block;
-    width: 100%;
-    height: 100%;
-    overflow: visible;
+  html[data-home-intro-state="signal"] .home__world::after {
+    animation: home-origin-burst 2200ms ease-out 120ms forwards;
   }
 
-  .under-construction-hex {
-    fill: color-mix(in srgb, var(--theme-accent) 4%, transparent);
-    stroke: color-mix(in srgb, var(--theme-accent) 72%, white 28%);
-    stroke-width: 1.4;
-    stroke-linejoin: round;
-    vector-effect: non-scaling-stroke;
-    opacity: 0;
-    transition: opacity 180ms ease, stroke 180ms ease, fill 180ms ease, filter 180ms ease;
+  .home__world .scene-grid {
+    opacity: 0.56;
+    transition: opacity 420ms ease, transform 280ms ease;
   }
 
-  .under-construction-hex.is-resolved {
-    fill: color-mix(in srgb, var(--theme-accent) 8%, transparent);
-    opacity: 0.82;
-    filter: drop-shadow(0 0 5px color-mix(in srgb, var(--theme-accent) 26%, transparent));
-  }
-
-  .under-construction-hex.is-origin,
-  .under-construction-hex.is-propagating,
-  .under-construction-hex.is-receiving {
-    fill: color-mix(in srgb, var(--theme-accent-strong) 28%, transparent);
-    stroke: color-mix(in srgb, var(--theme-focus) 72%, white 28%);
-    stroke-width: 2.2;
+  html[data-home-intro-state="ready"] .home__world .scene-grid,
+  html[data-home-intro-state="signal"] .home__world .scene-grid,
+  html[data-home-intro-state="logo"] .home__world .scene-grid {
     opacity: 1;
-    filter: drop-shadow(0 0 11px color-mix(in srgb, var(--theme-accent) 62%, transparent));
   }
 
-  .under-construction-connector {
-    stroke: color-mix(in srgb, var(--theme-accent) 48%, transparent);
-    stroke-width: 1.1;
-    stroke-linecap: round;
-    vector-effect: non-scaling-stroke;
-    opacity: 0;
-    transition: stroke 180ms ease, stroke-width 180ms ease, opacity 180ms ease, filter 180ms ease;
-  }
-
-  .under-construction-connector.is-partial {
-    stroke: color-mix(in srgb, var(--theme-accent) 58%, transparent);
-    opacity: 0.34;
-  }
-
-  .under-construction-connector.role-g,
-  .under-construction-connector.role-h {
-    stroke: color-mix(in srgb, var(--theme-text-primary) 72%, transparent);
-  }
-
-  .under-construction-connector.is-settled {
-    stroke: color-mix(in srgb, var(--theme-accent) 66%, transparent);
+  html[data-home-intro-state="handoff"] .home__world .scene-grid {
     opacity: 0.48;
   }
 
-  .under-construction-connector.is-active {
-    stroke: var(--theme-focus);
-    stroke-width: 2.2;
-    opacity: 0.96;
-    filter: drop-shadow(0 0 7px color-mix(in srgb, var(--theme-accent) 58%, transparent));
+  html[data-home-intro-state="done"] .home__world .scene-grid {
+    opacity: 0.56;
   }
 
-  .under-construction-hex.role-g,
-  .under-construction-hex.role-h {
-    stroke: var(--theme-text-primary);
-  }
-
-  .under-construction-hex.role-g.is-origin,
-  .under-construction-hex.role-g.is-propagating,
-  .under-construction-hex.role-g.is-receiving,
-  .under-construction-hex.role-h.is-origin,
-  .under-construction-hex.role-h.is-propagating,
-  .under-construction-hex.role-h.is-receiving {
-    stroke: var(--theme-text-primary);
-  }
-
-  .under-construction-core {
-    fill: color-mix(in srgb, var(--theme-accent) 46%, transparent);
-    stroke: color-mix(in srgb, var(--theme-accent) 80%, white 20%);
-    stroke-width: 1;
-    opacity: 0;
-    transition: opacity 180ms ease, fill 180ms ease, filter 180ms ease;
-  }
-
-  .under-construction-core.role-g,
-  .under-construction-core.role-h {
-    fill: var(--theme-text-primary);
-    stroke: var(--theme-text-primary);
-  }
-
-
-  .under-construction-core.is-resolved {
-    fill: var(--theme-accent);
-    opacity: 0.78;
-  }
-
-  .under-construction-core.is-origin,
-  .under-construction-core.is-propagating,
-  .under-construction-core.is-receiving {
-    fill: var(--theme-focus);
+  .home__world [data-node-id="intro-logo"] {
     opacity: 1;
-    filter: drop-shadow(0 0 8px color-mix(in srgb, var(--theme-accent) 75%, transparent));
+    transition: opacity 500ms ease, transform 240ms ease;
+    cursor: pointer;
+    touch-action: manipulation;
   }
 
-  .under-construction-core.role-g,
-  .under-construction-core.role-h {
-    fill: var(--theme-text-primary);
-    stroke: var(--theme-text-primary);
+  .home__world [data-node-id="intro-logo"] .grid-occupant-image {
+    transition: opacity 500ms ease, transform 500ms ease;
+    opacity: 1;
   }
 
-  .under-construction-core.role-g.is-origin,
-  .under-construction-core.role-g.is-propagating,
-  .under-construction-core.role-g.is-receiving,
-  .under-construction-core.role-h.is-origin,
-  .under-construction-core.role-h.is-propagating,
-  .under-construction-core.role-h.is-receiving {
-    fill: var(--theme-text-primary);
-    stroke: var(--theme-text-primary);
+  html[data-home-intro-state="signal"] .home__world [data-node-id="intro-logo"] .grid-occupant-image,
+  html[data-home-intro-state="logo"] .home__world [data-node-id="intro-logo"] .grid-occupant-image,
+  html[data-home-intro-state="handoff"] .home__world [data-node-id="intro-logo"] .grid-occupant-image {
+    opacity: 0;
   }
 
-  .under-construction-connector.role-g,
-  .under-construction-connector.role-h {
-    stroke: var(--theme-text-primary);
+  html[data-home-intro-state="handoff"] .home__world [data-node-id="intro-logo"],
+  html[data-home-intro-state="done"] .home__world [data-node-id="intro-logo"] {
+    opacity: 0;
+    cursor: default;
   }
 
-  .under-construction-card {
-    width: min(100%, 380px);
-    padding: 1rem 1.2rem 1.15rem;
-    text-align: center;
-    pointer-events: auto;
-    background: color-mix(in srgb, var(--theme-surface) 84%, transparent);
-    border-color: color-mix(in srgb, var(--theme-accent) 28%, var(--theme-line));
-    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
+  .home__world [data-node-id="intro-logo"] .grid-hex.is-logo-border,
+  .home__world [data-node-id="intro-logo"] .grid-node.is-logo-border {
+    stroke: var(--accent);
+    fill: color-mix(in srgb, var(--accent) 14%, transparent);
+    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--accent) 38%, transparent));
   }
 
-  .under-construction-card .eyebrow {
-    margin-bottom: 0.55rem;
-    font-size: 0.63rem;
+  .home__world [data-node-id="intro-logo"] .grid-hex.is-logo-g,
+  .home__world [data-node-id="intro-logo"] .grid-node.is-logo-g,
+  .home__world [data-node-id="intro-logo"] .grid-hex.is-logo-h,
+  .home__world [data-node-id="intro-logo"] .grid-node.is-logo-h {
+    stroke: #ffffff;
+    fill: color-mix(in srgb, #ffffff 16%, transparent);
+    filter: drop-shadow(0 0 8px color-mix(in srgb, #ffffff 26%, transparent));
   }
 
-  .under-construction-card h1 {
-    margin-bottom: 0.3rem;
-    font-size: clamp(1.25rem, 3vw, 1.8rem);
+  .home__world-scene {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
   }
 
-  .under-construction-card p:last-child {
+  .home__world-vignette {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 50% 20%, rgba(242, 169, 0, 0.06), transparent 22%),
+      linear-gradient(180deg, rgba(1, 4, 6, 0.08), rgba(1, 4, 6, 0.55));
+  }
+
+
+  .home__hero,
+  .home__content {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 78rem);
+    margin: 0 auto;
+  }
+
+  .home__hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    min-height: clamp(24rem, 58svh, 40rem);
+    align-content: center;
+    margin-bottom: 0.75rem;
+  }
+
+  .home__content {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0.85rem;
+    align-items: start;
+  }
+
+  .home__lead {
+    padding-inline: 0;
+    padding-block: 0.2rem 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    gap: 1.35rem;
+    min-height: 26rem;
+    padding-block: 0.9rem 0.35rem;
+  }
+
+  .home__hero-meta {
+    display: grid;
+    gap: 0.3rem;
+  }
+
+  .home__hero-name {
     margin: 0;
-    color: var(--theme-text-secondary);
-    font-size: 0.88rem;
+    color: var(--text);
+    font-family: var(--font-title);
+    font-size: clamp(1.35rem, 2vw, 1.8rem);
+    letter-spacing: -0.03em;
+    line-height: 1.02;
   }
 
-  @media (max-width: 640px) {
-    .under-construction-page {
-      padding: 1rem;
-    }
+  .home__hero-role {
+    margin: 0;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
 
-    .under-construction-content {
-      transform: translateY(-1vh);
-    }
+  .home__headline {
+    margin: 0;
+    display: grid;
+    gap: 0.04em;
+    font-size: clamp(3rem, 6.7vw, 6.2rem);
+    line-height: 0.9;
+    letter-spacing: -0.06em;
+  }
 
-    .under-construction-logo-wrap {
-      width: min(94vw, 460px);
+  .home__headline-accent {
+    color: var(--accent);
+  }
+
+  .home__lede {
+    max-width: 32rem;
+    margin: 0;
+    color: var(--text);
+    font-size: clamp(1.02rem, 1.55vw, 1.18rem);
+    line-height: 1.65;
+  }
+
+  .home__lead-actions {
+    margin-top: 0.55rem;
+  }
+
+  .home__inspector {
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .home__inspector-kicker {
+    margin: 0;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.4rem;
+    padding: 0.45rem 0.8rem;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.02);
+    transition: border-color 180ms ease, background 180ms ease, transform 180ms ease;
+  }
+
+  .home__inspector-body {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .home__card {
+    display: grid;
+    gap: 0.5rem;
+    align-content: start;
+  }
+
+  .home__lead:hover,
+  .home__lead:focus-within {
+    transform: none;
+    box-shadow: none;
+  }
+
+  html:not([data-home-intro-state="done"]) .home__hero,
+  html:not([data-home-intro-state="done"]) .home__content {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(0.4rem);
+  }
+
+  html:not([data-home-intro-state="done"]) .home__world {
+    z-index: 0;
+  }
+
+  html[data-home-intro-state="done"] .home__world {
+    z-index: -1;
+  }
+
+  html[data-home-intro-state="done"] .home__hero,
+  html[data-home-intro-state="done"] .home__content {
+    transition-delay: 220ms;
+  }
+
+  .home__hero,
+  .home__content {
+    transition: opacity 520ms ease, transform 520ms ease;
+  }
+
+  .home__card-label,
+  .home__card-id,
+  .home__card-date {
+    margin: 0;
+    color: var(--muted);
+  }
+
+  .home__card-label {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .home__card h3 {
+    margin: 0;
+    font-size: 1.08rem;
+  }
+
+  .home__card-body {
+    margin: 0;
+    max-width: 28ch;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+
+  .home__card-link {
+    margin-top: 0.25rem;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.4rem;
+    padding: 0.45rem 0.8rem;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.02);
+    transition: border-color 180ms ease, background 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+  }
+
+  .home__status-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .home__card--journal,
+  .home__card--incident {
+    min-height: 100%;
+    position: relative;
+  }
+
+  .home__card--journal::before,
+  .home__card--incident::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    height: 2px;
+    opacity: 0.9;
+  }
+
+  .home__card--journal::before {
+    background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 70%, transparent), transparent);
+  }
+
+  .home__card--incident::before {
+    background: linear-gradient(90deg, color-mix(in srgb, var(--blue) 72%, transparent), transparent);
+  }
+
+  .home__status-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.8rem;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    background: color-mix(in srgb, var(--accent-soft) 60%, transparent);
+  }
+
+  @keyframes home-origin-burst {
+    0% {
+      opacity: 0;
+      transform: scale(0.18);
+    }
+    20% {
+      opacity: 0.88;
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1.62);
     }
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .under-construction-hex,
-    .under-construction-connector,
-  .under-construction-hex.role-g,
-  .under-construction-hex.role-h {
-    stroke: var(--theme-text-primary);
-  }
-
-  .under-construction-hex.role-g.is-origin,
-  .under-construction-hex.role-g.is-propagating,
-  .under-construction-hex.role-g.is-receiving,
-  .under-construction-hex.role-h.is-origin,
-  .under-construction-hex.role-h.is-propagating,
-  .under-construction-hex.role-h.is-receiving {
-    stroke: var(--theme-text-primary);
-  }
-
-    .under-construction-core {
-      transition: none;
+  @media (max-width: 980px) {
+    .home__content {
+      grid-template-columns: 1fr;
     }
+  }
+
+  @media (max-width: 680px) {
+    .home {
+      width: 100%;
+      min-height: auto;
+      padding-top: 0.95rem;
+      padding-bottom: 1rem;
+    }
+
+    .home__hero,
+    .home__content {
+      width: 100%;
+    }
+
+    .home__hero {
+      min-height: 0;
+      margin-top: 0.25rem;
+      margin-bottom: 0.95rem;
+    }
+
+    .home__lead {
+      gap: 0.9rem;
+      min-height: 18rem;
+    }
+
+    .home__hero-meta {
+      gap: 0.1rem;
+    }
+
+    .home__hero-name {
+      font-size: clamp(1.2rem, 7vw, 1.55rem);
+    }
+
+    .home__hero-role {
+      font-size: 0.7rem;
+    }
+
+    .home__content {
+      gap: 0.8rem;
+    }
+
+    .home__card {
+      gap: 0.45rem;
+    }
+
+    .home__card-label {
+      font-size: 0.66rem;
+    }
+
+    .home__card h3 {
+      font-size: 1rem;
+    }
+
+    .home__card-body {
+      max-width: none;
+      font-size: 0.96rem;
+    }
+
+    .home__status-row {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+
+    .home__headline {
+      font-size: clamp(2.55rem, 15vw, 4.1rem);
+      line-height: 0.94;
+    }
+
+    .home__lead-actions {
+      margin-top: 0.5rem;
+    }
+
+    .home__lede {
+      max-width: none;
+      font-size: 1rem;
+      line-height: 1.65;
+    }
+
   }
 </style>
+
+<script>
+  import { getGhLogoFrame } from "operational-topology/labs";
+
+  const root = document.documentElement;
+  const worldSceneRoot = document.querySelector(".home__world-scene");
+  const worldCellsPayload = worldSceneRoot?.querySelector(".topology-scene__cells");
+
+  const stateClasses = ["is-origin", "is-propagating", "is-receiving", "is-resolved"];
+  const logoCellCache = new Map();
+
+  const originHoldMs = 2200;
+  const handoffFadeMs = 500;
+  const logoStartDelayMs = 120;
+  const logoAnimationOffsetMs = 1700;
+
+  let introAnimating = false;
+  let logoFrameRaf = 0;
+  let logoCleanupTimer = 0;
+
+  const syncState = (state) => {
+    root.dataset.homeIntroState = state;
+  };
+
+
+  const getLogoCells = () => worldCellsPayload ? JSON.parse(worldCellsPayload.textContent || "[]") : [];
+
+  const applyLogoRoles = (cells) => {
+    for (const cell of cells) {
+      const role = GH_LOGO_ROLE_BY_CELL[cell.id];
+      if (!role) continue;
+      const elements = logoCellCache.get(cell.id);
+      if (!elements) continue;
+      const roleClass = role === "border" ? "is-logo-border" : role === "g" ? "is-logo-g" : "is-logo-h";
+      for (const element of elements) {
+        element.classList.add(roleClass);
+        element.dataset.logoRole = role;
+      }
+    }
+  };
+
+  const collectLogoElements = (cells) => {
+    if (logoCellCache.size > 0) {
+      return logoCellCache;
+    }
+
+    for (const cell of cells) {
+      const elements = Array.from(worldSceneRoot?.querySelectorAll(`[data-cell-id="${cell.id}"]`) ?? []);
+      if (!elements.length) continue;
+      logoCellCache.set(cell.id, elements);
+    }
+
+    applyLogoRoles(cells);
+
+    return logoCellCache;
+  };
+  const applyLogoFrame = (frame) => {
+    for (const state of frame.states) {
+      const elements = logoCellCache.get(state.id);
+      if (!elements) continue;
+      for (const element of elements) {
+        element.dataset.cellState = state.state;
+        element.style.setProperty("--cell-intensity", String(state.intensity));
+        for (const className of stateClasses) {
+          element.classList.remove(className);
+        }
+        if (state.state === "origin") element.classList.add("is-origin");
+        if (state.state === "propagating") element.classList.add("is-propagating");
+        if (state.state === "receiving") element.classList.add("is-receiving");
+        if (state.state === "resolved") element.classList.add("is-resolved");
+        if (state.state !== "idle") {
+          element.classList.add("is-active");
+        } else {
+          element.classList.remove("is-active");
+        }
+      }
+    }
+  };
+
+  const finishIntro = () => {
+    if (logoFrameRaf) cancelAnimationFrame(logoFrameRaf);
+    if (logoCleanupTimer) window.clearTimeout(logoCleanupTimer);
+    introAnimating = false;
+    syncState("done");
+  };
+
+  const playLogoAnimation = () => {
+    if (!worldSceneRoot) {
+      finishIntro();
+      return;
+    }
+
+    const cells = getLogoCells();
+    if (cells.length === 0) {
+      finishIntro();
+      return;
+    }
+
+    collectLogoElements(cells);
+
+    const startedAt = performance.now();
+    const duration = 4600;
+
+    const tick = (now) => {
+      const elapsed = now - startedAt + logoAnimationOffsetMs;
+      applyLogoFrame(getGhLogoFrame(cells, elapsed, "border-reveal"));
+      if (elapsed < duration) {
+        logoFrameRaf = requestAnimationFrame(tick);
+        return;
+      }
+      syncState("handoff");
+      logoCleanupTimer = window.setTimeout(() => {
+        finishIntro();
+      }, handoffFadeMs);
+    };
+
+    logoFrameRaf = requestAnimationFrame(tick);
+  };
+
+  const startIntro = () => {
+    if (introAnimating) return;
+    introAnimating = true;
+    syncState("signal");
+    window.setTimeout(() => {
+      syncState("logo");
+      window.setTimeout(() => {
+        playLogoAnimation();
+      }, logoStartDelayMs);
+    }, originHoldMs);
+  };
+
+  syncState("ready");
+
+  worldSceneRoot?.addEventListener("click", (event) => {
+    const target = event.target instanceof Element ? event.target.closest("[data-node-id='intro-logo']") : null;
+    if (!target) return;
+    startIntro();
+  }, { passive: true });
+
+  worldSceneRoot?.addEventListener("pointerdown", (event) => {
+    const target = event.target instanceof Element ? event.target.closest("[data-node-id='intro-logo']") : null;
+    if (!target) return;
+    event.preventDefault();
+    startIntro();
+  });
+</script>
