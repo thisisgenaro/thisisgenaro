@@ -700,6 +700,19 @@ const latestIncident = {
         element.dataset.logoRole = "";
         element.classList.remove("is-active", "is-origin", "is-propagating", "is-receiving", "is-resolved", "is-logo-border", "is-logo-g", "is-logo-h");
         element.style.removeProperty("--cell-intensity");
+        element.style.removeProperty("opacity");
+        element.style.removeProperty("transform");
+      }
+    }
+  };
+
+  const fadeOutLogoActivity = (cells) => {
+    for (const cell of cells) {
+      const elements = logoCellCache.get(cell.id);
+      if (!elements) continue;
+      for (const element of elements) {
+        element.style.opacity = "0";
+        element.style.transform = "scale(0.985)";
       }
     }
   };
@@ -737,6 +750,7 @@ const latestIncident = {
         return;
       }
       syncState("handoff");
+      fadeOutLogoActivity(cells);
       logoCleanupTimer = window.setTimeout(() => {
         finishIntro();
       }, handoffFadeMs);
