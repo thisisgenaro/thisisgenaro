@@ -170,6 +170,11 @@ const latestIncident = {
     filter: saturate(1.08) brightness(1.12);
   }
 
+  html[data-home-intro-state="handoff"] .home__world {
+    opacity: 0.12;
+    filter: saturate(0.72) brightness(0.92);
+  }
+
   html[data-home-intro-state="done"] .home__world {
     opacity: 0.18;
     filter: saturate(0.85);
@@ -197,22 +202,26 @@ const latestIncident = {
   }
 
   html[data-home-intro-state="signal"] .home__world::before {
-    animation: home-origin-burst 720ms ease-out forwards;
+    animation: home-origin-burst 2200ms ease-out forwards;
   }
 
   html[data-home-intro-state="signal"] .home__world::after {
-    animation: home-origin-burst 720ms ease-out 80ms forwards;
+    animation: home-origin-burst 2200ms ease-out 120ms forwards;
   }
 
   .home__world .scene-grid {
     opacity: 0.56;
-    transition: opacity 280ms ease, transform 280ms ease;
+    transition: opacity 420ms ease, transform 280ms ease;
   }
 
   html[data-home-intro-state="ready"] .home__world .scene-grid,
   html[data-home-intro-state="signal"] .home__world .scene-grid,
   html[data-home-intro-state="logo"] .home__world .scene-grid {
     opacity: 1;
+  }
+
+  html[data-home-intro-state="handoff"] .home__world .scene-grid {
+    opacity: 0.48;
   }
 
   html[data-home-intro-state="done"] .home__world .scene-grid {
@@ -388,9 +397,14 @@ const latestIncident = {
     z-index: -1;
   }
 
+  html[data-home-intro-state="done"] .home__hero,
+  html[data-home-intro-state="done"] .home__content {
+    transition-delay: 220ms;
+  }
+
   .home__hero,
   .home__content {
-    transition: opacity 240ms ease, transform 240ms ease;
+    transition: opacity 520ms ease, transform 520ms ease;
   }
 
   .home__card-label,
@@ -596,6 +610,10 @@ const latestIncident = {
   const stateClasses = ["is-origin", "is-propagating", "is-receiving", "is-resolved"];
   const logoCellCache = new Map();
 
+  const originHoldMs = 2200;
+  const handoffFadeMs = 560;
+  const logoStartDelayMs = 120;
+
   let introAnimating = false;
   let introSeen = root.dataset.homeIntroState === "done";
   let logoFrameRaf = 0;
@@ -693,9 +711,10 @@ const latestIncident = {
         logoFrameRaf = requestAnimationFrame(tick);
         return;
       }
+      syncState("handoff");
       logoCleanupTimer = window.setTimeout(() => {
         finishIntro();
-      }, 320);
+      }, handoffFadeMs);
     };
 
     logoFrameRaf = requestAnimationFrame(tick);
@@ -707,8 +726,10 @@ const latestIncident = {
     syncState("signal");
     window.setTimeout(() => {
       syncState("logo");
-      playLogoAnimation();
-    }, 280);
+      window.setTimeout(() => {
+        playLogoAnimation();
+      }, logoStartDelayMs);
+    }, originHoldMs);
   };
 
   if (!readSeen() && root.dataset.homeIntroState !== "done") {
