@@ -78,13 +78,11 @@ const latestIncident = {
     <section class="home__hero">
       <article class="home__lead" aria-labelledby="home-lead-title">
         <div class="home__hero-meta">
-          <p class="home__hero-name">Genaro Hernandez</p>
           <p class="home__hero-role">IT Infrastructure &amp; Cloud Specialist</p>
+          <p class="home__hero-signal">Design · Automate · Keep things running.</p>
         </div>
         <h1 class="home__headline" id="home-lead-title">
-          <span>Design</span>
-          <span>Automate</span>
-          <span class="home__headline-accent">Keep things running.</span>
+          <span>Genaro Hernández</span>
         </h1>
         <p class="home__lede">
           I help organizations build resilient infrastructure, gain visibility across their systems and resolve the incidents that matter.
@@ -97,21 +95,6 @@ const latestIncident = {
     </section>
 
     <section class="home__content">
-      <aside class="home__inspector surface surface-pad" aria-labelledby="inspector-title">
-        <div class="section-label">
-          <h2 id="inspector-title">Knowledge System</h2>
-        </div>
-        <p class="home__inspector-body">
-          Organizations, incidents, entries, and lessons stay connected through one persistent world.
-        </p>
-        <div class="chip-row">
-          <span class="chip">Shared world</span>
-          <span class="chip">Clear signals</span>
-          <span class="chip">Editorial content</span>
-          <span class="chip">Reusable scenes</span>
-        </div>
-      </aside>
-
       <article class="home__card surface surface-pad home__card--journal">
         <p class="home__card-label">Latest Journal</p>
         <p class="home__card-id mono">{latestJournal.id}</p>
@@ -144,7 +127,7 @@ const latestIncident = {
     gap: clamp(0.75rem, 2vw, 1.15rem);
     min-height: 100svh;
     width: 100%;
-    padding: clamp(1rem, 4vh, 2.4rem) 0;
+    padding: clamp(1rem, 4vh, 2.4rem) clamp(1rem, 3.5vw, 2.4rem);
   }
 
   .home__world {
@@ -288,7 +271,7 @@ const latestIncident = {
   .home__content {
     position: relative;
     z-index: 1;
-    width: min(100%, 78rem);
+    width: min(100%, 84rem);
     margin: 0 auto;
   }
 
@@ -302,9 +285,10 @@ const latestIncident = {
 
   .home__content {
     display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
-    gap: 0.85rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
     align-items: start;
+    max-width: 64rem;
   }
 
   .home__lead {
@@ -317,20 +301,12 @@ const latestIncident = {
     gap: 1.35rem;
     min-height: 26rem;
     padding-block: 0.9rem 0.35rem;
+    padding-inline: 0;
   }
 
   .home__hero-meta {
     display: grid;
-    gap: 0.3rem;
-  }
-
-  .home__hero-name {
-    margin: 0;
-    color: var(--text);
-    font-family: var(--font-title);
-    font-size: clamp(1.35rem, 2vw, 1.8rem);
-    letter-spacing: -0.03em;
-    line-height: 1.02;
+    gap: 0.25rem;
   }
 
   .home__hero-role {
@@ -343,21 +319,27 @@ const latestIncident = {
     text-transform: uppercase;
   }
 
+  .home__hero-signal {
+    margin: 0;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
   .home__headline {
     margin: 0;
     display: grid;
     gap: 0.04em;
-    font-size: clamp(3rem, 6.7vw, 6.2rem);
-    line-height: 0.9;
+    font-size: clamp(3.35rem, 7vw, 6.8rem);
+    line-height: 0.92;
     letter-spacing: -0.06em;
   }
 
-  .home__headline-accent {
-    color: var(--accent);
-  }
-
   .home__lede {
-    max-width: 32rem;
+    max-width: 40rem;
     margin: 0;
     color: var(--text);
     font-size: clamp(1.02rem, 1.55vw, 1.18rem);
@@ -370,7 +352,7 @@ const latestIncident = {
 
   .home__inspector {
     display: grid;
-    gap: 0.8rem;
+    gap: 1rem;
   }
 
   .home__inspector-kicker {
@@ -542,6 +524,7 @@ const latestIncident = {
   @media (max-width: 980px) {
     .home__content {
       grid-template-columns: 1fr;
+      max-width: none;
     }
   }
 
@@ -565,7 +548,7 @@ const latestIncident = {
     }
 
     .home__lead {
-      gap: 0.9rem;
+      gap: 0.85rem;
       min-height: 18rem;
     }
 
@@ -573,12 +556,14 @@ const latestIncident = {
       gap: 0.1rem;
     }
 
-    .home__hero-name {
-      font-size: clamp(1.2rem, 7vw, 1.55rem);
-    }
 
     .home__hero-role {
       font-size: 0.7rem;
+    }
+
+    .home__hero-signal {
+      font-size: 0.62rem;
+      letter-spacing: 0.16em;
     }
 
     .home__content {
@@ -597,9 +582,10 @@ const latestIncident = {
       font-size: 1rem;
     }
 
-    .home__card-body {
-      max-width: none;
-      font-size: 0.96rem;
+    .home__card-body,
+    .home__card-date,
+    .home__card-id {
+      display: none;
     }
 
     .home__status-row {
@@ -609,8 +595,8 @@ const latestIncident = {
     }
 
     .home__headline {
-      font-size: clamp(2.55rem, 15vw, 4.1rem);
-      line-height: 0.94;
+      font-size: clamp(2.4rem, 13vw, 3.8rem);
+      line-height: 0.98;
     }
 
     .home__lead-actions {
