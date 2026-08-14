@@ -370,20 +370,14 @@ const latestIncident = {
     box-shadow: none;
   }
 
-  html[data-home-intro-state="ready"] .home__hero,
-  html[data-home-intro-state="signal"] .home__hero,
-  html[data-home-intro-state="logo"] .home__hero,
-  html[data-home-intro-state="ready"] .home__content,
-  html[data-home-intro-state="signal"] .home__content,
-  html[data-home-intro-state="logo"] .home__content {
+  html:not([data-home-intro-state="done"]) .home__hero,
+  html:not([data-home-intro-state="done"]) .home__content {
     opacity: 0;
     pointer-events: none;
     transform: translateY(0.4rem);
   }
 
-  html[data-home-intro-state="ready"] .home__world,
-  html[data-home-intro-state="signal"] .home__world,
-  html[data-home-intro-state="logo"] .home__world {
+  html:not([data-home-intro-state="done"]) .home__world {
     z-index: 0;
   }
 
