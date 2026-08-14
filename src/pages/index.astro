@@ -7,6 +7,7 @@ import { getGhLogoFrame } from "operational-topology/labs";
 const dormantScene = createTopologyScenePreset({
   layout: "viewport-fit",
   topologyLayout: "ring",
+  radius: 34,
   showGridNodes: false,
   gridActivity: true,
   ambientSignals: false,
@@ -603,7 +604,7 @@ const latestIncident = {
   const logoCellCache = new Map();
 
   const originHoldMs = 2200;
-  const handoffFadeMs = 560;
+  const handoffFadeMs = 1200;
   const logoStartDelayMs = 120;
 
   let introAnimating = false;
@@ -680,7 +681,7 @@ const latestIncident = {
 
     const tick = (now) => {
       const elapsed = now - startedAt;
-      applyLogoFrame(getGhLogoFrame(cells, elapsed, "center-origin"));
+      applyLogoFrame(getGhLogoFrame(cells, elapsed, "border-reveal"));
       if (elapsed < duration) {
         logoFrameRaf = requestAnimationFrame(tick);
         return;

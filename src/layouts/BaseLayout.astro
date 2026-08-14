@@ -76,8 +76,8 @@ const railBootstrap =
   "const key=" + JSON.stringify(railStateStorageKey) + ";" +
   "try {" +
   "const stored=localStorage.getItem(key);" +
-  "document.documentElement.dataset.shellRail=stored==='true'?'collapsed':'expanded';" +
-  "} catch {document.documentElement.dataset.shellRail='expanded';}" +
+  "document.documentElement.dataset.shellRail=stored==='false'?'expanded':'collapsed';" +
+  "} catch {document.documentElement.dataset.shellRail='collapsed';}" +
   "})();";
 ---
 
@@ -167,7 +167,7 @@ const railBootstrap =
         }
       };
 
-      applyState(root.dataset.shellRail === "collapsed");
+      applyState(root.dataset.shellRail !== "expanded");
 
       toggle?.addEventListener("click", () => {
         applyState(root.dataset.shellRail !== "collapsed");
