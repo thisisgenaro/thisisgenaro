@@ -634,6 +634,7 @@ const latestIncident = {
   const originHoldMs = 2200;
   const handoffFadeMs = 500;
   const logoStartDelayMs = 120;
+  const logoAnimationOffsetMs = 1700;
 
   let introAnimating = false;
   let logoFrameRaf = 0;
@@ -723,7 +724,7 @@ const latestIncident = {
     const duration = 4600;
 
     const tick = (now) => {
-      const elapsed = now - startedAt;
+      const elapsed = now - startedAt + logoAnimationOffsetMs;
       applyLogoFrame(getGhLogoFrame(cells, elapsed, "border-reveal"));
       if (elapsed < duration) {
         logoFrameRaf = requestAnimationFrame(tick);
