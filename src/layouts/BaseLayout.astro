@@ -395,6 +395,15 @@ const railBootstrap =
     padding: 0 0 2rem;
   }
 
+  html[data-home-intro-state="ready"] .shell__rail,
+  html[data-home-intro-state="signal"] .shell__rail,
+  html[data-home-intro-state="logo"] .shell__rail {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(-0.5rem);
+  }
+
+
   html[data-shell-rail="collapsed"] .shell__rail {
     padding-inline: 0.85rem;
   }
@@ -465,6 +474,14 @@ const railBootstrap =
       border-bottom: 1px solid color-mix(in srgb, var(--line-strong) 70%, transparent);
       box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
       width: 100%;
+    }
+
+    html[data-home-intro-state="ready"] .shell__rail,
+    html[data-home-intro-state="signal"] .shell__rail,
+    html[data-home-intro-state="logo"] .shell__rail {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-0.35rem);
     }
 
     .shell__rail-top {

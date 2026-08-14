@@ -1,7 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import TopologyScene from "operational-topology/astro/TopologyScene";
-import { TOPOLOGY_SCENE_PRESETS, createTopologyScenePreset } from "operational-topology/presets";
+import { createTopologyScenePreset } from "operational-topology/presets";
 import { getGhLogoFrame } from "operational-topology/labs";
 
 const dormantScene = createTopologyScenePreset({
@@ -28,7 +28,6 @@ const introLogoNode = [
   },
 ];
 
-const introLogoScene = TOPOLOGY_SCENE_PRESETS.homepageOpening;
 const introStorageKey = "thisisgenaro:homepage-intro-seen";
 const introBootstrap =
   "(() => {" +
@@ -72,7 +71,7 @@ const latestIncident = {
     <div class="home__world" aria-hidden="true">
       <TopologyScene
         class="home__world-scene"
-        nodes={[]}
+        nodes={introLogoNode}
         edges={[]}
         {...dormantScene}
         signalTransitionSpeed={0.9}
@@ -88,27 +87,8 @@ const latestIncident = {
         aria-label="Open the site"
         aria-describedby="home-intro-caption"
       >
-        <span class="home__intro-shell">
-          <TopologyScene
-            class="home__intro-node-scene"
-            nodes={introLogoNode}
-            edges={[]}
-            {...dormantScene}
-            signalTransitionSpeed={0.9}
-          />
-          <span class="home__intro-origin" aria-hidden="true"></span>
-          <span class="home__intro-caption" id="home-intro-caption">Tap to begin</span>
-        </span>
+        <span class="home__intro-caption" id="home-intro-caption">Tap to begin</span>
       </button>
-      <div class="home__intro-logo-scene" data-home-logo-animation aria-hidden="true">
-        <TopologyScene
-          class="home__intro-logo-grid"
-          nodes={[]}
-          edges={[]}
-          {...introLogoScene}
-          signalTransitionSpeed={0.9}
-        />
-      </div>
     </div>
 
     <section class="home__hero">
@@ -192,6 +172,46 @@ const latestIncident = {
     filter: saturate(0.85);
   }
 
+  .home__world::before,
+  .home__world::after {
+    content: "";
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    width: 7rem;
+    height: 7rem;
+    translate: -50% -50%;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .home__world::after {
+    width: 5.25rem;
+    height: 5.25rem;
+    border-color: color-mix(in srgb, var(--accent) 20%, transparent);
+  }
+
+  html[data-home-intro-state="signal"] .home__world::before {
+    animation: home-origin-burst 720ms ease-out forwards;
+  }
+
+  html[data-home-intro-state="signal"] .home__world::after {
+    animation: home-origin-burst 720ms ease-out 80ms forwards;
+  }
+
+  .home__world [data-node-id="intro-logo"] {
+    opacity: 1;
+    transition: opacity 240ms ease, transform 240ms ease;
+  }
+
+  html[data-home-intro-state="signal"] .home__world [data-node-id="intro-logo"],
+  html[data-home-intro-state="logo"] .home__world [data-node-id="intro-logo"],
+  html[data-home-intro-state="done"] .home__world [data-node-id="intro-logo"] {
+    opacity: 0;
+  }
+
   .home__world-scene {
     position: absolute;
     inset: 0;
@@ -213,31 +233,21 @@ const latestIncident = {
     place-items: center;
     padding: clamp(1rem, 4vw, 2rem);
     background:
-      radial-gradient(circle at 50% 42%, rgba(242, 169, 0, 0.06), transparent 24%),
-      linear-gradient(180deg, rgba(2, 5, 8, 0.88), rgba(2, 5, 8, 0.8));
+      radial-gradient(circle at 50% 42%, rgba(242, 169, 0, 0.04), transparent 24%),
+      linear-gradient(180deg, rgba(2, 5, 8, 0.72), rgba(2, 5, 8, 0.56));
     opacity: 1;
     transition: opacity 340ms ease, transform 340ms ease;
+    pointer-events: auto;
   }
 
-  .home__intro[data-home-intro-state="signal"] .home__intro-shell {
-    transform: scale(0.995);
+  .home__intro[data-home-intro-state="signal"] {
+    background:
+      radial-gradient(circle at 50% 42%, rgba(242, 169, 0, 0.06), transparent 24%),
+      linear-gradient(180deg, rgba(2, 5, 8, 0.72), rgba(2, 5, 8, 0.56));
   }
 
-  .home__intro[data-home-intro-state="logo"] {
-    background: transparent;
-  }
-
-  .home__intro[data-home-intro-state="logo"] .home__intro-shell {
-    opacity: 0;
-    transform: translateY(0.85rem) scale(0.985);
-    pointer-events: none;
-  }
-
-  .home__intro[data-home-intro-state="logo"] .home__intro-logo-scene {
-    opacity: 1;
-    transform: none;
-  }
-
+  .home__intro[data-home-intro-state="signal"],
+  .home__intro[data-home-intro-state="logo"],
   .home__intro[data-home-intro-state="done"] {
     opacity: 0;
     pointer-events: none;
@@ -249,7 +259,8 @@ const latestIncident = {
     display: grid;
     place-items: center;
     width: min(100%, 28rem);
-    padding: 0;
+    min-height: clamp(5rem, 12svh, 7rem);
+    padding: 0.5rem 1.25rem;
     border: 0;
     background: transparent;
     color: inherit;
@@ -258,90 +269,17 @@ const latestIncident = {
     isolation: isolate;
   }
 
-  .home__intro-shell {
-    position: relative;
-    display: grid;
-    place-items: center;
-    gap: 1rem;
-    width: 100%;
-    min-height: clamp(18rem, 42svh, 24rem);
-    padding: clamp(1.25rem, 3vw, 2rem);
-    border: 1px solid color-mix(in srgb, var(--line-strong) 60%, transparent);
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 28%),
-      color-mix(in srgb, var(--surface) 90%, transparent);
-    box-shadow:
-      0 22px 60px rgba(0, 0, 0, 0.36),
-      inset 0 1px 0 rgba(255, 255, 255, 0.04);
-    transition: opacity 340ms ease, transform 340ms ease;
-  }
-
-  .home__intro-node-scene {
-    width: min(100%, 18rem);
-    aspect-ratio: 1;
-    overflow: visible;
-  }
-
-  .home__intro-origin {
-    position: absolute;
-    inset: 50% auto auto 50%;
-    width: 7rem;
-    height: 7rem;
-    translate: -50% -58%;
-    border-radius: 50%;
-    pointer-events: none;
-  }
-
-  .home__intro-origin::before,
-  .home__intro-origin::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border: 1px solid color-mix(in srgb, var(--accent) 44%, transparent);
-    border-radius: 50%;
-    opacity: 0;
-    transform: scale(0.28);
-    box-shadow: 0 0 0 0 rgba(242, 169, 0, 0);
-  }
-
-  .home__intro-origin::after {
-    inset: 12%;
-    border-color: color-mix(in srgb, var(--accent) 26%, transparent);
-  }
-
-  .home__intro[data-home-intro-state="signal"] .home__intro-origin::before {
-    animation: home-origin-burst 720ms ease-out forwards;
-  }
-
-  .home__intro[data-home-intro-state="signal"] .home__intro-origin::after {
-    animation: home-origin-burst 720ms ease-out 80ms forwards;
-  }
 
   .home__intro-caption {
-    position: absolute;
-    inset: auto 1.25rem 1rem;
-    color: var(--muted);
+    position: relative;
+    z-index: 1;
+    color: var(--text);
     font-family: var(--font-mono);
     font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.16em;
     text-align: center;
     text-transform: uppercase;
-  }
-
-  .home__intro-logo-scene {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    opacity: 0;
-    transform: scale(1.01);
-    transition: opacity 280ms ease, transform 280ms ease;
-    pointer-events: none;
-  }
-
-  .home__intro-logo-grid {
-    position: absolute;
-    inset: 0;
   }
 
   .home__hero,
@@ -465,6 +403,22 @@ const latestIncident = {
   .home__lead:focus-within {
     transform: none;
     box-shadow: none;
+  }
+
+  html[data-home-intro-state="ready"] .home__hero,
+  html[data-home-intro-state="signal"] .home__hero,
+  html[data-home-intro-state="logo"] .home__hero,
+  html[data-home-intro-state="ready"] .home__content,
+  html[data-home-intro-state="signal"] .home__content,
+  html[data-home-intro-state="logo"] .home__content {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(0.4rem);
+  }
+
+  .home__hero,
+  .home__content {
+    transition: opacity 240ms ease, transform 240ms ease;
   }
 
   .home__card-label,
@@ -661,16 +615,18 @@ const latestIncident = {
     }
 
     .home__intro-trigger {
-      width: min(100%, 23rem);
+      width: min(100%, 18rem);
+      min-height: 4.75rem;
     }
 
-    .home__intro-shell {
-      min-height: clamp(14rem, 36svh, 20rem);
-      padding: 1rem;
+    .home__intro-trigger::before {
+      width: 6rem;
+      height: 6rem;
     }
 
-    .home__intro-node-scene {
-      width: min(100%, 15rem);
+    .home__intro-trigger::after {
+      width: 4.5rem;
+      height: 4.5rem;
     }
   }
 </style>
@@ -725,7 +681,7 @@ const latestIncident = {
       });
     }
 
-    const elements = Array.from(logoSceneRoot?.querySelectorAll("[data-cell-id]") ?? []);
+    const elements = Array.from(worldSceneRoot?.querySelectorAll("[data-cell-id]") ?? []);
     for (const element of elements) {
       const id = element.getAttribute("data-cell-id");
       if (!id) continue;
@@ -775,7 +731,7 @@ const latestIncident = {
   };
 
   const playLogoAnimation = () => {
-    if (!logoSceneRoot) {
+    if (!worldSceneRoot) {
       finishIntro();
       return;
     }
