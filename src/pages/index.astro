@@ -224,11 +224,12 @@ const latestIncident = {
 
   .home__world [data-node-id="intro-logo"] {
     opacity: 1;
-    transition: opacity 240ms ease, transform 240ms ease;
+    transition: opacity 500ms ease, transform 240ms ease;
     cursor: pointer;
     touch-action: manipulation;
   }
 
+  html[data-home-intro-state="handoff"] .home__world [data-node-id="intro-logo"],
   html[data-home-intro-state="done"] .home__world [data-node-id="intro-logo"] {
     opacity: 0;
     cursor: default;
