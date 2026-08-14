@@ -1,7 +1,8 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import TopologyScene from "operational-topology/astro/TopologyScene";
-import { createTopologyScenePreset } from "operational-topology/presets";
+import { TOPOLOGY_SCENE_PRESETS, createTopologyScenePreset } from "operational-topology/presets";
+import { getGhLogoFrame } from "operational-topology/labs";
 
 const dormantScene = createTopologyScenePreset({
   layout: "viewport-fit",
@@ -11,6 +12,34 @@ const dormantScene = createTopologyScenePreset({
   ambientSignals: false,
 });
 
+const introLogoNode = [
+  {
+    id: "intro-logo",
+    label: "GH",
+    image: "/gh-logo.png",
+    imageScale: 0.82,
+    imageAlign: "center",
+    q: 0,
+    r: 0,
+    variant: "root",
+    size: "root",
+    active: true,
+    selected: true,
+  },
+];
+
+const introLogoScene = TOPOLOGY_SCENE_PRESETS.homepageOpening;
+const introStorageKey = "thisisgenaro:homepage-intro-seen";
+const introBootstrap =
+  "(() => {" +
+  "const root=document.documentElement;" +
+  "const key=" + JSON.stringify(introStorageKey) + ";" +
+  "try {" +
+  "const seen=localStorage.getItem(key)==='true';" +
+  "const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;" +
+  "root.dataset.homeIntroState=seen||reduced?'done':'ready';" +
+  "} catch {root.dataset.homeIntroState='ready';}" +
+  "})();";
 
 const latestJournal = {
   id: "JRNL-001",
@@ -33,6 +62,8 @@ const latestIncident = {
 
 ---
 
+<script is:inline slot="head" set:html={introBootstrap}></script>
+
 <BaseLayout
   title="thisisgenaro.com | Genaro Hernandez"
   description="Genaro Hernandez builds resilient infrastructure, writes about the work, and documents incidents with clarity."
@@ -49,6 +80,36 @@ const latestIncident = {
       <div class="home__world-vignette"></div>
     </div>
 
+    <div class="home__intro" data-home-intro data-home-intro-state="ready">
+      <button
+        class="home__intro-trigger"
+        type="button"
+        data-home-intro-trigger
+        aria-label="Open the site"
+        aria-describedby="home-intro-caption"
+      >
+        <span class="home__intro-shell">
+          <TopologyScene
+            class="home__intro-node-scene"
+            nodes={introLogoNode}
+            edges={[]}
+            {...dormantScene}
+            signalTransitionSpeed={0.9}
+          />
+          <span class="home__intro-origin" aria-hidden="true"></span>
+          <span class="home__intro-caption" id="home-intro-caption">Tap to begin</span>
+        </span>
+      </button>
+      <div class="home__intro-logo-scene" data-home-logo-animation aria-hidden="true">
+        <TopologyScene
+          class="home__intro-logo-grid"
+          nodes={[]}
+          edges={[]}
+          {...introLogoScene}
+          signalTransitionSpeed={0.9}
+        />
+      </div>
+    </div>
 
     <section class="home__hero">
       <article class="home__lead" aria-labelledby="home-lead-title">
@@ -108,8 +169,6 @@ const latestIncident = {
         <a class="home__card-link" href={latestIncident.href}>Open incident</a>
       </article>
     </section>
-
-
   </main>
 </BaseLayout>
 
@@ -144,6 +203,145 @@ const latestIncident = {
     background:
       radial-gradient(circle at 50% 20%, rgba(242, 169, 0, 0.06), transparent 22%),
       linear-gradient(180deg, rgba(1, 4, 6, 0.08), rgba(1, 4, 6, 0.55));
+  }
+
+  .home__intro {
+    position: fixed;
+    inset: 0;
+    z-index: 5;
+    display: grid;
+    place-items: center;
+    padding: clamp(1rem, 4vw, 2rem);
+    background:
+      radial-gradient(circle at 50% 42%, rgba(242, 169, 0, 0.06), transparent 24%),
+      linear-gradient(180deg, rgba(2, 5, 8, 0.88), rgba(2, 5, 8, 0.8));
+    opacity: 1;
+    transition: opacity 340ms ease, transform 340ms ease;
+  }
+
+  .home__intro[data-home-intro-state="signal"] .home__intro-shell {
+    transform: scale(0.995);
+  }
+
+  .home__intro[data-home-intro-state="logo"] {
+    background: transparent;
+  }
+
+  .home__intro[data-home-intro-state="logo"] .home__intro-shell {
+    opacity: 0;
+    transform: translateY(0.85rem) scale(0.985);
+    pointer-events: none;
+  }
+
+  .home__intro[data-home-intro-state="logo"] .home__intro-logo-scene {
+    opacity: 1;
+    transform: none;
+  }
+
+  .home__intro[data-home-intro-state="done"] {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .home__intro-trigger {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: min(100%, 28rem);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    touch-action: manipulation;
+    isolation: isolate;
+  }
+
+  .home__intro-shell {
+    position: relative;
+    display: grid;
+    place-items: center;
+    gap: 1rem;
+    width: 100%;
+    min-height: clamp(18rem, 42svh, 24rem);
+    padding: clamp(1.25rem, 3vw, 2rem);
+    border: 1px solid color-mix(in srgb, var(--line-strong) 60%, transparent);
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 28%),
+      color-mix(in srgb, var(--surface) 90%, transparent);
+    box-shadow:
+      0 22px 60px rgba(0, 0, 0, 0.36),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    transition: opacity 340ms ease, transform 340ms ease;
+  }
+
+  .home__intro-node-scene {
+    width: min(100%, 18rem);
+    aspect-ratio: 1;
+    overflow: visible;
+  }
+
+  .home__intro-origin {
+    position: absolute;
+    inset: 50% auto auto 50%;
+    width: 7rem;
+    height: 7rem;
+    translate: -50% -58%;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  .home__intro-origin::before,
+  .home__intro-origin::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 1px solid color-mix(in srgb, var(--accent) 44%, transparent);
+    border-radius: 50%;
+    opacity: 0;
+    transform: scale(0.28);
+    box-shadow: 0 0 0 0 rgba(242, 169, 0, 0);
+  }
+
+  .home__intro-origin::after {
+    inset: 12%;
+    border-color: color-mix(in srgb, var(--accent) 26%, transparent);
+  }
+
+  .home__intro[data-home-intro-state="signal"] .home__intro-origin::before {
+    animation: home-origin-burst 720ms ease-out forwards;
+  }
+
+  .home__intro[data-home-intro-state="signal"] .home__intro-origin::after {
+    animation: home-origin-burst 720ms ease-out 80ms forwards;
+  }
+
+  .home__intro-caption {
+    position: absolute;
+    inset: auto 1.25rem 1rem;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  .home__intro-logo-scene {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    opacity: 0;
+    transform: scale(1.01);
+    transition: opacity 280ms ease, transform 280ms ease;
+    pointer-events: none;
+  }
+
+  .home__intro-logo-grid {
+    position: absolute;
+    inset: 0;
   }
 
   .home__hero,
@@ -257,7 +455,6 @@ const latestIncident = {
     line-height: 1.6;
   }
 
-
   .home__card {
     display: grid;
     gap: 0.5rem;
@@ -361,6 +558,20 @@ const latestIncident = {
     background: color-mix(in srgb, var(--accent-soft) 60%, transparent);
   }
 
+  @keyframes home-origin-burst {
+    0% {
+      opacity: 0;
+      transform: scale(0.18);
+    }
+    20% {
+      opacity: 0.88;
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1.62);
+    }
+  }
+
   @media (max-width: 980px) {
     .home__content {
       grid-template-columns: 1fr;
@@ -444,6 +655,171 @@ const latestIncident = {
       font-size: 1rem;
       line-height: 1.65;
     }
+
+    .home__intro {
+      padding: 0.75rem;
+    }
+
+    .home__intro-trigger {
+      width: min(100%, 23rem);
+    }
+
+    .home__intro-shell {
+      min-height: clamp(14rem, 36svh, 20rem);
+      padding: 1rem;
+    }
+
+    .home__intro-node-scene {
+      width: min(100%, 15rem);
+    }
   }
 </style>
 
+<script>
+  import { getGhLogoFrame } from "operational-topology/labs";
+
+  const root = document.documentElement;
+  const introRoot = document.querySelector("[data-home-intro]");
+  const introTrigger = introRoot?.querySelector("[data-home-intro-trigger]");
+  const logoSceneRoot = document.querySelector("[data-home-logo-animation]");
+  const introStorageKey = "thisisgenaro:homepage-intro-seen";
+
+  const stateClasses = ["is-origin", "is-propagating", "is-receiving", "is-resolved"];
+  const logoCellCache = new Map();
+
+  let introAnimating = false;
+  let introSeen = root.dataset.homeIntroState === "done";
+  let logoFrameRaf = 0;
+  let logoCleanupTimer = 0;
+
+  const syncState = (state) => {
+    root.dataset.homeIntroState = state;
+    if (introRoot) {
+      introRoot.dataset.homeIntroState = state;
+    }
+  };
+
+  const readSeen = () => {
+    try {
+      return localStorage.getItem(introStorageKey) === "true";
+    } catch {
+      return introSeen;
+    }
+  };
+
+  const storeSeen = () => {
+    try {
+      localStorage.setItem(introStorageKey, "true");
+    } catch {
+      // Ignore persistence failures.
+    }
+  };
+
+  const getLogoCells = () => {
+    if (logoCellCache.size > 0) {
+      return Array.from(logoCellCache.keys()).map((id) => {
+        const element = logoCellCache.get(id)?.[0];
+        const q = Number(element?.getAttribute("data-q") ?? "0");
+        const r = Number(element?.getAttribute("data-r") ?? "0");
+        return { id, q, r, center: { x: 0, y: 0 }, path: "" };
+      });
+    }
+
+    const elements = Array.from(logoSceneRoot?.querySelectorAll("[data-cell-id]") ?? []);
+    for (const element of elements) {
+      const id = element.getAttribute("data-cell-id");
+      if (!id) continue;
+      const cells = logoCellCache.get(id) ?? [];
+      cells.push(element);
+      logoCellCache.set(id, cells);
+    }
+
+    return Array.from(logoCellCache.keys()).map((id) => {
+      const element = logoCellCache.get(id)?.[0];
+      const q = Number(element?.getAttribute("data-q") ?? "0");
+      const r = Number(element?.getAttribute("data-r") ?? "0");
+      return { id, q, r, center: { x: 0, y: 0 }, path: "" };
+    });
+  };
+
+  const applyLogoFrame = (frame) => {
+    for (const state of frame.states) {
+      const elements = logoCellCache.get(state.id);
+      if (!elements) continue;
+      for (const element of elements) {
+        element.dataset.cellState = state.state;
+        element.style.setProperty("--cell-intensity", String(state.intensity));
+        for (const className of stateClasses) {
+          element.classList.remove(className);
+        }
+        if (state.state === "origin") element.classList.add("is-origin");
+        if (state.state === "propagating") element.classList.add("is-propagating");
+        if (state.state === "receiving") element.classList.add("is-receiving");
+        if (state.state === "resolved") element.classList.add("is-resolved");
+        if (state.state !== "idle") {
+          element.classList.add("is-active");
+        } else {
+          element.classList.remove("is-active");
+        }
+      }
+    }
+  };
+
+  const finishIntro = () => {
+    if (logoFrameRaf) cancelAnimationFrame(logoFrameRaf);
+    if (logoCleanupTimer) window.clearTimeout(logoCleanupTimer);
+    introAnimating = false;
+    introSeen = true;
+    storeSeen();
+    syncState("done");
+  };
+
+  const playLogoAnimation = () => {
+    if (!logoSceneRoot) {
+      finishIntro();
+      return;
+    }
+
+    const cells = getLogoCells();
+    if (cells.length === 0) {
+      finishIntro();
+      return;
+    }
+
+    const startedAt = performance.now();
+    const duration = 4600;
+
+    const tick = (now) => {
+      const elapsed = now - startedAt;
+      applyLogoFrame(getGhLogoFrame(cells, elapsed, "center-origin"));
+      if (elapsed < duration) {
+        logoFrameRaf = requestAnimationFrame(tick);
+        return;
+      }
+      logoCleanupTimer = window.setTimeout(() => {
+        finishIntro();
+      }, 320);
+    };
+
+    logoFrameRaf = requestAnimationFrame(tick);
+  };
+
+  const startIntro = () => {
+    if (introAnimating || introSeen) return;
+    introAnimating = true;
+    syncState("signal");
+    window.setTimeout(() => {
+      syncState("logo");
+      playLogoAnimation();
+    }, 280);
+  };
+
+  if (!readSeen() && root.dataset.homeIntroState !== "done") {
+    syncState("ready");
+  } else {
+    syncState("done");
+    introSeen = true;
+  }
+
+  introTrigger?.addEventListener("click", startIntro);
+</script>
