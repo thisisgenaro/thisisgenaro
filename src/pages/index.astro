@@ -74,6 +74,7 @@ const latestIncident = {
         nodes={introLogoNode}
         edges={[]}
         {...dormantScene}
+        showGridNodes={true}
         signalTransitionSpeed={0.9}
       />
       <div class="home__world-vignette"></div>
@@ -173,6 +174,19 @@ const latestIncident = {
     pointer-events: none;
     opacity: 0.18;
     filter: saturate(0.85);
+    transition: opacity 280ms ease, filter 280ms ease;
+  }
+
+  html[data-home-intro-state="ready"] .home__world,
+  html[data-home-intro-state="signal"] .home__world,
+  html[data-home-intro-state="logo"] .home__world {
+    opacity: 0.34;
+    filter: saturate(1) brightness(1.04);
+  }
+
+  html[data-home-intro-state="done"] .home__world {
+    opacity: 0.18;
+    filter: saturate(0.85);
   }
 
   .home__world::before,
@@ -204,13 +218,26 @@ const latestIncident = {
     animation: home-origin-burst 720ms ease-out 80ms forwards;
   }
 
+  .home__world .scene-grid {
+    opacity: 0.56;
+    transition: opacity 280ms ease;
+  }
+
+  html[data-home-intro-state="ready"] .home__world .scene-grid,
+  html[data-home-intro-state="signal"] .home__world .scene-grid,
+  html[data-home-intro-state="logo"] .home__world .scene-grid {
+    opacity: 0.88;
+  }
+
+  html[data-home-intro-state="done"] .home__world .scene-grid {
+    opacity: 0.56;
+  }
+
   .home__world [data-node-id="intro-logo"] {
     opacity: 1;
     transition: opacity 240ms ease, transform 240ms ease;
   }
 
-  html[data-home-intro-state="signal"] .home__world [data-node-id="intro-logo"],
-  html[data-home-intro-state="logo"] .home__world [data-node-id="intro-logo"],
   html[data-home-intro-state="done"] .home__world [data-node-id="intro-logo"] {
     opacity: 0;
   }
