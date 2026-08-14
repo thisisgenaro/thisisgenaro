@@ -621,14 +621,11 @@ const latestIncident = {
 
   const stateClasses = ["is-origin", "is-propagating", "is-receiving", "is-resolved"];
   const logoCellCache = new Map();
-  const mobileIntroQuery = window.matchMedia("(max-width: 680px)");
 
   const originHoldMs = 2200;
   const handoffFadeMs = 500;
   const logoStartDelayMs = 120;
   const logoAnimationOffsetMs = 1700;
-  const mobileLogoAnimationOffsetMs = 900;
-  const mobileLogoDurationMs = 2800;
   const desktopLogoDurationMs = 4600;
 
   let introAnimating = false;
@@ -730,14 +727,11 @@ const latestIncident = {
     collectLogoElements(cells);
 
     const startedAt = performance.now();
-    const isMobileIntro = mobileIntroQuery.matches;
-    const duration = isMobileIntro ? mobileLogoDurationMs : desktopLogoDurationMs;
-    const variant = isMobileIntro ? "center-origin" : "border-reveal";
-    const offset = isMobileIntro ? mobileLogoAnimationOffsetMs : logoAnimationOffsetMs;
+    const duration = desktopLogoDurationMs;
 
     const tick = (now) => {
-      const elapsed = now - startedAt + offset;
-      applyLogoFrame(getGhLogoFrame(cells, elapsed, variant));
+      const elapsed = now - startedAt + logoAnimationOffsetMs;
+      applyLogoFrame(getGhLogoFrame(cells, elapsed, "border-reveal"));
       if (elapsed < duration) {
         logoFrameRaf = requestAnimationFrame(tick);
         return;
@@ -747,7 +741,6 @@ const latestIncident = {
         finishIntro();
       }, handoffFadeMs);
     };
-
     logoFrameRaf = requestAnimationFrame(tick);
   };
 
