@@ -246,6 +246,11 @@ const latestIncident = {
     cursor: default;
   }
 
+  html[data-home-intro-state="done"] .home__world [data-node-id="intro-logo"],
+  html[data-home-intro-state="done"] .home__world [data-node-id="intro-logo"] * {
+    pointer-events: none;
+  }
+
   .home__world [data-node-id="intro-logo"] .grid-hex.is-logo-border,
   .home__world [data-node-id="intro-logo"] .grid-node.is-logo-border {
     stroke: var(--accent);
@@ -699,9 +704,23 @@ const latestIncident = {
     }
   };
 
+  const clearLogoActivity = (cells) => {
+    for (const cell of cells) {
+      const elements = logoCellCache.get(cell.id);
+      if (!elements) continue;
+      for (const element of elements) {
+        element.dataset.cellState = "idle";
+        element.dataset.logoRole = "";
+        element.classList.remove("is-active", "is-origin", "is-propagating", "is-receiving", "is-resolved", "is-logo-border", "is-logo-g", "is-logo-h");
+        element.style.removeProperty("--cell-intensity");
+      }
+    }
+  };
+
   const finishIntro = () => {
     if (logoFrameRaf) cancelAnimationFrame(logoFrameRaf);
     if (logoCleanupTimer) window.clearTimeout(logoCleanupTimer);
+    clearLogoActivity(getLogoCells());
     introAnimating = false;
     syncState("done");
   };
