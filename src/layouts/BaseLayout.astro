@@ -507,8 +507,8 @@ const railBootstrap =
       min-height: 3.2rem;
       padding: 0.6rem 0.85rem;
       border-radius: 1rem;
-      border-color: color-mix(in srgb, var(--accent) 62%, transparent);
-      background: var(--surface-high);
+      border-color: color-mix(in srgb, var(--accent) 34%, transparent);
+      background: color-mix(in srgb, var(--surface-high) 32%, transparent);
       box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
     }
     .shell__menu-toggle-burger {
@@ -528,6 +528,11 @@ const railBootstrap =
     }
 
     .shell__links {
+      border: 1px solid transparent;
+      border-radius: 1rem;
+      background: transparent;
+      padding: 0;
+      transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, padding 180ms ease;
       display: none;
       width: 100%;
       gap: 0.15rem;
@@ -544,6 +549,10 @@ const railBootstrap =
     .shell__rail.is-open .shell__links,
     html[data-shell-rail="expanded"] .shell__links {
       display: grid;
+      padding: 0.65rem 0.7rem 0.75rem;
+      border-color: color-mix(in srgb, var(--line-strong) 74%, transparent);
+      background: color-mix(in srgb, var(--surface-high) 88%, transparent);
+      box-shadow: 0 14px 26px rgba(0, 0, 0, 0.2);
     }
 
     html[data-shell-rail="collapsed"] .shell__links {
