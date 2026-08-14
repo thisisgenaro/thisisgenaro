@@ -166,8 +166,8 @@ const latestIncident = {
   html[data-home-intro-state="ready"] .home__world,
   html[data-home-intro-state="signal"] .home__world,
   html[data-home-intro-state="logo"] .home__world {
-    opacity: 0.34;
-    filter: saturate(1) brightness(1.04);
+    opacity: 0.64;
+    filter: saturate(1.08) brightness(1.12);
   }
 
   html[data-home-intro-state="done"] .home__world {
@@ -206,13 +206,13 @@ const latestIncident = {
 
   .home__world .scene-grid {
     opacity: 0.56;
-    transition: opacity 280ms ease;
+    transition: opacity 280ms ease, transform 280ms ease;
   }
 
   html[data-home-intro-state="ready"] .home__world .scene-grid,
   html[data-home-intro-state="signal"] .home__world .scene-grid,
   html[data-home-intro-state="logo"] .home__world .scene-grid {
-    opacity: 0.88;
+    opacity: 1;
   }
 
   html[data-home-intro-state="done"] .home__world .scene-grid {
@@ -621,17 +621,20 @@ const latestIncident = {
     }
   };
 
-  const getLogoCells = () => {
+  const getLogoCells = () => worldCellsPayload ? JSON.parse(worldCellsPayload.textContent || "[]") : [];
+
+  const collectLogoElements = (cells) => {
     if (logoCellCache.size > 0) {
-      return Array.from(logoCellCache.values()).flat();
+      return logoCellCache;
     }
 
-    const cells = worldCellsPayload ? JSON.parse(worldCellsPayload.textContent || "[]") : [];
     for (const cell of cells) {
-      logoCellCache.set(cell.id, [cell]);
+      const elements = Array.from(worldSceneRoot?.querySelectorAll(`[data-cell-id="${cell.id}"]`) ?? []);
+      if (!elements.length) continue;
+      logoCellCache.set(cell.id, elements);
     }
 
-    return cells;
+    return logoCellCache;
   };
 
   const applyLogoFrame = (frame) => {
@@ -677,6 +680,8 @@ const latestIncident = {
       finishIntro();
       return;
     }
+
+    collectLogoElements(cells);
 
     const startedAt = performance.now();
     const duration = 4600;
