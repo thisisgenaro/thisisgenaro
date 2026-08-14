@@ -156,7 +156,7 @@ const latestIncident = {
   .home__world {
     position: fixed;
     inset: 0;
-    z-index: -1;
+    z-index: 0;
     pointer-events: auto;
     opacity: 0.18;
     filter: saturate(0.85);
@@ -223,6 +223,7 @@ const latestIncident = {
     opacity: 1;
     transition: opacity 240ms ease, transform 240ms ease;
     cursor: pointer;
+    touch-action: manipulation;
   }
 
   html[data-home-intro-state="done"] .home__world [data-node-id="intro-logo"] {
@@ -246,6 +247,8 @@ const latestIncident = {
 
   .home__hero,
   .home__content {
+    position: relative;
+    z-index: 1;
     width: min(100%, 78rem);
     margin: 0 auto;
   }
@@ -376,6 +379,16 @@ const latestIncident = {
     opacity: 0;
     pointer-events: none;
     transform: translateY(0.4rem);
+  }
+
+  html[data-home-intro-state="ready"] .home__world,
+  html[data-home-intro-state="signal"] .home__world,
+  html[data-home-intro-state="logo"] .home__world {
+    z-index: 0;
+  }
+
+  html[data-home-intro-state="done"] .home__world {
+    z-index: -1;
   }
 
   .home__hero,
@@ -706,6 +719,13 @@ const latestIncident = {
   worldSceneRoot?.addEventListener("click", (event) => {
     const target = event.target instanceof Element ? event.target.closest("[data-node-id='intro-logo']") : null;
     if (!target) return;
+    startIntro();
+  }, { passive: true });
+
+  worldSceneRoot?.addEventListener("pointerdown", (event) => {
+    const target = event.target instanceof Element ? event.target.closest("[data-node-id='intro-logo']") : null;
+    if (!target) return;
+    event.preventDefault();
     startIntro();
   });
 </script>
