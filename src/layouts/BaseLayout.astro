@@ -495,13 +495,17 @@ const railBootstrap =
     }
 
     html[data-shell-rail="collapsed"] .shell__rail-top {
-      flex-direction: row-reverse;
+      flex-direction: row;
       justify-content: space-between;
     }
 
     html[data-shell-rail="collapsed"] .shell__brand {
       position: static;
       transform: none;
+    }
+
+    html[data-shell-rail="collapsed"] .shell__menu-toggle {
+      order: 2;
     }
 
     html[data-shell-rail="collapsed"] .shell__rail {
