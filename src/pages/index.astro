@@ -28,16 +28,9 @@ const introLogoNode = [
   },
 ];
 
-const introStorageKey = "thisisgenaro:homepage-intro-seen";
 const introBootstrap =
   "(() => {" +
-  "const root=document.documentElement;" +
-  "const key=" + JSON.stringify(introStorageKey) + ";" +
-  "try {" +
-  "const seen=localStorage.getItem(key)==='true';" +
-  "const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;" +
-  "root.dataset.homeIntroState=seen||reduced?'done':'ready';" +
-  "} catch {root.dataset.homeIntroState='ready';}" +
+  "document.documentElement.dataset.homeIntroState='ready';" +
   "})();";
 
 const latestJournal = {
@@ -605,7 +598,6 @@ const latestIncident = {
   const root = document.documentElement;
   const worldSceneRoot = document.querySelector(".home__world-scene");
   const worldCellsPayload = worldSceneRoot?.querySelector(".topology-scene__cells");
-  const introStorageKey = "thisisgenaro:homepage-intro-seen";
 
   const stateClasses = ["is-origin", "is-propagating", "is-receiving", "is-resolved"];
   const logoCellCache = new Map();
@@ -615,7 +607,6 @@ const latestIncident = {
   const logoStartDelayMs = 120;
 
   let introAnimating = false;
-  let introSeen = root.dataset.homeIntroState === "done";
   let logoFrameRaf = 0;
   let logoCleanupTimer = 0;
 
@@ -623,21 +614,6 @@ const latestIncident = {
     root.dataset.homeIntroState = state;
   };
 
-  const readSeen = () => {
-    try {
-      return localStorage.getItem(introStorageKey) === "true";
-    } catch {
-      return introSeen;
-    }
-  };
-
-  const storeSeen = () => {
-    try {
-      localStorage.setItem(introStorageKey, "true");
-    } catch {
-      // Ignore persistence failures.
-    }
-  };
 
   const getLogoCells = () => worldCellsPayload ? JSON.parse(worldCellsPayload.textContent || "[]") : [];
 
@@ -682,8 +658,6 @@ const latestIncident = {
     if (logoFrameRaf) cancelAnimationFrame(logoFrameRaf);
     if (logoCleanupTimer) window.clearTimeout(logoCleanupTimer);
     introAnimating = false;
-    introSeen = true;
-    storeSeen();
     syncState("done");
   };
 
@@ -721,7 +695,7 @@ const latestIncident = {
   };
 
   const startIntro = () => {
-    if (introAnimating || introSeen) return;
+    if (introAnimating) return;
     introAnimating = true;
     syncState("signal");
     window.setTimeout(() => {
@@ -732,12 +706,7 @@ const latestIncident = {
     }, originHoldMs);
   };
 
-  if (!readSeen() && root.dataset.homeIntroState !== "done") {
-    syncState("ready");
-  } else {
-    syncState("done");
-    introSeen = true;
-  }
+  syncState("ready");
 
   worldSceneRoot?.addEventListener("click", (event) => {
     const target = event.target instanceof Element ? event.target.closest("[data-node-id='intro-logo']") : null;
