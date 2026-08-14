@@ -73,14 +73,12 @@ const themeBootstrap =
 
 const railBootstrap =
   "(() => {" +
-  "const key=" + JSON.stringify(railStateStorageKey) + ";" +
   "try {" +
-  "const stored=localStorage.getItem(key);" +
-  "document.documentElement.dataset.shellRail=stored==='false'?'expanded':'collapsed';" +
+  "document.documentElement.dataset.shellRail='collapsed';" +
   "} catch {document.documentElement.dataset.shellRail='collapsed';}" +
   "})();";
----
 
+---
 <!doctype html>
 <html lang="en">
   <head>
@@ -486,7 +484,7 @@ const railBootstrap =
 
     .shell__rail-top {
       display: grid;
-      grid-template-columns: 3.2rem minmax(0, 1fr) 3.2rem;
+      grid-template-columns: minmax(0, 1fr) auto auto;
       align-items: center;
       gap: 0.85rem;
       min-height: 4.25rem;
@@ -503,6 +501,7 @@ const railBootstrap =
     .shell__menu-toggle {
       border: 0;
       order: 1;
+      grid-column: 3;
       justify-self: end;
       width: 3.2rem;
       min-height: 3.2rem;
