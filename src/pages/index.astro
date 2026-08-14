@@ -15,7 +15,7 @@ const dormantScene = createTopologyScenePreset({
 const introLogoNode = [
   {
     id: "intro-logo",
-    label: "GH",
+    label: "",
     image: "/gh-logo.png",
     imageScale: 0.82,
     imageAlign: "center",
@@ -80,20 +80,6 @@ const latestIncident = {
       <div class="home__world-vignette"></div>
     </div>
 
-    <div class="home__intro" data-home-intro data-home-intro-state="ready">
-      <button
-        class="home__intro-trigger"
-        type="button"
-        data-home-intro-trigger
-        aria-label="Open the site"
-        aria-describedby="home-intro-caption"
-      >
-        <span class="home__intro-node" aria-hidden="true">
-          <img class="home__intro-logo" src="/gh-logo.png" alt="" />
-        </span>
-        <span class="home__intro-caption" id="home-intro-caption">Tap to begin</span>
-      </button>
-    </div>
 
     <section class="home__hero">
       <article class="home__lead" aria-labelledby="home-lead-title">
@@ -171,7 +157,7 @@ const latestIncident = {
     position: fixed;
     inset: 0;
     z-index: -1;
-    pointer-events: none;
+    pointer-events: auto;
     opacity: 0.18;
     filter: saturate(0.85);
     transition: opacity 280ms ease, filter 280ms ease;
@@ -236,10 +222,12 @@ const latestIncident = {
   .home__world [data-node-id="intro-logo"] {
     opacity: 1;
     transition: opacity 240ms ease, transform 240ms ease;
+    cursor: pointer;
   }
 
   html[data-home-intro-state="done"] .home__world [data-node-id="intro-logo"] {
     opacity: 0;
+    cursor: default;
   }
 
   .home__world-scene {
@@ -255,62 +243,6 @@ const latestIncident = {
       linear-gradient(180deg, rgba(1, 4, 6, 0.08), rgba(1, 4, 6, 0.55));
   }
 
-  .home__intro {
-    position: fixed;
-    inset: 0;
-    z-index: 5;
-    display: grid;
-    place-items: center;
-    padding: clamp(1rem, 4vw, 2rem);
-    background:
-      radial-gradient(circle at 50% 42%, rgba(242, 169, 0, 0.04), transparent 24%),
-      linear-gradient(180deg, rgba(2, 5, 8, 0.72), rgba(2, 5, 8, 0.56));
-    opacity: 1;
-    transition: opacity 340ms ease, transform 340ms ease;
-    pointer-events: auto;
-  }
-
-  .home__intro[data-home-intro-state="signal"] {
-    background:
-      radial-gradient(circle at 50% 42%, rgba(242, 169, 0, 0.06), transparent 24%),
-      linear-gradient(180deg, rgba(2, 5, 8, 0.72), rgba(2, 5, 8, 0.56));
-  }
-
-  .home__intro[data-home-intro-state="signal"],
-  .home__intro[data-home-intro-state="logo"],
-  .home__intro[data-home-intro-state="done"] {
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  .home__intro-trigger {
-    position: relative;
-    z-index: 1;
-    display: grid;
-    place-items: center;
-    width: min(100%, 28rem);
-    min-height: clamp(5rem, 12svh, 7rem);
-    padding: 0.5rem 1.25rem;
-    border: 0;
-    background: transparent;
-    color: inherit;
-    cursor: pointer;
-    touch-action: manipulation;
-    isolation: isolate;
-  }
-
-
-  .home__intro-caption {
-    position: relative;
-    z-index: 1;
-    color: var(--text);
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.16em;
-    text-align: center;
-    text-transform: uppercase;
-  }
 
   .home__hero,
   .home__content {
@@ -640,29 +572,6 @@ const latestIncident = {
       line-height: 1.65;
     }
 
-    .home__intro {
-      padding: 0.75rem;
-    }
-
-    .home__intro-trigger {
-      width: min(100%, 18rem);
-      min-height: 14rem;
-      padding: 0.75rem;
-    }
-
-    .home__intro-node {
-      width: 8rem;
-    }
-
-    .home__intro-trigger::before {
-      width: 7rem;
-      height: 7rem;
-    }
-
-    .home__intro-trigger::after {
-      width: 5rem;
-      height: 5rem;
-    }
   }
 </style>
 
@@ -670,9 +579,8 @@ const latestIncident = {
   import { getGhLogoFrame } from "operational-topology/labs";
 
   const root = document.documentElement;
-  const introRoot = document.querySelector("[data-home-intro]");
-  const introTrigger = introRoot?.querySelector("[data-home-intro-trigger]");
-  const logoSceneRoot = document.querySelector("[data-home-logo-animation]");
+  const worldSceneRoot = document.querySelector(".home__world-scene");
+  const worldCellsPayload = worldSceneRoot?.querySelector(".topology-scene__cells");
   const introStorageKey = "thisisgenaro:homepage-intro-seen";
 
   const stateClasses = ["is-origin", "is-propagating", "is-receiving", "is-resolved"];
@@ -685,9 +593,6 @@ const latestIncident = {
 
   const syncState = (state) => {
     root.dataset.homeIntroState = state;
-    if (introRoot) {
-      introRoot.dataset.homeIntroState = state;
-    }
   };
 
   const readSeen = () => {
@@ -708,29 +613,15 @@ const latestIncident = {
 
   const getLogoCells = () => {
     if (logoCellCache.size > 0) {
-      return Array.from(logoCellCache.keys()).map((id) => {
-        const element = logoCellCache.get(id)?.[0];
-        const q = Number(element?.getAttribute("data-q") ?? "0");
-        const r = Number(element?.getAttribute("data-r") ?? "0");
-        return { id, q, r, center: { x: 0, y: 0 }, path: "" };
-      });
+      return Array.from(logoCellCache.values()).flat();
     }
 
-    const elements = Array.from(worldSceneRoot?.querySelectorAll("[data-cell-id]") ?? []);
-    for (const element of elements) {
-      const id = element.getAttribute("data-cell-id");
-      if (!id) continue;
-      const cells = logoCellCache.get(id) ?? [];
-      cells.push(element);
-      logoCellCache.set(id, cells);
+    const cells = worldCellsPayload ? JSON.parse(worldCellsPayload.textContent || "[]") : [];
+    for (const cell of cells) {
+      logoCellCache.set(cell.id, [cell]);
     }
 
-    return Array.from(logoCellCache.keys()).map((id) => {
-      const element = logoCellCache.get(id)?.[0];
-      const q = Number(element?.getAttribute("data-q") ?? "0");
-      const r = Number(element?.getAttribute("data-r") ?? "0");
-      return { id, q, r, center: { x: 0, y: 0 }, path: "" };
-    });
+    return cells;
   };
 
   const applyLogoFrame = (frame) => {
@@ -812,5 +703,9 @@ const latestIncident = {
     introSeen = true;
   }
 
-  introTrigger?.addEventListener("click", startIntro);
+  worldSceneRoot?.addEventListener("click", (event) => {
+    const target = event.target instanceof Element ? event.target.closest("[data-node-id='intro-logo']") : null;
+    if (!target) return;
+    startIntro();
+  });
 </script>
