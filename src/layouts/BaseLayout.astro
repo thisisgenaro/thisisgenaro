@@ -463,12 +463,18 @@ const railBootstrap =
     }
 
     .shell__rail-top {
-      flex-direction: column;
+      position: relative;
+      display: flex;
+      flex-direction: row;
       align-items: center;
+      justify-content: flex-start;
       gap: 0.55rem;
     }
 
     .shell__brand {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
       order: 0;
     }
 
@@ -486,6 +492,16 @@ const railBootstrap =
 
     .shell__menu-label {
       display: none;
+    }
+
+    html[data-shell-rail="collapsed"] .shell__rail-top {
+      flex-direction: row-reverse;
+      justify-content: space-between;
+    }
+
+    html[data-shell-rail="collapsed"] .shell__brand {
+      position: static;
+      transform: none;
     }
 
     html[data-shell-rail="collapsed"] .shell__rail {
