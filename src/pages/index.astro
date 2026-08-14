@@ -157,16 +157,16 @@ const latestIncident = {
     transition: opacity 280ms ease, filter 280ms ease;
   }
 
-  html[data-home-intro-state="ready"] .home__world,
-  html[data-home-intro-state="signal"] .home__world,
-  html[data-home-intro-state="logo"] .home__world {
+  html[data-home-intro-state="ready"] .home__world {
     opacity: 0.64;
     filter: saturate(1.08) brightness(1.12);
   }
 
+  html[data-home-intro-state="signal"] .home__world,
+  html[data-home-intro-state="logo"] .home__world,
   html[data-home-intro-state="handoff"] .home__world {
-    opacity: 0.12;
-    filter: saturate(0.72) brightness(0.92);
+    opacity: 1;
+    filter: saturate(1.08) brightness(1.12);
   }
 
   html[data-home-intro-state="done"] .home__world {
@@ -208,14 +208,14 @@ const latestIncident = {
     transition: opacity 420ms ease, transform 280ms ease;
   }
 
-  html[data-home-intro-state="ready"] .home__world .scene-grid,
-  html[data-home-intro-state="signal"] .home__world .scene-grid,
-  html[data-home-intro-state="logo"] .home__world .scene-grid {
+  html[data-home-intro-state="ready"] .home__world .scene-grid {
     opacity: 1;
   }
 
+  html[data-home-intro-state="signal"] .home__world .scene-grid,
+  html[data-home-intro-state="logo"] .home__world .scene-grid,
   html[data-home-intro-state="handoff"] .home__world .scene-grid {
-    opacity: 0.48;
+    opacity: 1;
   }
 
   html[data-home-intro-state="done"] .home__world .scene-grid {
