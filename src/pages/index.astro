@@ -218,15 +218,12 @@ const latestIncident = {
   }
 
   html[data-home-intro-state="signal"] .home__world [data-node-id="intro-logo"] .grid-occupant-image,
-  html[data-home-intro-state="logo"] .home__world [data-node-id="intro-logo"] .grid-occupant-image,
-  html[data-home-intro-state="handoff"] .home__world [data-node-id="intro-logo"] .grid-occupant-image {
+  html[data-home-intro-state="logo"] .home__world [data-node-id="intro-logo"] .grid-occupant-image {
     opacity: 0;
   }
 
-  html[data-home-intro-state="handoff"] .home__world [data-node-id="intro-logo"],
   html[data-home-intro-state="done"] .home__world [data-node-id="intro-logo"] {
     opacity: 0;
-    display: none;
     cursor: default;
   }
 
@@ -237,18 +234,20 @@ const latestIncident = {
 
   .home__world [data-node-id="intro-logo"] .grid-hex.is-logo-border,
   .home__world [data-node-id="intro-logo"] .grid-node.is-logo-border {
-    stroke: var(--accent);
-    fill: color-mix(in srgb, var(--accent) 14%, transparent);
-    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--accent) 38%, transparent));
+    stroke: var(--theme-accent) !important;
+    fill: color-mix(in srgb, var(--theme-accent) 18%, transparent) !important;
+    color: var(--theme-accent) !important;
+    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--theme-accent) 42%, transparent)) !important;
   }
 
   .home__world [data-node-id="intro-logo"] .grid-hex.is-logo-g,
   .home__world [data-node-id="intro-logo"] .grid-node.is-logo-g,
   .home__world [data-node-id="intro-logo"] .grid-hex.is-logo-h,
   .home__world [data-node-id="intro-logo"] .grid-node.is-logo-h {
-    stroke: #ffffff;
-    fill: color-mix(in srgb, #ffffff 16%, transparent);
-    filter: drop-shadow(0 0 8px color-mix(in srgb, #ffffff 26%, transparent));
+    stroke: #ffffff !important;
+    fill: color-mix(in srgb, #ffffff 18%, transparent) !important;
+    color: #ffffff !important;
+    filter: drop-shadow(0 0 8px color-mix(in srgb, #ffffff 26%, transparent)) !important;
   }
 
   .home__world-scene {
@@ -397,10 +396,6 @@ const latestIncident = {
     z-index: -1;
   }
 
-  html[data-home-intro-state="done"] .home__hero,
-  html[data-home-intro-state="done"] .home__content {
-    transition-delay: 220ms;
-  }
 
   .home__hero,
   .home__content {
@@ -741,7 +736,6 @@ const latestIncident = {
         return;
       }
       syncState("handoff");
-      fadeOutLogoActivity(cells);
       logoCleanupTimer = window.setTimeout(() => {
         finishIntro();
       }, handoffFadeMs);
