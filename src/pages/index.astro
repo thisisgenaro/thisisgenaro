@@ -40,7 +40,7 @@ const latestJournal = {
   title: "Keeping the operating model readable",
   date: "2026-08-13",
   excerpt:
-    "A practical home works better when structure stays visible without making the experience feel like a dashboard demo.",
+    "A clear operating model keeps the thinking readable while leaving room for the human story behind it.",
   href: "/journal",
 };
 
@@ -49,7 +49,7 @@ const latestIncident = {
   title: "Signal route failure",
   date: "2026-08-11",
   summary:
-    "A topology route lost clarity during a transition and needed a bounded camera frame to remain legible.",
+    "A transition briefly obscured the route, so the scene was bounded until the incident could be read clearly again.",
   status: "INVESTIGATING",
   href: "/incidents",
 };
@@ -79,7 +79,7 @@ const latestIncident = {
       <div class="home__hero-grid">
         <article class="home__lead" aria-labelledby="home-lead-title">
           <div class="home__hero-meta">
-            <p class="home__hero-role">IT Infrastructure &amp; Cloud Specialist</p>
+            <p class="home__hero-role">Sharing infrastructure patterns and incident lessons</p>
             <p class="home__hero-principle">
               <span>Design</span>
               <span>Automate</span>
@@ -90,7 +90,7 @@ const latestIncident = {
             <span>Genaro Hernández</span>
           </h1>
           <p class="home__lede">
-            I help organizations build resilient infrastructure, gain visibility across their systems, and resolve the incidents that matter.
+            I share practical infrastructure patterns, visibility habits, and incident lessons so the work stays useful to other engineers too.
           </p>
           <div class="home__lead-actions button-row">
             <a class="button primary" href="/journal">Journal</a>
@@ -100,21 +100,21 @@ const latestIncident = {
 
         <aside class="home__inspector surface surface-pad" aria-label="Knowledge System">
           <p class="home__inspector-kicker">Knowledge System</p>
-          <h2 class="home__inspector-title">Journal + Incident Library</h2>
+          <h2 class="home__inspector-title">Thinking and record</h2>
           <p class="home__inspector-body">
-            Two registers shape what is shared: the Journal for the thinking, and the Incident Library for the operational record.
+            One register is editorial and reflective. The other is precise and operational. Together they keep the work readable for the viewer.
           </p>
           <div class="home__system-panels">
             <section class="home__system-panel home__system-panel--journal">
               <p class="home__system-label">Journal</p>
               <p class="home__system-copy">
-                Reflective, editorial, and human. It keeps the thinking visible, explains why decisions were made, and gives the viewer context that survives the first read.
+                Editorial, readable, and personal. It keeps the thinking visible and the reasoning easy to follow without flattening the work into a checklist.
               </p>
             </section>
             <section class="home__system-panel home__system-panel--incident">
               <p class="home__system-label">Incident Library</p>
               <p class="home__system-copy">
-                Precise, structured, and operational. It records what happened, what changed, what is still open, and what should be remembered next time.
+                Structured, specific, and operational. It keeps the record tight enough to act on and detailed enough to revisit later.
               </p>
             </section>
           </div>
@@ -129,7 +129,7 @@ const latestIncident = {
         <h3>{latestJournal.title}</h3>
         <p class="home__card-date">{latestJournal.date}</p>
         <p class="home__card-body">{latestJournal.excerpt}</p>
-        <a class="home__card-link" href={latestJournal.href}>Read journal</a>
+        <a class="home__card-link" href={latestJournal.href}>Read entry</a>
       </article>
 
       <article class="home__card surface surface-pad home__card--incident">
@@ -141,7 +141,7 @@ const latestIncident = {
           <span class="home__status-pill">{latestIncident.status}</span>
         </div>
         <p class="home__card-body">{latestIncident.summary}</p>
-        <a class="home__card-link" href={latestIncident.href}>Open incident</a>
+        <a class="home__card-link" href={latestIncident.href}>Open record</a>
       </article>
     </section>
   </main>
@@ -303,7 +303,7 @@ const latestIncident = {
 
   .home__hero-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1.15fr) minmax(18rem, 0.85fr);
+    grid-template-columns: minmax(0, 1.25fr) minmax(18rem, 0.75fr);
     gap: clamp(0.9rem, 1.8vw, 1.25rem);
     align-items: start;
   }
@@ -313,7 +313,7 @@ const latestIncident = {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1rem;
     align-items: start;
-    max-width: 72rem;
+    max-width: 84rem;
   }
 
   .home__lead {
