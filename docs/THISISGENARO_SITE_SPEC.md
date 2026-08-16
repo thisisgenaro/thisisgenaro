@@ -809,16 +809,34 @@ Images should support the writing rather than become mandatory content decoratio
 
 The Incidents section should feel like a ServiceDesk / operational record.
 
+The index cards are metadata-only. They do not surface scenes, root cause, or narrative detail.
+
+Recommended card fields:
+
+- title
+- status
+- organization
+- requester
+- created
+- closed, when present
+
+Recommended card order:
+
+- title on the left
+- status pill on the right
+- organization below title
+- requester below organization
+- created date in the footer row
+- closed date only when the incident is closed
+
+Mobile behavior:
+
+- keep the card compact
+- collapse the footer row to created plus closed if present
+- omit closed entirely while the incident is open
+- preserve the status pill
+
 It is intentionally denser and more technical than Journal.
-
-Recommended entry:
-
-- INC-0027
-- Signal route failure
-- system / area
-- date
-- severity
-- status pill
 
 ---
 
@@ -832,6 +850,7 @@ Visual character:
 - clear status
 - clear severity
 - clean filtering / sorting if later added
+- hex-led framing where possible
 
 This page should still belong to Imperial Gold but feel more operational.
 
