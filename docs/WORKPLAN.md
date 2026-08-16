@@ -8,7 +8,7 @@ Last updated: 2026-08-16
 | --- | --- | --- |
 | Incident Library | done | Metadata-only index cards defined; detail page remains the presentation layer. |
 | Incident Template | done | Scene-based OTF presentation schema documented with topology layouts. |
-| Journal | next | Index and editorial flow can stay lighter than Incidents. |
+| Journal | done | Index and entry page now render from Markdown content. |
 | Journal Entry Template | done | Markdown/frontmatter seed added for the entry model. |
 | About Me | pending | One-page authorial section, not a reusable template. |
 

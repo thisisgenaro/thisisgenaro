@@ -1,0 +1,237 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const entries = (await getCollection("entries", ({ data }) => data.language === "en"))
+  .sort((left, right) => right.data.date.getTime() - left.data.date.getTime());
+
+const formatDate = (value: Date) =>
+  new Intl.DateTimeFormat("en", { year: "numeric", month: "short", day: "2-digit" }).format(value);
+
+const toEntryHref = (id: string) => {
+  const [language, ...slugParts] = id.split("/");
+  return `/journal/${language}/${slugParts.join("/")}`;
+};
+---
+<BaseLayout
+  title="Journal | thisisgenaro.com"
+  description="Editorial notes, observations, and lessons from the work."
+>
+  <main class="journal">
+    <section class="journal__hero">
+      <div class="journal__lead stack">
+        <p class="eyebrow">Journal</p>
+        <h1>Reading the work as it unfolds.</h1>
+        <p class="journal__lede">
+          Observations, patterns, and lessons from the work. The Journal stays editorial and reflective so the thinking remains usable after the moment has passed.
+        </p>
+      </div>
+
+      <aside class="journal__meta surface surface-pad" aria-label="Journal overview">
+        <p class="journal__meta-kicker">Overview</p>
+        <p class="journal__meta-title">{entries.length} published entries</p>
+        <p class="journal__meta-body">
+          Each entry preserves the reasoning behind the work, not just the outcome. The goal is to help the viewer learn something practical without flattening the story.
+        </p>
+      </aside>
+    </section>
+
+    <section class="journal__entries" aria-label="Journal entries">
+      {entries.length ? entries.map((entry) => (
+        <article class="journal__card surface surface-pad">
+          <div class="journal__card-head">
+            <div>
+              <p class="journal__card-date mono">{formatDate(entry.data.date)}</p>
+              <h2 class="journal__card-title">
+                <a href={toEntryHref(entry.id)}>{entry.data.title}</a>
+              </h2>
+            </div>
+            {entry.data.readingTime ? <p class="journal__card-time mono">{entry.data.readingTime} min read</p> : null}
+          </div>
+
+          <p class="journal__card-summary">{entry.data.summary}</p>
+
+          {entry.data.tags.length ? (
+            <ul class="journal__tags" aria-label="Tags">
+              {entry.data.tags.map((tag) => <li>{tag}</li>)}
+            </ul>
+          ) : null}
+
+          <a class="journal__card-link" href={toEntryHref(entry.id)}>Read entry</a>
+        </article>
+      )) : (
+        <article class="journal__card surface surface-pad">
+          <p class="journal__card-summary">No entries have been published yet.</p>
+        </article>
+      )}
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .journal {
+    position: relative;
+    display: grid;
+    gap: clamp(1rem, 2vw, 1.5rem);
+    width: min(100%, 84rem);
+    margin: 0 auto;
+    padding: clamp(1rem, 3.5vw, 2.5rem);
+  }
+
+  .journal__hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(18rem, 0.8fr);
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .journal__lead {
+    padding: clamp(0.5rem, 1vw, 0.9rem) 0;
+  }
+
+  .journal__lead h1 {
+    margin: 0;
+    font-size: clamp(2.8rem, 6vw, 5.2rem);
+    line-height: 0.94;
+    letter-spacing: -0.06em;
+  }
+
+  .journal__lede {
+    max-width: 46ch;
+    margin: 0;
+    color: var(--muted);
+    font-size: 1.05rem;
+    line-height: 1.7;
+  }
+
+  .journal__meta {
+    display: grid;
+    gap: 0.65rem;
+    align-content: start;
+    min-height: 100%;
+  }
+
+  .journal__meta-kicker,
+  .journal__card-date,
+  .journal__card-time {
+    margin: 0;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .journal__meta-title {
+    margin: 0;
+    font-size: 1.02rem;
+    line-height: 1.25;
+  }
+
+  .journal__meta-body {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .journal__entries {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .journal__card {
+    display: grid;
+    gap: 0.75rem;
+    align-content: start;
+    min-height: 100%;
+  }
+
+  .journal__card-head {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .journal__card-title {
+    margin: 0.25rem 0 0;
+    font-size: 1.12rem;
+    line-height: 1.25;
+  }
+
+  .journal__card-title a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .journal__card-summary {
+    margin: 0;
+    color: var(--text);
+    line-height: 1.62;
+  }
+
+  .journal__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .journal__tags li {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.8rem;
+    padding: 0.22rem 0.62rem;
+    border: 1px solid color-mix(in srgb, var(--line-strong) 72%, transparent);
+    border-radius: 999px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: color-mix(in srgb, var(--surface-high) 42%, transparent);
+  }
+
+  .journal__card-link {
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 900px) {
+    .journal__hero,
+    .journal__entries {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 680px) {
+    .journal {
+      width: 100%;
+      padding: 0.95rem;
+    }
+
+    .journal__lead h1 {
+      font-size: clamp(2.4rem, 12vw, 3.6rem);
+    }
+
+    .journal__lede,
+    .journal__meta-body,
+    .journal__card-summary {
+      font-size: 0.95rem;
+      line-height: 1.58;
+    }
+
+    .journal__card-head {
+      flex-direction: column;
+      align-items: start;
+      gap: 0.35rem;
+    }
+  }
+</style>

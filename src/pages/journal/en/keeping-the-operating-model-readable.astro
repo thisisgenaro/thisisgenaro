@@ -1,0 +1,169 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+
+const entry = (await getCollection("entries"))[0];
+
+if (!entry) {
+  throw new Error("Journal entry not found");
+}
+
+const { Content } = await entry.render();
+const formattedDate = new Intl.DateTimeFormat("en", {
+  year: "numeric",
+  month: "long",
+  day: "2-digit",
+}).format(entry.data.date);
+---
+<BaseLayout
+  title={`${entry.data.title} | Journal | thisisgenaro.com`}
+  description={entry.data.summary}
+>
+  <main class="journal-entry">
+    <header class="journal-entry__hero surface surface-pad">
+      <div class="journal-entry__meta">
+        <p class="journal-entry__eyebrow eyebrow">Journal Entry</p>
+        <p class="journal-entry__date mono">{formattedDate}</p>
+      </div>
+
+      <div class="journal-entry__title-block">
+        <h1>{entry.data.title}</h1>
+        <p class="journal-entry__summary">{entry.data.summary}</p>
+      </div>
+
+      <div class="journal-entry__aside">
+        {entry.data.readingTime ? <p class="journal-entry__metric"><span>Reading time</span><strong>{entry.data.readingTime} min</strong></p> : null}
+        {entry.data.tags.length ? <p class="journal-entry__metric"><span>Tags</span><strong>{entry.data.tags.join(", ")}</strong></p> : null}
+      </div>
+    </header>
+
+    {entry.data.image ? (
+      <figure class="journal-entry__image surface">
+        <img src={entry.data.image} alt={entry.data.title} loading="eager" />
+      </figure>
+    ) : null}
+
+    <article class="journal-entry__body">
+      <Content />
+    </article>
+  </main>
+</BaseLayout>
+
+<style>
+  .journal-entry {
+    width: min(100%, 76rem);
+    margin: 0 auto;
+    padding: clamp(1rem, 3.5vw, 2.5rem);
+  }
+
+  .journal-entry__hero {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .journal-entry__meta,
+  .journal-entry__aside {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .journal-entry__eyebrow,
+  .journal-entry__date {
+    margin: 0;
+  }
+
+  .journal-entry__title-block {
+    display: grid;
+    gap: 0.65rem;
+  }
+
+  .journal-entry__title-block h1 {
+    margin: 0;
+    font-size: clamp(2.4rem, 5vw, 4.8rem);
+    line-height: 0.95;
+    letter-spacing: -0.06em;
+  }
+
+  .journal-entry__summary {
+    max-width: 52ch;
+    margin: 0;
+    color: var(--muted);
+    font-size: 1.06rem;
+    line-height: 1.7;
+  }
+
+  .journal-entry__metric {
+    display: grid;
+    gap: 0.2rem;
+    margin: 0;
+  }
+
+  .journal-entry__metric span {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .journal-entry__metric strong {
+    color: var(--text);
+    font-size: 0.92rem;
+    font-weight: 500;
+  }
+
+  .journal-entry__image {
+    margin: 0 0 1rem;
+    overflow: hidden;
+  }
+
+  .journal-entry__image img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .journal-entry__body {
+    max-width: 68ch;
+    margin: 0 auto;
+    color: var(--text);
+    font-size: 1.02rem;
+    line-height: 1.75;
+  }
+
+  .journal-entry__body :global(h2),
+  .journal-entry__body :global(h3) {
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .journal-entry__body :global(p) {
+    margin-bottom: 1rem;
+  }
+
+  .journal-entry__body :global(ul),
+  .journal-entry__body :global(ol) {
+    padding-left: 1.25rem;
+  }
+
+  @media (max-width: 680px) {
+    .journal-entry {
+      padding: 0.95rem;
+    }
+
+    .journal-entry__title-block h1 {
+      font-size: clamp(2.2rem, 10vw, 3.4rem);
+    }
+
+    .journal-entry__summary,
+    .journal-entry__body {
+      font-size: 0.96rem;
+      line-height: 1.65;
+    }
+  }
+</style>
