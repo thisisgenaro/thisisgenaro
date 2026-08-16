@@ -759,6 +759,29 @@ The page should prioritize reading and discovery.
 
 ## 41. Journal Entry
 
+Journal entries should be authored as Markdown or MDX with frontmatter.
+
+Recommended frontmatter:
+
+- id
+- language
+- title
+- date
+- summary
+- tags/categories
+- organizationIds
+- incidentIds
+- personIds
+- image
+- readingTime
+
+Recommended body:
+
+- short introduction
+- reflective sections or subheads
+- lessons or conclusions
+- optional related links
+
 Individual Journal pages should minimize technical visual noise.
 
 Recommended:
@@ -771,8 +794,6 @@ Recommended:
 - optional generated imagery
 
 No full topology scene unless a specific article genuinely requires it.
-
----
 
 ## 42. Journal Imagery
 
@@ -837,6 +858,32 @@ Use the existing theme's semantic color system rather than hard-coding arbitrary
 
 Incident Detail is the page where OTF becomes a primary explanatory medium.
 
+The incident body should be a presentation, not a linear report.
+
+Recommended incident presentation structure:
+
+- INCIDENT HEADER
+- SCENE LIST / PRESENTATION FLOW
+- TOPOLOGY / WORLD
+- INSPECTOR
+- TIMELINE
+- ROOT CAUSE
+- RESOLUTION
+- FOLLOW-UP / NOTES
+
+The report or scene sequence should be driven by a scene array in frontmatter or adjacent structured data. Each scene should define:
+
+- sceneId
+- label
+- title
+- summary
+- camera
+- nodes
+- connectors
+- highlights
+- inspector
+- optional nextScene / actions
+
 Desktop structure:
 
 - INCIDENT HEADER
@@ -846,8 +893,6 @@ Desktop structure:
 - ROOT CAUSE
 - RESOLUTION
 - FOLLOW-UP / NOTES
-
----
 
 ## 47. Incident Scene Framing
 
@@ -1209,11 +1254,16 @@ Do not turn the footer into another topology scene.
 
 A Journal entry should support at minimum:
 
+- id
+- language
 - title
 - date
 - summary
 - body
-- tags/categories if needed
+- tags/categories
+- organizationIds
+- incidentIds
+- personIds
 
 Optional:
 
@@ -1221,22 +1271,34 @@ Optional:
 - reading time
 - related entries
 
----
+Journal entries should be Markdown/MDX authored documents with structured frontmatter and a readable body.
 
 ## 70. Content Model - Incident
 
 An Incident should support at minimum:
 
-- incident ID
+- id
+- incidentId
+- language
 - title
 - status
 - severity
+- opened
+- restored
 - date
 - summary
-- affected system
-- timeline
-- root cause
-- resolution
+- executiveSummary
+- service
+- organizationId
+- category
+- duration
+- primarySystems
+- affectedServices
+- peopleIds
+- tags
+- owner
+- body
+- scenes
 
 Optional OTF-linked content:
 
@@ -1246,8 +1308,11 @@ Optional OTF-linked content:
 - signal route
 - failure state
 - rerouting data
+- inspector data
+- related incidents
+- follow-up actions
 
----
+The scene sequence should be presentation-first: each scene explains one step of the incident and can drive the inspector state.
 
 ## 71. Content Model - CV
 
