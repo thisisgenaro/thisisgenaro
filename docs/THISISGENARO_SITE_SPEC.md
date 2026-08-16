@@ -877,12 +877,23 @@ The report or scene sequence should be driven by a scene array in frontmatter or
 - label
 - title
 - summary
+- topologyLayout
 - camera
 - nodes
 - connectors
 - highlights
 - inspector
 - optional nextScene / actions
+
+Suggested topology layouts for the canonical incident sections:
+
+- Overview -> ring
+- Executive Report -> swimlanes
+- Technical Analysis -> matrix
+- Root Cause -> basin
+- Dependency Map -> fan
+- Timeline -> linear
+- Lessons -> territories
 
 Desktop structure:
 
@@ -1313,6 +1324,31 @@ Optional OTF-linked content:
 - follow-up actions
 
 The scene sequence should be presentation-first: each scene explains one step of the incident and can drive the inspector state.
+
+Incident scene objects should support structured fields such as:
+
+- sceneId
+- label
+- title
+- summary
+- topologyLayout
+- camera
+- nodes
+- connectors
+- highlights
+- inspector
+- nextScene
+- actions
+
+Suggested layout mapping:
+
+- Overview -> ring
+- Executive Report -> swimlanes
+- Technical Analysis -> matrix
+- Root Cause -> basin
+- Dependency Map -> fan
+- Timeline -> linear
+- Lessons -> territories
 
 ## 71. Content Model - CV
 
