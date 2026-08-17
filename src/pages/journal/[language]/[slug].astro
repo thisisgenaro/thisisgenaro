@@ -1,0 +1,295 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import JournalTopology from "../../../components/journal/JournalTopology.astro";
+import {
+  createJournalEntryRecord,
+  getPublishedJournalEntries,
+} from "../../../lib/journal";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("entries", ({ data }) => data.language === "en");
+  const published = getPublishedJournalEntries(entries);
+
+  return published.map((entry) => {
+    const [language, ...slugParts] = entry.id.split("/");
+    return {
+      params: {
+        language,
+        slug: slugParts.join("/").replace(/\.mdx?$/, ""),
+      },
+      props: { entryId: entry.id },
+    };
+  });
+}
+
+type Props = {
+  entryId: string;
+};
+
+const { entryId } = Astro.props as Props;
+const entry = (await getCollection("entries")).find((candidate) => candidate.id === entryId);
+
+if (!entry) {
+  throw new Error(`Journal entry not found for ${entryId}`);
+}
+
+const record = createJournalEntryRecord(entry);
+const { Content } = await entry.render();
+---
+<BaseLayout
+  title={`${record.title} | Journal | thisisgenaro.com`}
+  description={record.excerpt}
+>
+  <JournalTopology class="journal-topology--entry" />
+  <main class="journal-entry-page">
+    <header class="journal-entry-page__header">
+      <a class="journal-entry-page__back mono" href="/journal/entries">← BACK TO ENTRIES</a>
+      <p class="journal-entry-page__eyebrow">JOURNAL ENTRY</p>
+      <h1 class="journal-entry-page__title">{record.title}</h1>
+      <p class="journal-entry-page__summary">{record.excerpt}</p>
+    </header>
+
+    <div class="journal-entry-page__layout">
+      <article class="journal-entry-page__article">
+        <div class="journal-entry-page__meta mono">
+          <span>{record.publishedLabel.toUpperCase()}</span>
+          {record.readTime ? <span>{record.readTime} MIN READ</span> : null}
+        </div>
+
+        {entry.data.image ? (
+          <figure class="journal-entry-page__image surface">
+            <img src={entry.data.image} alt={record.title} loading="eager" />
+          </figure>
+        ) : null}
+
+        <article class="journal-entry-page__content">
+          <Content />
+        </article>
+      </article>
+
+      <aside class="journal-entry-page__rail" aria-label="Journal entry sidebar">
+        <section class="journal-rail-card surface surface-pad">
+          <p class="journal-rail-card__label">TOPICS</p>
+          <div class="journal-entry-page__topics">
+            {record.topicDefinitions.length ? record.topicDefinitions.map((topic) => (
+              <a class="journal-entry-page__topic" href={`/journal/topics/${topic.slug}`}>
+                {topic.name}
+              </a>
+            )) : <p class="journal-rail-card__body">No topics assigned.</p>}
+          </div>
+        </section>
+
+        <section class="journal-rail-card surface surface-pad">
+          <p class="journal-rail-card__label">BROWSE</p>
+          <a class="journal-rail-card__link mono" href="/journal">JOURNAL HOME →</a>
+          <a class="journal-rail-card__link mono" href="/journal/topics">VIEW TOPICS →</a>
+          <a class="journal-rail-card__link mono" href="/journal/entries">ALL ENTRIES →</a>
+        </section>
+      </aside>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .journal-entry-page {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 84rem);
+    margin: 0 auto;
+    padding: clamp(1rem, 3.5vw, 2.5rem);
+  }
+
+  .journal-entry-page__header {
+    display: grid;
+    gap: 0.7rem;
+    max-width: 48rem;
+    margin-bottom: clamp(1.2rem, 3vw, 2rem);
+    padding-bottom: 1rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--line-strong) 52%, transparent);
+  }
+
+  .journal-entry-page__back,
+  .journal-entry-page__eyebrow,
+  .journal-entry-page__meta,
+  .journal-rail-card__label,
+  .journal-rail-card__link,
+  .journal-entry-page__topic {
+    font-family: var(--font-mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .journal-entry-page__back {
+    width: fit-content;
+    color: var(--accent);
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .journal-entry-page__eyebrow {
+    margin: 0;
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .journal-entry-page__title {
+    margin: 0;
+    max-width: 40rem;
+    font-size: clamp(2.6rem, 6vw, 5.4rem);
+    line-height: 0.94;
+    letter-spacing: -0.07em;
+  }
+
+  .journal-entry-page__summary {
+    max-width: 46rem;
+    margin: 0;
+    color: var(--muted);
+    font-size: clamp(1rem, 1.4vw, 1.16rem);
+    line-height: 1.74;
+  }
+
+  .journal-entry-page__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 20rem);
+    gap: clamp(1rem, 2.4vw, 1.8rem);
+    align-items: start;
+  }
+
+  .journal-entry-page__article {
+    min-width: 0;
+    display: grid;
+    gap: 1rem;
+    padding-left: clamp(1rem, 2vw, 1.4rem);
+    border-left: 1px solid color-mix(in srgb, var(--accent) 36%, transparent);
+  }
+
+  .journal-entry-page__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+    color: var(--accent);
+    font-size: 0.68rem;
+    font-weight: 700;
+  }
+
+  .journal-entry-page__image {
+    margin: 0;
+    overflow: hidden;
+  }
+
+  .journal-entry-page__image img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .journal-entry-page__content {
+    max-width: 68ch;
+    color: var(--text);
+    font-size: 1.02rem;
+    line-height: 1.78;
+  }
+
+  .journal-entry-page__content :global(h2),
+  .journal-entry-page__content :global(h3) {
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .journal-entry-page__content :global(p) {
+    margin-bottom: 1rem;
+  }
+
+  .journal-entry-page__content :global(ul),
+  .journal-entry-page__content :global(ol) {
+    padding-left: 1.25rem;
+  }
+
+  .journal-entry-page__rail {
+    display: grid;
+    gap: 1rem;
+    align-content: start;
+  }
+
+  .journal-rail-card {
+    display: grid;
+    gap: 0.8rem;
+    border: 1px solid color-mix(in srgb, var(--line-strong) 72%, transparent);
+    background: color-mix(in srgb, var(--surface) 84%, transparent);
+  }
+
+  .journal-rail-card__label {
+    margin: 0;
+    color: var(--accent);
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+
+  .journal-entry-page__topics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+
+  .journal-entry-page__topic {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.85rem;
+    padding: 0.18rem 0.58rem;
+    border: 1px solid color-mix(in srgb, var(--line-strong) 72%, transparent);
+    border-radius: 999px;
+    color: var(--muted);
+    font-size: 0.66rem;
+    text-decoration: none;
+    transition: border-color 180ms ease, color 180ms ease, background 180ms ease;
+  }
+
+  .journal-entry-page__topic:hover,
+  .journal-entry-page__topic:focus-visible {
+    color: var(--text);
+    border-color: color-mix(in srgb, var(--accent) 36%, transparent);
+    background: color-mix(in srgb, var(--accent-soft) 44%, transparent);
+    outline: none;
+  }
+
+  .journal-rail-card__link {
+    width: fit-content;
+    color: var(--accent);
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  @media (max-width: 1024px) {
+    .journal-entry-page__layout {
+      grid-template-columns: 1fr;
+    }
+
+    .journal-entry-page__rail {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 720px) {
+    .journal-entry-page {
+      width: 100%;
+      padding: 0.95rem;
+    }
+
+    .journal-entry-page__title {
+      font-size: clamp(2.3rem, 11vw, 3.8rem);
+    }
+
+    .journal-entry-page__layout,
+    .journal-entry-page__rail {
+      grid-template-columns: 1fr;
+    }
+
+    .journal-entry-page__article {
+      padding-left: 0.9rem;
+    }
+  }
+</style>

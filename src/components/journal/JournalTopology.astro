@@ -1,0 +1,99 @@
+---
+interface Props {
+  class?: string;
+}
+
+const { class: className = "" } = Astro.props as Props;
+---
+<div class:list={[
+  "journal-topology",
+  className,
+]} aria-hidden="true">
+  <div class="journal-topology__sweep" aria-hidden="true"></div>
+  <svg class="journal-topology__svg" viewBox="0 0 1440 960" preserveAspectRatio="none">
+    <defs>
+      <pattern id="journal-hex-pattern" width="72" height="62.35" patternUnits="userSpaceOnUse">
+        <path class="journal-topology__hex" d="M18 1.5h36L71 31.18 54 60.85H18L1 31.18z" />
+        <circle class="journal-topology__node" cx="18" cy="1.5" r="1.2" />
+        <circle class="journal-topology__node" cx="54" cy="1.5" r="1.2" />
+        <circle class="journal-topology__node" cx="71" cy="31.18" r="1.2" />
+        <circle class="journal-topology__node" cx="54" cy="60.85" r="1.2" />
+        <circle class="journal-topology__node" cx="18" cy="60.85" r="1.2" />
+        <circle class="journal-topology__node" cx="1" cy="31.18" r="1.2" />
+        <circle class="journal-topology__node journal-topology__node--center" cx="36" cy="31.18" r="1.05" />
+      </pattern>
+      <linearGradient id="journal-sweep-gradient" x1="0%" y1="100%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="rgba(0, 0, 0, 0)" />
+        <stop offset="45%" stop-color="rgba(0, 0, 0, 0)" />
+        <stop offset="50%" stop-color="rgba(242, 169, 0, 0.25)" />
+        <stop offset="55%" stop-color="rgba(0, 0, 0, 0)" />
+        <stop offset="100%" stop-color="rgba(0, 0, 0, 0)" />
+      </linearGradient>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#journal-hex-pattern)" />
+    <rect class="journal-topology__sweep-band" x="-30%" y="-30%" width="160%" height="160%" fill="url(#journal-sweep-gradient)" />
+  </svg>
+</div>
+
+<style>
+  .journal-topology {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    opacity: 0.2;
+    mix-blend-mode: screen;
+  }
+
+  .journal-topology__svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .journal-topology__hex {
+    fill: none;
+    stroke: color-mix(in srgb, var(--accent) 18%, transparent);
+    stroke-width: 1;
+    opacity: 0.26;
+  }
+
+  .journal-topology__node {
+    fill: color-mix(in srgb, var(--accent) 22%, transparent);
+    opacity: 0.42;
+  }
+
+  .journal-topology__node--center {
+    fill: color-mix(in srgb, var(--accent) 30%, transparent);
+    opacity: 0.5;
+  }
+
+  .journal-topology__sweep {
+    position: absolute;
+    inset: -30%;
+    background: linear-gradient(135deg, transparent 44%, color-mix(in srgb, var(--accent) 12%, transparent) 50%, transparent 56%);
+    filter: blur(18px);
+    opacity: 0.45;
+    animation: journal-diagonal-sweep 18s linear infinite;
+    transform: translate3d(-14%, -12%, 0);
+    will-change: transform;
+  }
+
+  @keyframes journal-diagonal-sweep {
+    0% {
+      transform: translate3d(-16%, -14%, 0);
+    }
+    100% {
+      transform: translate3d(18%, 16%, 0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .journal-topology__sweep {
+      animation: none;
+      opacity: 0.18;
+    }
+  }
+</style>
