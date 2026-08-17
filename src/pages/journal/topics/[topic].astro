@@ -1,0 +1,349 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import JournalTopology from "../../../components/journal/JournalTopology.astro";
+import {
+  createJournalEntryRecords,
+  getJournalArchiveSummary,
+  getJournalTopicSummaries,
+  getTopicBySlug,
+  normalizeJournalTopicSlug,
+} from "../../../lib/journal";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("entries", ({ data }) => data.language === "en");
+  const topics = getJournalTopicSummaries(entries);
+
+  return topics.map((topic) => ({
+    params: { topic: topic.slug },
+  }));
+}
+
+const topicSlug = normalizeJournalTopicSlug(Astro.params.topic ?? "");
+const entries = await getCollection("entries", ({ data }) => data.language === "en");
+const records = createJournalEntryRecords(entries).filter((record) => record.topicSlugs.includes(topicSlug));
+const topic = getTopicBySlug(topicSlug) ?? getJournalTopicSummaries(entries).find((candidate) => candidate.slug === topicSlug) ?? null;
+const archiveSummary = getJournalArchiveSummary(entries);
+const featuredEntry = records[0] ?? null;
+const remainingEntries = records.slice(1);
+---
+<BaseLayout
+  title={`${topic?.name ?? "Topic"} | Journal Topics | thisisgenaro.com`}
+  description={topic?.description || "Journal topic browsing"}
+>
+  <JournalTopology class="journal-topology--topics" />
+  <main class="journal-topic-page">
+    <header class="journal-topic-page__header">
+      <p class="journal-topic-page__eyebrow">JOURNAL</p>
+      <h1 class="journal-topic-page__title">{topic?.name ?? "Topic"}</h1>
+      <p class="journal-topic-page__description">
+        {topic?.description || "A recurring idea in the Journal."}
+      </p>
+    </header>
+
+    <div class="journal-topic-page__layout">
+      <section class="journal-topic-page__main" aria-label="Topic entries">
+        <p class="journal-topic-page__count mono">{records.length} {records.length === 1 ? "entry" : "entries"}</p>
+
+        {featuredEntry ? (
+          <article class="journal-topic-feature">
+            <p class="journal-topic-feature__label">LATEST RELATED ENTRY</p>
+            <div class="journal-topic-feature__meta mono">
+              <span>{featuredEntry.publishedLabel.toUpperCase()}</span>
+              {featuredEntry.readTime ? <span>{featuredEntry.readTime} MIN READ</span> : null}
+            </div>
+            <h2 class="journal-topic-feature__title"><a href={featuredEntry.href}>{featuredEntry.title}</a></h2>
+            <p class="journal-topic-feature__excerpt">{featuredEntry.excerpt}</p>
+            <a class="journal-topic-feature__action" href={featuredEntry.href}>READ ENTRY →</a>
+          </article>
+        ) : (
+          <article class="journal-topic-empty surface surface-pad">
+            <p class="journal-topic-empty__body">No published entries are tagged with this topic yet.</p>
+          </article>
+        )}
+
+        {remainingEntries.length ? (
+          <section class="journal-topic-list" aria-label="Additional entries">
+            {remainingEntries.map((record) => (
+              <a class="journal-topic-row" href={record.href}>
+                <span class="journal-topic-row__date mono">{record.publishedLabel.toUpperCase()}</span>
+                <span class="journal-topic-row__title">{record.title}</span>
+                <span class="journal-topic-row__meta mono">{record.readTime ? `${record.readTime} MIN READ` : ""}</span>
+              </a>
+            ))}
+          </section>
+        ) : null}
+      </section>
+
+      <aside class="journal-topic-page__rail" aria-label="Topic sidebar">
+        <section class="journal-rail-card surface surface-pad">
+          <p class="journal-rail-card__label">ABOUT THE JOURNAL</p>
+          <p class="journal-rail-card__body">
+            Observations from infrastructure work—what failed, what held, and what the systems taught us.
+          </p>
+          <p class="journal-rail-card__body journal-rail-card__body--secondary">
+            Thoughts come first. Context lives inside each entry.
+          </p>
+        </section>
+
+        <section class="journal-rail-card surface surface-pad">
+          <p class="journal-rail-card__label">BROWSE</p>
+          <a class="journal-rail-card__link mono" href="/journal/topics">ALL TOPICS →</a>
+          <a class="journal-rail-card__link mono" href="/journal/entries">ALL ENTRIES →</a>
+          <a class="journal-rail-card__link mono" href="/journal">JOURNAL HOME →</a>
+        </section>
+
+        <section class="journal-rail-card surface surface-pad">
+          <p class="journal-rail-card__label">ARCHIVE SUMMARY</p>
+          <p class="journal-rail-card__total mono">{archiveSummary.totalLabel}</p>
+          <p class="journal-rail-card__body">
+            {archiveSummary.fromLabel} {archiveSummary.toLabel}
+          </p>
+        </section>
+      </aside>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .journal-topic-page {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 84rem);
+    margin: 0 auto;
+    padding: clamp(1rem, 3.5vw, 2.5rem);
+  }
+
+  .journal-topic-page__header {
+    display: grid;
+    gap: 0.55rem;
+    max-width: 44rem;
+    margin-bottom: clamp(1.2rem, 3vw, 2rem);
+    padding-bottom: 1rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--line-strong) 52%, transparent);
+  }
+
+  .journal-topic-page__eyebrow,
+  .journal-topic-page__count,
+  .journal-topic-feature__label,
+  .journal-topic-feature__meta,
+  .journal-topic-feature__action,
+  .journal-topic-row__date,
+  .journal-topic-row__meta,
+  .journal-rail-card__label,
+  .journal-rail-card__link,
+  .journal-rail-card__total {
+    font-family: var(--font-mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .journal-topic-page__eyebrow {
+    margin: 0;
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .journal-topic-page__title {
+    margin: 0;
+    font-size: clamp(2.9rem, 7vw, 5.2rem);
+    line-height: 0.94;
+    letter-spacing: -0.07em;
+  }
+
+  .journal-topic-page__description {
+    max-width: 42rem;
+    margin: 0;
+    color: var(--muted);
+    font-size: clamp(1rem, 1.4vw, 1.15rem);
+    line-height: 1.72;
+  }
+
+  .journal-topic-page__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 20rem);
+    gap: clamp(1rem, 2.4vw, 1.8rem);
+    align-items: start;
+  }
+
+  .journal-topic-page__main {
+    min-width: 0;
+    display: grid;
+    gap: 1rem;
+  }
+
+  .journal-topic-page__count {
+    margin: 0;
+    color: var(--accent);
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+
+  .journal-topic-feature {
+    display: grid;
+    gap: 0.85rem;
+    padding-left: 1rem;
+    border-left: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  }
+
+  .journal-topic-feature__label {
+    margin: 0;
+    color: var(--accent);
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+
+  .journal-topic-feature__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem 1rem;
+    color: var(--accent);
+    font-size: 0.68rem;
+    font-weight: 700;
+  }
+
+  .journal-topic-feature__title {
+    margin: 0;
+    max-width: 40rem;
+    font-size: clamp(2rem, 4.6vw, 4rem);
+    line-height: 0.98;
+    letter-spacing: -0.07em;
+  }
+
+  .journal-topic-feature__title a {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .journal-topic-feature__excerpt {
+    max-width: 46rem;
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.72;
+  }
+
+  .journal-topic-feature__action {
+    width: fit-content;
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .journal-topic-empty {
+    border: 1px solid color-mix(in srgb, var(--line-strong) 72%, transparent);
+    background: color-mix(in srgb, var(--surface) 84%, transparent);
+  }
+
+  .journal-topic-empty__body {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+
+  .journal-topic-list {
+    display: grid;
+    border-top: 1px solid color-mix(in srgb, var(--line-strong) 52%, transparent);
+  }
+
+  .journal-topic-row {
+    display: grid;
+    grid-template-columns: 9rem minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: start;
+    padding: 0.9rem 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--line-strong) 52%, transparent);
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .journal-topic-row__date,
+  .journal-topic-row__meta {
+    color: var(--accent);
+    font-size: 0.68rem;
+    font-weight: 700;
+  }
+
+  .journal-topic-row__title {
+    min-width: 0;
+    font-size: 1rem;
+    line-height: 1.35;
+  }
+
+  .journal-topic-page__rail {
+    display: grid;
+    gap: 1rem;
+    align-content: start;
+  }
+
+  .journal-rail-card {
+    display: grid;
+    gap: 0.8rem;
+    border: 1px solid color-mix(in srgb, var(--line-strong) 72%, transparent);
+    background: color-mix(in srgb, var(--surface) 84%, transparent);
+  }
+
+  .journal-rail-card__label {
+    margin: 0;
+    color: var(--accent);
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+
+  .journal-rail-card__body {
+    margin: 0;
+    color: var(--text);
+    line-height: 1.65;
+  }
+
+  .journal-rail-card__body--secondary {
+    color: var(--muted);
+  }
+
+  .journal-rail-card__link {
+    width: fit-content;
+    color: var(--accent);
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .journal-rail-card__total {
+    margin: 0;
+    color: var(--accent);
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+
+  @media (max-width: 1024px) {
+    .journal-topic-page__layout {
+      grid-template-columns: 1fr;
+    }
+
+    .journal-topic-page__rail {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 720px) {
+    .journal-topic-page {
+      width: 100%;
+      padding: 0.95rem;
+    }
+
+    .journal-topic-page__title {
+      font-size: clamp(2.4rem, 11vw, 3.8rem);
+    }
+
+    .journal-topic-page__layout,
+    .journal-topic-page__rail,
+    .journal-topic-row {
+      grid-template-columns: 1fr;
+    }
+
+    .journal-topic-row {
+      gap: 0.35rem;
+    }
+  }
+</style>

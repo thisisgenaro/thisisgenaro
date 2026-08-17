@@ -19,6 +19,7 @@ const introLogoNode = [
     label: "",
     image: "/gh-logo.png",
     imageScale: 0.82,
+    imageOffsetY: 0.06,
     imageAlign: "center",
     q: 0,
     r: 0,
@@ -39,7 +40,7 @@ const latestJournal = {
   title: "Keeping the operating model readable",
   date: "2026-08-13",
   excerpt:
-    "A practical site works better when structure stays visible without making the page feel like a dashboard demo.",
+    "A clear operating model keeps the thinking readable while leaving room for the human story behind it.",
   href: "/journal",
 };
 
@@ -48,7 +49,7 @@ const latestIncident = {
   title: "Signal route failure",
   date: "2026-08-11",
   summary:
-    "A topology route lost clarity during a transition and needed a bounded camera frame to remain legible.",
+    "A transition briefly obscured the route, so the scene was bounded until the incident could be read clearly again.",
   status: "INVESTIGATING",
   href: "/incidents",
 };
@@ -71,54 +72,63 @@ const latestIncident = {
         showGridNodes={true}
         signalTransitionSpeed={0.9}
       />
-      <div class="home__world-vignette"></div>
     </div>
 
 
     <section class="home__hero">
-      <article class="home__lead" aria-labelledby="home-lead-title">
-        <div class="home__hero-meta">
-          <p class="home__hero-name">Genaro Hernandez</p>
-          <p class="home__hero-role">IT Infrastructure &amp; Cloud Specialist</p>
-        </div>
-        <h1 class="home__headline" id="home-lead-title">
-          <span>Design</span>
-          <span>Automate</span>
-          <span class="home__headline-accent">Keep things running.</span>
-        </h1>
-        <p class="home__lede">
-          I help organizations build resilient infrastructure, gain visibility across their systems and resolve the incidents that matter.
-        </p>
-        <div class="home__lead-actions button-row">
-          <a class="button primary" href="/journal">Journal</a>
-          <a class="button" href="/about/cv">CV</a>
-        </div>
-      </article>
+      <div class="home__hero-grid">
+        <article class="home__lead" aria-labelledby="home-lead-title">
+          <div class="home__hero-meta">
+            <p class="home__hero-role">Sharing infrastructure patterns and incident lessons</p>
+            <p class="home__hero-principle">
+              <span>Design</span>
+              <span>Automate</span>
+              <span class="home__hero-principle-emphasis">Keep things running.</span>
+            </p>
+          </div>
+          <h1 class="home__headline" id="home-lead-title">
+            <span>Genaro Hernández</span>
+          </h1>
+          <p class="home__lede">
+            Learn to see infrastructure beyond servers and dashboards — as systems, dependencies, signals, and decisions.
+          </p>
+          <div class="home__lead-actions button-row">
+            <a class="button primary" href="/journal">Journal</a>
+          </div>
+        </article>
+
+        <aside class="home__inspector surface surface-pad" aria-label="Knowledge System">
+          <p class="home__inspector-kicker">Knowledge System</p>
+          <h2 class="home__inspector-title">Patterns and evidence</h2>
+          <p class="home__inspector-body">
+            The Journal follows the patterns that emerge from the work. The Incident Library preserves the evidence left behind by events. Together, they make experience easier to examine, understand, and carry forward.
+          </p>
+          <div class="home__system-panels">
+            <section class="home__system-panel home__system-panel--journal">
+              <p class="home__system-label">Journal</p>
+              <p class="home__system-copy">
+                Where observations become ideas. Editorial and reflective, it keeps the reasoning visible and explores the patterns, questions, and lessons behind the work.
+              </p>
+            </section>
+            <section class="home__system-panel home__system-panel--incident">
+              <p class="home__system-label">Incident Library</p>
+              <p class="home__system-copy">
+                Where events become records. Structured and operational, it captures what happened, what mattered, and what was learned with enough precision to remain useful later.
+              </p>
+            </section>
+          </div>
+        </aside>
+      </div>
     </section>
 
     <section class="home__content">
-      <aside class="home__inspector surface surface-pad" aria-labelledby="inspector-title">
-        <div class="section-label">
-          <h2 id="inspector-title">Knowledge System</h2>
-        </div>
-        <p class="home__inspector-body">
-          Organizations, incidents, entries, and lessons stay connected through one persistent world.
-        </p>
-        <div class="chip-row">
-          <span class="chip">Shared world</span>
-          <span class="chip">Clear signals</span>
-          <span class="chip">Editorial content</span>
-          <span class="chip">Reusable scenes</span>
-        </div>
-      </aside>
-
       <article class="home__card surface surface-pad home__card--journal">
         <p class="home__card-label">Latest Journal</p>
         <p class="home__card-id mono">{latestJournal.id}</p>
         <h3>{latestJournal.title}</h3>
         <p class="home__card-date">{latestJournal.date}</p>
         <p class="home__card-body">{latestJournal.excerpt}</p>
-        <a class="home__card-link" href={latestJournal.href}>Read journal</a>
+        <a class="home__card-link" href={latestJournal.href}>Read entry</a>
       </article>
 
       <article class="home__card surface surface-pad home__card--incident">
@@ -130,7 +140,7 @@ const latestIncident = {
           <span class="home__status-pill">{latestIncident.status}</span>
         </div>
         <p class="home__card-body">{latestIncident.summary}</p>
-        <a class="home__card-link" href={latestIncident.href}>Open incident</a>
+        <a class="home__card-link" href={latestIncident.href}>Open record</a>
       </article>
     </section>
   </main>
@@ -144,7 +154,7 @@ const latestIncident = {
     gap: clamp(0.75rem, 2vw, 1.15rem);
     min-height: 100svh;
     width: 100%;
-    padding: clamp(1rem, 4vh, 2.4rem) 0;
+    padding: clamp(1rem, 4vh, 2.4rem) clamp(1rem, 3.5vw, 2.4rem);
   }
 
   .home__world {
@@ -152,21 +162,21 @@ const latestIncident = {
     inset: 0;
     z-index: 0;
     pointer-events: auto;
-    opacity: 0.18;
+    opacity: 0.15;
     filter: saturate(0.85);
     transition: opacity 280ms ease, filter 280ms ease;
   }
 
-  html[data-home-intro-state="ready"] .home__world,
-  html[data-home-intro-state="signal"] .home__world,
-  html[data-home-intro-state="logo"] .home__world {
-    opacity: 0.64;
+  html[data-home-intro-state="ready"] .home__world {
+    opacity: 0.58;
     filter: saturate(1.08) brightness(1.12);
   }
 
+  html[data-home-intro-state="signal"] .home__world,
+  html[data-home-intro-state="logo"] .home__world,
   html[data-home-intro-state="handoff"] .home__world {
-    opacity: 0.12;
-    filter: saturate(0.72) brightness(0.92);
+    opacity: 1;
+    filter: saturate(1.08) brightness(1.12);
   }
 
   html[data-home-intro-state="done"] .home__world {
@@ -204,22 +214,22 @@ const latestIncident = {
   }
 
   .home__world .scene-grid {
-    opacity: 0.56;
+    opacity: 0.52;
     transition: opacity 420ms ease, transform 280ms ease;
   }
 
-  html[data-home-intro-state="ready"] .home__world .scene-grid,
-  html[data-home-intro-state="signal"] .home__world .scene-grid,
-  html[data-home-intro-state="logo"] .home__world .scene-grid {
+  html[data-home-intro-state="ready"] .home__world .scene-grid {
     opacity: 1;
   }
 
+  html[data-home-intro-state="signal"] .home__world .scene-grid,
+  html[data-home-intro-state="logo"] .home__world .scene-grid,
   html[data-home-intro-state="handoff"] .home__world .scene-grid {
-    opacity: 0.48;
+    opacity: 1;
   }
 
   html[data-home-intro-state="done"] .home__world .scene-grid {
-    opacity: 0.56;
+    opacity: 0.52;
   }
 
   .home__world [data-node-id="intro-logo"] {
@@ -234,32 +244,41 @@ const latestIncident = {
     opacity: 1;
   }
 
-  html[data-home-intro-state="signal"] .home__world [data-node-id="intro-logo"] .grid-occupant-image,
-  html[data-home-intro-state="logo"] .home__world [data-node-id="intro-logo"] .grid-occupant-image,
-  html[data-home-intro-state="handoff"] .home__world [data-node-id="intro-logo"] .grid-occupant-image {
-    opacity: 0;
+  html[data-home-intro-state="logo"] .home__world [data-node-id="intro-logo"] .grid-occupant-image {
+    opacity: 0 !important;
   }
 
-  html[data-home-intro-state="handoff"] .home__world [data-node-id="intro-logo"],
+  html[data-home-intro-state="logo"] .home__world [data-node-id="intro-logo"] {
+    opacity: 0 !important;
+    pointer-events: none;
+  }
+
   html[data-home-intro-state="done"] .home__world [data-node-id="intro-logo"] {
     opacity: 0;
     cursor: default;
   }
 
+  html[data-home-intro-state="done"] .home__world [data-node-id="intro-logo"],
+  html[data-home-intro-state="done"] .home__world [data-node-id="intro-logo"] * {
+    pointer-events: none;
+  }
+
   .home__world [data-node-id="intro-logo"] .grid-hex.is-logo-border,
   .home__world [data-node-id="intro-logo"] .grid-node.is-logo-border {
-    stroke: var(--accent);
-    fill: color-mix(in srgb, var(--accent) 14%, transparent);
-    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--accent) 38%, transparent));
+    stroke: var(--theme-accent) !important;
+    fill: color-mix(in srgb, var(--theme-accent) 18%, transparent) !important;
+    color: var(--theme-accent) !important;
+    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--theme-accent) 42%, transparent)) !important;
   }
 
   .home__world [data-node-id="intro-logo"] .grid-hex.is-logo-g,
   .home__world [data-node-id="intro-logo"] .grid-node.is-logo-g,
   .home__world [data-node-id="intro-logo"] .grid-hex.is-logo-h,
   .home__world [data-node-id="intro-logo"] .grid-node.is-logo-h {
-    stroke: #ffffff;
-    fill: color-mix(in srgb, #ffffff 16%, transparent);
-    filter: drop-shadow(0 0 8px color-mix(in srgb, #ffffff 26%, transparent));
+    stroke: #ffffff !important;
+    fill: color-mix(in srgb, #ffffff 18%, transparent) !important;
+    color: #ffffff !important;
+    filter: drop-shadow(0 0 8px color-mix(in srgb, #ffffff 26%, transparent)) !important;
   }
 
   .home__world-scene {
@@ -268,64 +287,48 @@ const latestIncident = {
     z-index: 0;
   }
 
-  .home__world-vignette {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    pointer-events: none;
-    background:
-      radial-gradient(circle at 50% 20%, rgba(242, 169, 0, 0.06), transparent 22%),
-      linear-gradient(180deg, rgba(1, 4, 6, 0.08), rgba(1, 4, 6, 0.55));
-  }
-
 
   .home__hero,
   .home__content {
     position: relative;
     z-index: 1;
-    width: min(100%, 78rem);
+    width: min(100%, 84rem);
     margin: 0 auto;
   }
 
   .home__hero {
+    margin-bottom: 1rem;
+  }
+
+  .home__hero-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    min-height: clamp(24rem, 58svh, 40rem);
-    align-content: center;
-    margin-bottom: 0.75rem;
+    grid-template-columns: minmax(0, 1.25fr) minmax(18rem, 0.75fr);
+    gap: clamp(0.9rem, 1.8vw, 1.25rem);
+    align-items: start;
   }
 
   .home__content {
     display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
-    gap: 0.85rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
     align-items: start;
+    max-width: 84rem;
   }
 
   .home__lead {
-    padding-inline: 0;
-    padding-block: 0.2rem 0;
+    display: grid;
+    gap: 1.1rem;
+    padding: 0;
     border: 0;
     border-radius: 0;
     background: transparent;
     box-shadow: none;
-    gap: 1.35rem;
-    min-height: 26rem;
-    padding-block: 0.9rem 0.35rem;
+    min-height: 24rem;
   }
 
   .home__hero-meta {
     display: grid;
-    gap: 0.3rem;
-  }
-
-  .home__hero-name {
-    margin: 0;
-    color: var(--text);
-    font-family: var(--font-title);
-    font-size: clamp(1.35rem, 2vw, 1.8rem);
-    letter-spacing: -0.03em;
-    line-height: 1.02;
+    gap: 0.6rem;
   }
 
   .home__hero-role {
@@ -338,21 +341,46 @@ const latestIncident = {
     text-transform: uppercase;
   }
 
+  .home__hero-principle {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin: 0;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .home__hero-principle span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    padding: 0.2rem 0.65rem;
+    border: 1px solid color-mix(in srgb, var(--line-strong) 72%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--surface) 72%, transparent);
+  }
+
+  .home__hero-principle-emphasis {
+    color: var(--accent);
+    border-color: color-mix(in srgb, var(--accent) 28%, transparent) !important;
+    background: color-mix(in srgb, var(--accent-soft) 52%, transparent) !important;
+  }
+
   .home__headline {
     margin: 0;
     display: grid;
     gap: 0.04em;
-    font-size: clamp(3rem, 6.7vw, 6.2rem);
+    font-size: clamp(3.5rem, 7vw, 6.9rem);
     line-height: 0.9;
     letter-spacing: -0.06em;
   }
 
-  .home__headline-accent {
-    color: var(--accent);
-  }
-
   .home__lede {
-    max-width: 32rem;
+    max-width: 41rem;
     margin: 0;
     color: var(--text);
     font-size: clamp(1.02rem, 1.55vw, 1.18rem);
@@ -360,12 +388,18 @@ const latestIncident = {
   }
 
   .home__lead-actions {
-    margin-top: 0.55rem;
+    margin-top: 0.1rem;
   }
 
   .home__inspector {
+    align-self: stretch;
     display: grid;
     gap: 0.8rem;
+    min-height: 100%;
+    padding: clamp(0.95rem, 1.8vw, 1.25rem);
+    border: 1px solid color-mix(in srgb, var(--line-strong) 82%, transparent);
+    background: color-mix(in srgb, var(--surface) 78%, transparent);
+    backdrop-filter: blur(10px);
   }
 
   .home__inspector-kicker {
@@ -376,20 +410,63 @@ const latestIncident = {
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    display: inline-flex;
-    align-items: center;
-    min-height: 2.4rem;
-    padding: 0.45rem 0.8rem;
-    border: 1px solid transparent;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.02);
-    transition: border-color 180ms ease, background 180ms ease, transform 180ms ease;
+  }
+
+  .home__inspector-title {
+    margin: 0;
+    font-size: 1.02rem;
+    line-height: 1.15;
   }
 
   .home__inspector-body {
     margin: 0;
+    max-width: 42ch;
     color: var(--muted);
-    line-height: 1.6;
+    line-height: 1.54;
+  }
+
+  .home__system-panels {
+    display: grid;
+    gap: 0.72rem;
+    margin-top: 0.1rem;
+  }
+
+  .home__system-panel {
+    display: grid;
+    gap: 0.28rem;
+    padding: 0.75rem 0.82rem;
+    border: 1px solid color-mix(in srgb, var(--line-strong) 72%, transparent);
+    border-radius: 0.8rem;
+    background: color-mix(in srgb, var(--surface-high) 55%, transparent);
+  }
+
+  .home__system-panel--journal {
+    border-color: color-mix(in srgb, var(--accent) 24%, transparent);
+  }
+
+  .home__system-panel--incident {
+    border-color: color-mix(in srgb, var(--blue) 24%, transparent);
+  }
+
+  .home__system-label {
+    margin: 0;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+  }
+
+  .home__system-panel--incident .home__system-label {
+    color: var(--blue);
+  }
+
+  .home__system-copy {
+    margin: 0;
+    max-width: 34ch;
+    color: var(--text);
+    line-height: 1.5;
   }
 
   .home__card {
@@ -419,10 +496,6 @@ const latestIncident = {
     z-index: -1;
   }
 
-  html[data-home-intro-state="done"] .home__hero,
-  html[data-home-intro-state="done"] .home__content {
-    transition-delay: 220ms;
-  }
 
   .home__hero,
   .home__content {
@@ -537,6 +610,7 @@ const latestIncident = {
   @media (max-width: 980px) {
     .home__content {
       grid-template-columns: 1fr;
+      max-width: none;
     }
   }
 
@@ -559,25 +633,63 @@ const latestIncident = {
       margin-bottom: 0.95rem;
     }
 
+    .home__hero-grid {
+      grid-template-columns: 1fr;
+      gap: 0.8rem;
+    }
+
     .home__lead {
-      gap: 0.9rem;
-      min-height: 18rem;
+      gap: 0.95rem;
+      min-height: 0;
     }
 
     .home__hero-meta {
-      gap: 0.1rem;
-    }
-
-    .home__hero-name {
-      font-size: clamp(1.2rem, 7vw, 1.55rem);
+      gap: 0.3rem;
     }
 
     .home__hero-role {
-      font-size: 0.7rem;
+      font-size: 0.68rem;
+    }
+
+    .home__hero-principle {
+      gap: 0.35rem;
+      font-size: 0.64rem;
+    }
+
+    .home__hero-principle span {
+      min-height: 1.7rem;
+      padding-inline: 0.55rem;
     }
 
     .home__content {
       gap: 0.8rem;
+    }
+
+    .home__inspector {
+      padding: 0.9rem;
+      gap: 0.68rem;
+    }
+
+    .home__inspector-title {
+      font-size: 0.96rem;
+    }
+
+    .home__inspector-body {
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    .home__system-panels {
+      gap: 0.62rem;
+    }
+
+    .home__system-panel {
+      padding: 0.72rem 0.78rem;
+    }
+
+    .home__system-copy {
+      font-size: 0.91rem;
+      line-height: 1.48;
     }
 
     .home__card {
@@ -592,9 +704,10 @@ const latestIncident = {
       font-size: 1rem;
     }
 
-    .home__card-body {
-      max-width: none;
-      font-size: 0.96rem;
+    .home__card-body,
+    .home__card-date,
+    .home__card-id {
+      display: none;
     }
 
     .home__status-row {
@@ -604,8 +717,8 @@ const latestIncident = {
     }
 
     .home__headline {
-      font-size: clamp(2.55rem, 15vw, 4.1rem);
-      line-height: 0.94;
+      font-size: clamp(2.4rem, 13vw, 3.8rem);
+      line-height: 0.98;
     }
 
     .home__lead-actions {
@@ -622,19 +735,21 @@ const latestIncident = {
 </style>
 
 <script>
-  import { getGhLogoFrame } from "operational-topology/labs";
+  import { GH_LOGO_ROLE_BY_CELL, getGhLogoFrame } from "operational-topology/labs";
 
   const root = document.documentElement;
   const worldSceneRoot = document.querySelector(".home__world-scene");
   const worldCellsPayload = worldSceneRoot?.querySelector(".topology-scene__cells");
+  const introLogoNode = worldSceneRoot?.querySelector("[data-node-id='intro-logo']");
 
   const stateClasses = ["is-origin", "is-propagating", "is-receiving", "is-resolved"];
   const logoCellCache = new Map();
 
   const originHoldMs = 2200;
   const handoffFadeMs = 500;
-  const logoStartDelayMs = 120;
+  const logoStartDelayMs = 500;
   const logoAnimationOffsetMs = 1700;
+  const desktopLogoDurationMs = 4600;
 
   let introAnimating = false;
   let logoFrameRaf = 0;
@@ -699,9 +814,42 @@ const latestIncident = {
     }
   };
 
+  const clearLogoActivity = (cells) => {
+    for (const cell of cells) {
+      const elements = logoCellCache.get(cell.id);
+      if (!elements) continue;
+      for (const element of elements) {
+        element.dataset.cellState = "idle";
+        element.dataset.logoRole = "";
+        element.classList.remove("is-active", "is-origin", "is-propagating", "is-receiving", "is-resolved", "is-logo-border", "is-logo-g", "is-logo-h");
+        element.style.removeProperty("--cell-intensity");
+        element.style.removeProperty("opacity");
+        element.style.removeProperty("transform");
+      }
+    }
+  };
+
+  const fadeOutLogoActivity = (cells) => {
+    for (const cell of cells) {
+      const elements = logoCellCache.get(cell.id);
+      if (!elements) continue;
+      for (const element of elements) {
+        element.style.opacity = "0";
+        element.style.transform = "scale(0.985)";
+      }
+    }
+  };
+
+  const fadeIntroLogoNode = (hidden) => {
+    if (!introLogoNode) return;
+    introLogoNode.style.opacity = hidden ? "0" : "";
+    introLogoNode.style.pointerEvents = hidden ? "none" : "";
+  };
+
   const finishIntro = () => {
     if (logoFrameRaf) cancelAnimationFrame(logoFrameRaf);
     if (logoCleanupTimer) window.clearTimeout(logoCleanupTimer);
+    clearLogoActivity(getLogoCells());
     introAnimating = false;
     syncState("done");
   };
@@ -721,7 +869,7 @@ const latestIncident = {
     collectLogoElements(cells);
 
     const startedAt = performance.now();
-    const duration = 4600;
+    const duration = desktopLogoDurationMs;
 
     const tick = (now) => {
       const elapsed = now - startedAt + logoAnimationOffsetMs;
@@ -735,7 +883,6 @@ const latestIncident = {
         finishIntro();
       }, handoffFadeMs);
     };
-
     logoFrameRaf = requestAnimationFrame(tick);
   };
 
@@ -745,6 +892,7 @@ const latestIncident = {
     syncState("signal");
     window.setTimeout(() => {
       syncState("logo");
+      fadeIntroLogoNode(true);
       window.setTimeout(() => {
         playLogoAnimation();
       }, logoStartDelayMs);

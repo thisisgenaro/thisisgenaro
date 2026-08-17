@@ -1,0 +1,5 @@
+.astro/
+dist/
+node_modules/
+gh-logo.png
+public/gh-logo.jpg

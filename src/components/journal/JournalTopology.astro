@@ -1,0 +1,227 @@
+---
+import {
+  createViewportFitHexGrid,
+  prepareTopologyRenderFrame,
+  renderTopologyGridMarkup,
+} from "operational-topology";
+import { getDiagonalSweepFrame, toGridCellStateMap } from "operational-topology/labs";
+
+interface Props {
+  class?: string;
+}
+
+const { class: className = "" } = Astro.props as Props;
+---
+<div class:list={["journal-topology", className]} aria-hidden="true" data-journal-topology>
+  <div class="journal-topology__grid-host" data-topology-grid></div>
+</div>
+
+<script>
+  import {
+    createViewportFitHexGrid,
+    prepareTopologyRenderFrame,
+    renderTopologyGridMarkup,
+  } from "operational-topology";
+  import { getDiagonalSweepFrame, toGridCellStateMap } from "operational-topology/labs";
+
+  const hosts = document.querySelectorAll("[data-journal-topology]");
+
+  for (const host of hosts) {
+    const gridHost = host.querySelector("[data-topology-grid]");
+    if (!(gridHost instanceof HTMLElement)) continue;
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const mobileRailQuery = window.matchMedia("(max-width: 860px)");
+    const root = document.documentElement;
+    let intervalId = 0;
+    let frameIndex = 0;
+    let cells = [];
+    let bandSpan = 1;
+    let frame = null;
+    let lastWidth = 0;
+    let lastHeight = 0;
+
+    const radiusForViewport = () => (mobileRailQuery.matches ? 44 : 40);
+
+    const updateViewportOffset = () => {
+      const collapsed = root.dataset.shellRail !== "expanded";
+      const isMobile = mobileRailQuery.matches;
+      const railWidth = root.style.getPropertyValue("--shell-rail-current-width").trim() || (collapsed ? "5.25rem" : "15.5rem");
+      host.style.setProperty("--journal-topology-offset-left", isMobile ? "0px" : railWidth);
+      host.style.setProperty("--journal-topology-offset-top", isMobile ? "5rem" : "0px");
+    };
+
+    const buildFrame = (width, height) => {
+      const radius = radiusForViewport();
+      cells = createViewportFitHexGrid({ radius, width, height });
+      const bands = cells.map((cell) => cell.q + cell.r);
+      bandSpan = Math.max(1, Math.max(...bands) - Math.min(...bands) + 1);
+      frame = prepareTopologyRenderFrame({ cells });
+    };
+
+    const render = () => {
+      if (!frame || !cells.length) return;
+
+      const states = getDiagonalSweepFrame({
+        cells,
+        frame: frameIndex,
+        width: bandSpan,
+        trail: 4,
+        wrap: true,
+      });
+
+      gridHost.innerHTML = renderTopologyGridMarkup({
+        frame,
+        radius: mobileRailQuery.matches ? 44 : 40,
+        cellStates: toGridCellStateMap(states),
+        showNodes: true,
+        className: "journal-topology__grid",
+        connectorRouting: "straight",
+      });
+    };
+
+    const stop = () => {
+      if (intervalId) {
+        window.clearInterval(intervalId);
+        intervalId = 0;
+      }
+    };
+
+    const start = () => {
+      stop();
+      render();
+      if (reducedMotion.matches) return;
+      intervalId = window.setInterval(() => {
+        frameIndex = (frameIndex + 1) % bandSpan;
+        render();
+      }, 180);
+    };
+
+    const rebuild = () => {
+      const rect = host.getBoundingClientRect();
+      const width = Math.max(1, Math.round(rect.width));
+      const height = Math.max(1, Math.round(rect.height));
+      if (width === lastWidth && height === lastHeight) return;
+      lastWidth = width;
+      lastHeight = height;
+      buildFrame(width, height);
+      start();
+    };
+
+    const resizeObserver = "ResizeObserver" in window
+      ? new ResizeObserver(() => rebuild())
+      : null;
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        stop();
+        return;
+      }
+
+      start();
+    };
+
+    const handleMediaChange = () => {
+      updateViewportOffset();
+      rebuild();
+    };
+
+    reducedMotion.addEventListener("change", start);
+    mobileRailQuery.addEventListener("change", handleMediaChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    resizeObserver?.observe(host);
+    updateViewportOffset();
+    rebuild();
+
+    window.addEventListener("pagehide", () => {
+      stop();
+      resizeObserver?.disconnect();
+    }, { once: true });
+  }
+</script>
+
+<style>
+  .journal-topology {
+    position: fixed;
+    inset: 0;
+    inset-inline-start: var(--journal-topology-offset-left, var(--shell-rail-collapsed, 0px));
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    opacity: 0.18;
+    filter: saturate(0.9);
+  }
+
+  .journal-topology__grid-host {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .journal-topology :global(.topology-grid) {
+    width: 100%;
+    height: 100%;
+    display: block;
+    overflow: visible;
+    color: color-mix(in srgb, var(--accent) 14%, transparent);
+    pointer-events: none;
+  }
+
+  .journal-topology :global(.grid-lines),
+  .journal-topology :global(.grid-nodes),
+  .journal-topology :global(.grid-connectors),
+  .journal-topology :global(.grid-occupants) {
+    pointer-events: none;
+  }
+
+  .journal-topology :global(.grid-hex) {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+    opacity: calc(var(--grid-line-opacity, 0.34) * var(--cell-intensity, 1) * var(--cell-edge-factor, 1));
+  }
+
+  .journal-topology :global(.grid-hex[data-cell-state="idle"]:not(.is-origin):not(.is-propagating):not(.is-receiving):not(.is-resolved)) {
+    fill: var(--scene-cell, rgba(255, 250, 238, 0.01));
+    stroke: var(--scene-grid, rgba(190, 184, 169, 0.16));
+    opacity: calc(0.28 * var(--cell-edge-factor, 1));
+  }
+
+  .journal-topology :global(.grid-hex[data-cell-state="trail"]),
+  .journal-topology :global(.grid-hex[data-cell-state="converted"]) {
+    stroke: var(--accent);
+    fill: var(--accent);
+    opacity: calc(1 * var(--cell-intensity, 1) * var(--cell-edge-factor, 1));
+    filter: none;
+  }
+
+  .journal-topology :global(.grid-hex-signal[data-cell-state="trail"]),
+  .journal-topology :global(.grid-hex-signal[data-cell-state="converted"]) {
+    stroke: var(--accent);
+    opacity: calc(1 * var(--cell-intensity, 1) * var(--cell-edge-factor, 1));
+    filter: none;
+  }
+
+  .journal-topology :global(.grid-node) {
+    fill: color-mix(in srgb, var(--accent) 24%, transparent);
+    opacity: 0.16;
+  }
+
+  .journal-topology :global(.grid-node-signal.is-active),
+  .journal-topology :global(.grid-node.is-active) {
+    fill: color-mix(in srgb, var(--accent) 48%, white 10%);
+    opacity: 0.3;
+  }
+
+  @media (max-width: 860px) {
+    .journal-topology {
+      inset-inline-start: 0;
+      inset-block-start: var(--shell-mobile-rail-height, 5rem);
+      opacity: 0.16;
+    }
+  }
+</style>

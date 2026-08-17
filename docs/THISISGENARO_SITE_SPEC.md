@@ -759,6 +759,29 @@ The page should prioritize reading and discovery.
 
 ## 41. Journal Entry
 
+Journal entries should be authored as Markdown or MDX with frontmatter.
+
+Recommended frontmatter:
+
+- id
+- language
+- title
+- date
+- summary
+- tags/categories
+- organizationIds
+- incidentIds
+- personIds
+- image
+- readingTime
+
+Recommended body:
+
+- short introduction
+- reflective sections or subheads
+- lessons or conclusions
+- optional related links
+
 Individual Journal pages should minimize technical visual noise.
 
 Recommended:
@@ -771,8 +794,6 @@ Recommended:
 - optional generated imagery
 
 No full topology scene unless a specific article genuinely requires it.
-
----
 
 ## 42. Journal Imagery
 
@@ -788,16 +809,34 @@ Images should support the writing rather than become mandatory content decoratio
 
 The Incidents section should feel like a ServiceDesk / operational record.
 
+The index cards are metadata-only. They do not surface scenes, root cause, or narrative detail.
+
+Recommended card fields:
+
+- title
+- status
+- organization
+- requester
+- created
+- closed, when present
+
+Recommended card order:
+
+- title on the left
+- status pill on the right
+- organization below title
+- requester below organization
+- created date in the footer row
+- closed date only when the incident is closed
+
+Mobile behavior:
+
+- keep the card compact
+- collapse the footer row to created plus closed if present
+- omit closed entirely while the incident is open
+- preserve the status pill
+
 It is intentionally denser and more technical than Journal.
-
-Recommended entry:
-
-- INC-0027
-- Signal route failure
-- system / area
-- date
-- severity
-- status pill
 
 ---
 
@@ -811,6 +850,7 @@ Visual character:
 - clear status
 - clear severity
 - clean filtering / sorting if later added
+- hex-led framing where possible
 
 This page should still belong to Imperial Gold but feel more operational.
 
@@ -837,6 +877,43 @@ Use the existing theme's semantic color system rather than hard-coding arbitrary
 
 Incident Detail is the page where OTF becomes a primary explanatory medium.
 
+The incident body should be a presentation, not a linear report.
+
+Recommended incident presentation structure:
+
+- INCIDENT HEADER
+- SCENE LIST / PRESENTATION FLOW
+- TOPOLOGY / WORLD
+- INSPECTOR
+- TIMELINE
+- ROOT CAUSE
+- RESOLUTION
+- FOLLOW-UP / NOTES
+
+The report or scene sequence should be driven by a scene array in frontmatter or adjacent structured data. Each scene should define:
+
+- sceneId
+- label
+- title
+- summary
+- topologyLayout
+- camera
+- nodes
+- connectors
+- highlights
+- inspector
+- optional nextScene / actions
+
+Suggested topology layouts for the canonical incident sections:
+
+- Overview -> ring
+- Executive Report -> swimlanes
+- Technical Analysis -> matrix
+- Root Cause -> basin
+- Dependency Map -> fan
+- Timeline -> linear
+- Lessons -> territories
+
 Desktop structure:
 
 - INCIDENT HEADER
@@ -846,8 +923,6 @@ Desktop structure:
 - ROOT CAUSE
 - RESOLUTION
 - FOLLOW-UP / NOTES
-
----
 
 ## 47. Incident Scene Framing
 
@@ -1209,11 +1284,16 @@ Do not turn the footer into another topology scene.
 
 A Journal entry should support at minimum:
 
+- id
+- language
 - title
 - date
 - summary
 - body
-- tags/categories if needed
+- tags/categories
+- organizationIds
+- incidentIds
+- personIds
 
 Optional:
 
@@ -1221,22 +1301,34 @@ Optional:
 - reading time
 - related entries
 
----
+Journal entries should be Markdown/MDX authored documents with structured frontmatter and a readable body.
 
 ## 70. Content Model - Incident
 
 An Incident should support at minimum:
 
-- incident ID
+- id
+- incidentId
+- language
 - title
 - status
 - severity
+- opened
+- restored
 - date
 - summary
-- affected system
-- timeline
-- root cause
-- resolution
+- executiveSummary
+- service
+- organizationId
+- category
+- duration
+- primarySystems
+- affectedServices
+- peopleIds
+- tags
+- owner
+- body
+- scenes
 
 Optional OTF-linked content:
 
@@ -1246,8 +1338,36 @@ Optional OTF-linked content:
 - signal route
 - failure state
 - rerouting data
+- inspector data
+- related incidents
+- follow-up actions
 
----
+The scene sequence should be presentation-first: each scene explains one step of the incident and can drive the inspector state.
+
+Incident scene objects should support structured fields such as:
+
+- sceneId
+- label
+- title
+- summary
+- topologyLayout
+- camera
+- nodes
+- connectors
+- highlights
+- inspector
+- nextScene
+- actions
+
+Suggested layout mapping:
+
+- Overview -> ring
+- Executive Report -> swimlanes
+- Technical Analysis -> matrix
+- Root Cause -> basin
+- Dependency Map -> fan
+- Timeline -> linear
+- Lessons -> territories
 
 ## 71. Content Model - CV
 
