@@ -193,17 +193,17 @@ const { class: className = "" } = Astro.props as Props;
 
   .journal-topology :global(.grid-hex[data-cell-state="trail"]),
   .journal-topology :global(.grid-hex[data-cell-state="converted"]) {
-    stroke: color-mix(in srgb, var(--accent) 52%, white 8%);
-    fill: color-mix(in srgb, var(--accent) 16%, transparent);
-    opacity: calc(0.94 * var(--cell-intensity, 1) * var(--cell-edge-factor, 1));
-    filter: drop-shadow(0 0 8px color-mix(in srgb, var(--accent) 24%, transparent));
+    stroke: var(--accent);
+    fill: var(--accent);
+    opacity: calc(1 * var(--cell-intensity, 1) * var(--cell-edge-factor, 1));
+    filter: none;
   }
 
   .journal-topology :global(.grid-hex-signal[data-cell-state="trail"]),
   .journal-topology :global(.grid-hex-signal[data-cell-state="converted"]) {
-    stroke: color-mix(in srgb, var(--accent) 60%, white 12%);
-    opacity: calc(0.96 * var(--cell-intensity, 1) * var(--cell-edge-factor, 1));
-    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--accent) 30%, transparent));
+    stroke: var(--accent);
+    opacity: calc(1 * var(--cell-intensity, 1) * var(--cell-edge-factor, 1));
+    filter: none;
   }
 
   .journal-topology :global(.grid-node) {
