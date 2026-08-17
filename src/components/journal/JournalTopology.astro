@@ -1,99 +1,226 @@
 ---
+import {
+  createViewportFitHexGrid,
+  prepareTopologyRenderFrame,
+  renderTopologyGridMarkup,
+} from "operational-topology";
+import { getDiagonalSweepFrame, toGridCellStateMap } from "operational-topology/labs";
+
 interface Props {
   class?: string;
 }
 
 const { class: className = "" } = Astro.props as Props;
 ---
-<div class:list={[
-  "journal-topology",
-  className,
-]} aria-hidden="true">
-  <div class="journal-topology__sweep" aria-hidden="true"></div>
-  <svg class="journal-topology__svg" viewBox="0 0 1440 960" preserveAspectRatio="none">
-    <defs>
-      <pattern id="journal-hex-pattern" width="72" height="62.35" patternUnits="userSpaceOnUse">
-        <path class="journal-topology__hex" d="M18 1.5h36L71 31.18 54 60.85H18L1 31.18z" />
-        <circle class="journal-topology__node" cx="18" cy="1.5" r="1.2" />
-        <circle class="journal-topology__node" cx="54" cy="1.5" r="1.2" />
-        <circle class="journal-topology__node" cx="71" cy="31.18" r="1.2" />
-        <circle class="journal-topology__node" cx="54" cy="60.85" r="1.2" />
-        <circle class="journal-topology__node" cx="18" cy="60.85" r="1.2" />
-        <circle class="journal-topology__node" cx="1" cy="31.18" r="1.2" />
-        <circle class="journal-topology__node journal-topology__node--center" cx="36" cy="31.18" r="1.05" />
-      </pattern>
-      <linearGradient id="journal-sweep-gradient" x1="0%" y1="100%" x2="100%" y2="0%">
-        <stop offset="0%" stop-color="rgba(0, 0, 0, 0)" />
-        <stop offset="45%" stop-color="rgba(0, 0, 0, 0)" />
-        <stop offset="50%" stop-color="rgba(242, 169, 0, 0.25)" />
-        <stop offset="55%" stop-color="rgba(0, 0, 0, 0)" />
-        <stop offset="100%" stop-color="rgba(0, 0, 0, 0)" />
-      </linearGradient>
-    </defs>
-    <rect width="100%" height="100%" fill="url(#journal-hex-pattern)" />
-    <rect class="journal-topology__sweep-band" x="-30%" y="-30%" width="160%" height="160%" fill="url(#journal-sweep-gradient)" />
-  </svg>
+<div class:list={["journal-topology", className]} aria-hidden="true" data-journal-topology>
+  <div class="journal-topology__grid-host" data-topology-grid></div>
 </div>
+
+<script>
+  import {
+    createViewportFitHexGrid,
+    prepareTopologyRenderFrame,
+    renderTopologyGridMarkup,
+  } from "operational-topology";
+  import { getDiagonalSweepFrame, toGridCellStateMap } from "operational-topology/labs";
+
+  const hosts = document.querySelectorAll("[data-journal-topology]");
+
+  for (const host of hosts) {
+    const gridHost = host.querySelector("[data-topology-grid]");
+    if (!(gridHost instanceof HTMLElement)) continue;
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const mobileRailQuery = window.matchMedia("(max-width: 860px)");
+    const root = document.documentElement;
+    let intervalId = 0;
+    let frameIndex = 0;
+    let cells = [];
+    let bandSpan = 1;
+    let frame = null;
+    let lastWidth = 0;
+    let lastHeight = 0;
+
+    const radiusForViewport = () => (mobileRailQuery.matches ? 44 : 40);
+
+    const updateViewportOffset = () => {
+      const collapsed = root.dataset.shellRail !== "expanded";
+      const isMobile = mobileRailQuery.matches;
+      host.style.setProperty("--journal-topology-offset-left", isMobile ? "0px" : (collapsed ? "5.25rem" : "17rem"));
+      host.style.setProperty("--journal-topology-offset-top", isMobile ? "5rem" : "0px");
+    };
+
+    const buildFrame = (width, height) => {
+      const radius = radiusForViewport();
+      cells = createViewportFitHexGrid({ radius, width, height });
+      const bands = cells.map((cell) => cell.q + cell.r);
+      bandSpan = Math.max(1, Math.max(...bands) - Math.min(...bands) + 1);
+      frame = prepareTopologyRenderFrame({ cells });
+    };
+
+    const render = () => {
+      if (!frame || !cells.length) return;
+
+      const states = getDiagonalSweepFrame({
+        cells,
+        frame: frameIndex,
+        width: bandSpan,
+        trail: 4,
+        wrap: true,
+      });
+
+      gridHost.innerHTML = renderTopologyGridMarkup({
+        frame,
+        radius: mobileRailQuery.matches ? 44 : 40,
+        cellStates: toGridCellStateMap(states),
+        showNodes: true,
+        className: "journal-topology__grid",
+        connectorRouting: "straight",
+      });
+    };
+
+    const stop = () => {
+      if (intervalId) {
+        window.clearInterval(intervalId);
+        intervalId = 0;
+      }
+    };
+
+    const start = () => {
+      stop();
+      render();
+      if (reducedMotion.matches) return;
+      intervalId = window.setInterval(() => {
+        frameIndex = (frameIndex + 1) % bandSpan;
+        render();
+      }, 180);
+    };
+
+    const rebuild = () => {
+      const rect = host.getBoundingClientRect();
+      const width = Math.max(1, Math.round(rect.width));
+      const height = Math.max(1, Math.round(rect.height));
+      if (width === lastWidth && height === lastHeight) return;
+      lastWidth = width;
+      lastHeight = height;
+      buildFrame(width, height);
+      start();
+    };
+
+    const resizeObserver = "ResizeObserver" in window
+      ? new ResizeObserver(() => rebuild())
+      : null;
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        stop();
+        return;
+      }
+
+      start();
+    };
+
+    const handleMediaChange = () => {
+      updateViewportOffset();
+      rebuild();
+    };
+
+    reducedMotion.addEventListener("change", start);
+    mobileRailQuery.addEventListener("change", handleMediaChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    resizeObserver?.observe(host);
+    updateViewportOffset();
+    rebuild();
+
+    window.addEventListener("pagehide", () => {
+      stop();
+      resizeObserver?.disconnect();
+    }, { once: true });
+  }
+</script>
 
 <style>
   .journal-topology {
     position: fixed;
     inset: 0;
+    inset-inline-start: var(--journal-topology-offset-left, var(--shell-rail-collapsed, 0px));
     z-index: 0;
     pointer-events: none;
     overflow: hidden;
-    opacity: 0.2;
-    mix-blend-mode: screen;
+    opacity: 0.18;
+    filter: saturate(0.9);
   }
 
-  .journal-topology__svg {
+  .journal-topology__grid-host {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
   }
 
-  .journal-topology__hex {
+  .journal-topology :global(.topology-grid) {
+    width: 100%;
+    height: 100%;
+    display: block;
+    overflow: visible;
+    color: color-mix(in srgb, var(--accent) 14%, transparent);
+    pointer-events: none;
+  }
+
+  .journal-topology :global(.grid-lines),
+  .journal-topology :global(.grid-nodes),
+  .journal-topology :global(.grid-connectors),
+  .journal-topology :global(.grid-occupants) {
+    pointer-events: none;
+  }
+
+  .journal-topology :global(.grid-hex) {
     fill: none;
-    stroke: color-mix(in srgb, var(--accent) 18%, transparent);
+    stroke: currentColor;
     stroke-width: 1;
-    opacity: 0.26;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+    opacity: calc(var(--grid-line-opacity, 0.34) * var(--cell-intensity, 1) * var(--cell-edge-factor, 1));
   }
 
-  .journal-topology__node {
-    fill: color-mix(in srgb, var(--accent) 22%, transparent);
-    opacity: 0.42;
+  .journal-topology :global(.grid-hex[data-cell-state="idle"]:not(.is-origin):not(.is-propagating):not(.is-receiving):not(.is-resolved)) {
+    fill: var(--scene-cell, rgba(255, 250, 238, 0.01));
+    stroke: var(--scene-grid, rgba(190, 184, 169, 0.16));
+    opacity: calc(0.28 * var(--cell-edge-factor, 1));
   }
 
-  .journal-topology__node--center {
-    fill: color-mix(in srgb, var(--accent) 30%, transparent);
-    opacity: 0.5;
+  .journal-topology :global(.grid-hex[data-cell-state="trail"]),
+  .journal-topology :global(.grid-hex[data-cell-state="converted"]) {
+    stroke: color-mix(in srgb, var(--accent) 52%, white 8%);
+    fill: color-mix(in srgb, var(--accent) 16%, transparent);
+    opacity: calc(0.94 * var(--cell-intensity, 1) * var(--cell-edge-factor, 1));
+    filter: drop-shadow(0 0 8px color-mix(in srgb, var(--accent) 24%, transparent));
   }
 
-  .journal-topology__sweep {
-    position: absolute;
-    inset: -30%;
-    background: linear-gradient(135deg, transparent 44%, color-mix(in srgb, var(--accent) 12%, transparent) 50%, transparent 56%);
-    filter: blur(18px);
-    opacity: 0.45;
-    animation: journal-diagonal-sweep 18s linear infinite;
-    transform: translate3d(-14%, -12%, 0);
-    will-change: transform;
+  .journal-topology :global(.grid-hex-signal[data-cell-state="trail"]),
+  .journal-topology :global(.grid-hex-signal[data-cell-state="converted"]) {
+    stroke: color-mix(in srgb, var(--accent) 60%, white 12%);
+    opacity: calc(0.96 * var(--cell-intensity, 1) * var(--cell-edge-factor, 1));
+    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--accent) 30%, transparent));
   }
 
-  @keyframes journal-diagonal-sweep {
-    0% {
-      transform: translate3d(-16%, -14%, 0);
-    }
-    100% {
-      transform: translate3d(18%, 16%, 0);
-    }
+  .journal-topology :global(.grid-node) {
+    fill: color-mix(in srgb, var(--accent) 24%, transparent);
+    opacity: 0.16;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .journal-topology__sweep {
-      animation: none;
-      opacity: 0.18;
+  .journal-topology :global(.grid-node-signal.is-active),
+  .journal-topology :global(.grid-node.is-active) {
+    fill: color-mix(in srgb, var(--accent) 48%, white 10%);
+    opacity: 0.3;
+  }
+
+  @media (max-width: 860px) {
+    .journal-topology {
+      inset-inline-start: 0;
+      inset-block-start: var(--shell-mobile-rail-height, 5rem);
+      opacity: 0.16;
     }
   }
 </style>
