@@ -46,7 +46,8 @@ const { class: className = "" } = Astro.props as Props;
     const updateViewportOffset = () => {
       const collapsed = root.dataset.shellRail !== "expanded";
       const isMobile = mobileRailQuery.matches;
-      host.style.setProperty("--journal-topology-offset-left", isMobile ? "0px" : (collapsed ? "5.25rem" : "17rem"));
+      const railWidth = root.style.getPropertyValue("--shell-rail-current-width").trim() || (collapsed ? "5.25rem" : "15.5rem");
+      host.style.setProperty("--journal-topology-offset-left", isMobile ? "0px" : railWidth);
       host.style.setProperty("--journal-topology-offset-top", isMobile ? "5rem" : "0px");
     };
 

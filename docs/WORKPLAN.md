@@ -12,6 +12,15 @@ Last updated: 2026-08-16
 | Journal Entry Template | done | Markdown/frontmatter seed added for the entry model. |
 | About Me | pending | One-page authorial section, not a reusable template. |
 
+## Mobile Rail Plan
+
+| Step | Status | Notes |
+| --- | --- | --- |
+| Header spacing | pending | Give the mobile logo and toggle more breathing room. |
+| Open panel | pending | Make the expanded menu feel more intentional and less borrowed from desktop. |
+| Utilities policy | pending | Decide whether utilities stay hidden or surface inside the mobile menu. |
+| Stage offset | pending | Tune the top offset and tap targets, then verify responsive behavior. |
+
 ## Working Notes
 
 - Incident Library index stays metadata-only: title, status, organization, requester, created, closed if present.
