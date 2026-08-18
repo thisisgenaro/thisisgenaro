@@ -23,10 +23,11 @@ const {
 
 const pathname = Astro.url.pathname;
 const railStateStorageKey = "thisisgenaro:shell-rail-collapsed";
+const homeHref = pathname === "/" ? "/" : "/?homeIntro=done";
 
 const navItems = [
   {
-    href: "/",
+    href: homeHref,
     label: "Home",
     iconPath: "M4.5 11.5 12 5l7.5 6.5M7 10.5V19h10v-8.5",
   },
@@ -104,7 +105,7 @@ const railBootstrap =
             <span class="shell__menu-toggle-close" aria-hidden="true">&times;</span>
             <span class="shell__menu-label" aria-hidden="true">&lt;</span>
           </button>
-          <a class="shell__brand" href="/" aria-label="Home">
+          <a class="shell__brand" href={homeHref} aria-label="Home">
             <img class="shell__brand-image" src="/gh-logo.png" alt="" />
             <span class="shell__brand-name">GENARO HERN&Aacute;NDEZ</span>
           </a>
@@ -131,7 +132,6 @@ const railBootstrap =
           <section class="shell__rail-group shell__rail-group--utilities" aria-label="Utilities">
             <p class="shell__section-label">Utilities</p>
             <div class="shell__utility-mount" data-theme-switcher-mount></div>
-            <div class="shell__rail-topology" data-shell-rail-topology aria-hidden="true"></div>
           </section>
         </div>
       </aside>
@@ -326,143 +326,6 @@ const railBootstrap =
       mobileQuery.addEventListener("change", syncMobileState);
       syncMobileState();
     </script>
-    <script>
-      import {
-        createViewportFitHexGrid,
-        prepareTopologyRenderFrame,
-        renderTopologyGridMarkup,
-      } from "operational-topology";
-      import { getDiagonalSweepFrame, toGridCellStateMap } from "operational-topology/labs";
-
-      const host = document.querySelector<HTMLElement>("[data-shell-rail-topology]");
-
-      if (host) {
-        const root = document.documentElement;
-        const desktopQuery = window.matchMedia("(min-width: 861px)");
-        const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-        let frameIndex = 0;
-        let frame = null;
-        let cells = [];
-        let bandSpan = 1;
-        let intervalId = 0;
-        let lastWidth = 0;
-        let lastHeight = 0;
-
-        const stop = () => {
-          if (intervalId) {
-            window.clearInterval(intervalId);
-            intervalId = 0;
-          }
-        };
-
-        const updateHostState = () => {
-          const collapsed = root.dataset.shellRail !== "expanded";
-          host.style.setProperty("--shell-rail-topology-opacity", collapsed ? "0" : "1");
-        };
-
-        const buildFrame = (width, height) => {
-          const radius = desktopQuery.matches ? 28 : 24;
-          cells = createViewportFitHexGrid({ radius, width, height });
-          const bands = cells.map((cell) => cell.q + cell.r);
-          bandSpan = Math.max(1, Math.max(...bands) - Math.min(...bands) + 1);
-          frame = prepareTopologyRenderFrame({ cells });
-        };
-
-        const render = () => {
-          if (!frame || !cells.length) return;
-
-          const states = getDiagonalSweepFrame({
-            cells,
-            frame: frameIndex,
-            width: bandSpan,
-            trail: 3,
-            wrap: true,
-          });
-
-          host.innerHTML = renderTopologyGridMarkup({
-            frame,
-            radius: desktopQuery.matches ? 28 : 24,
-            cellStates: toGridCellStateMap(states),
-            showNodes: true,
-            className: "shell-topology",
-            connectorRouting: "straight",
-          });
-        };
-
-        const start = () => {
-          stop();
-          updateHostState();
-          render();
-          if (reducedMotion.matches || !desktopQuery.matches) return;
-          intervalId = window.setInterval(() => {
-            frameIndex = (frameIndex + 1) % bandSpan;
-            render();
-          }, 220);
-        };
-
-        const rebuild = () => {
-          if (!desktopQuery.matches) {
-            host.innerHTML = "";
-            stop();
-            return;
-          }
-
-          const rect = host.getBoundingClientRect();
-          const width = Math.max(1, Math.round(rect.width));
-          const height = Math.max(1, Math.round(rect.height));
-          if (width === lastWidth && height === lastHeight) return;
-          lastWidth = width;
-          lastHeight = height;
-          buildFrame(width, height);
-          start();
-        };
-
-        const resizeObserver = "ResizeObserver" in window ? new ResizeObserver(() => rebuild()) : null;
-
-        const handleVisibilityChange = () => {
-          if (document.hidden) {
-            stop();
-            return;
-          }
-
-          start();
-        };
-
-        const handleMediaChange = () => {
-          updateHostState();
-          rebuild();
-        };
-
-        const handleRailChange = () => {
-          updateHostState();
-          if (root.dataset.shellRail !== "expanded") {
-            stop();
-          } else {
-            start();
-          }
-        };
-
-        reducedMotion.addEventListener("change", handleMediaChange);
-        desktopQuery.addEventListener("change", handleMediaChange);
-        document.addEventListener("visibilitychange", handleVisibilityChange);
-        resizeObserver?.observe(host);
-        updateHostState();
-        rebuild();
-
-        const railStateObserver = new MutationObserver(handleRailChange);
-        railStateObserver.observe(root, { attributes: true, attributeFilter: ["data-shell-rail"] });
-
-        window.addEventListener(
-          "pagehide",
-          () => {
-            stop();
-            resizeObserver?.disconnect();
-            railStateObserver.disconnect();
-          },
-          { once: true },
-        );
-      }
-    </script>
   </body>
 </html>
 
@@ -475,7 +338,6 @@ const railBootstrap =
     --shell-mobile-nav-accent: var(--theme-selection);
     --shell-mobile-nav-text: var(--theme-text-primary);
     --shell-mobile-nav-muted: var(--theme-text-muted);
-    --shell-mobile-nav-topology: color-mix(in srgb, var(--theme-selection) 18%, transparent);
   }
 
   .shell {
@@ -1049,27 +911,6 @@ const railBootstrap =
     .shell__rail-slot .theme-switcher.is-embedded .theme-switcher__label {
       color: var(--shell-mobile-nav-muted);
     }
-
-    .shell__rail-topology {
-      position: relative;
-      inset: auto;
-      height: 6.5rem;
-      margin-top: 0.35rem;
-      pointer-events: none;
-      opacity: 0.06;
-      overflow: hidden;
-      z-index: 0;
-    }
-
-    .shell__rail-topology :global(.topology-grid) {
-      color: var(--shell-mobile-nav-topology);
-    }
-
-    .shell__rail-topology :global(.grid-hex[data-cell-state="trail"]),
-    .shell__rail-topology :global(.grid-hex[data-cell-state="converted"]) {
-      opacity: 0.8;
-    }
-
     .shell__stage {
       padding-top: 6rem;
     }
@@ -1305,23 +1146,43 @@ const railBootstrap =
     html[data-shell-rail="collapsed"] .shell__rail .theme-switcher.is-embedded {
       width: 100%;
       max-width: 100%;
+      padding: 0.45rem 0.5rem;
     }
 
     html[data-shell-rail="collapsed"] .shell__rail .theme-switcher.is-embedded .theme-switcher__panel {
-      display: none;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: stretch;
+      justify-content: flex-start;
+      width: 100%;
+      min-width: 0;
+      gap: 0.5rem;
     }
 
     html[data-shell-rail="collapsed"] .shell__rail .theme-switcher.is-embedded .theme-switcher__mobile-toggle {
-      display: inline-flex;
-      width: 100%;
-      justify-content: center;
-      border-radius: 0.5rem;
-      padding-inline: 0.4rem;
-      gap: 0.25rem;
+      display: none !important;
     }
 
-    html[data-shell-rail="collapsed"] .shell__rail .theme-switcher.is-embedded .theme-switcher__mobile-label {
-      display: none;
+    html[data-shell-rail="collapsed"] .shell__rail .theme-switcher.is-embedded select {
+      width: 100%;
+      max-width: none;
+    }
+
+    html[data-shell-rail="collapsed"] .shell__rail .theme-switcher.is-embedded .theme-switcher__modes {
+      width: 100%;
+      justify-content: space-between;
+      padding-inline-start: 0;
+      padding-top: 0.45rem;
+      border-inline-start: 0;
+      border-top: 1px solid color-mix(in srgb, var(--line-strong) 66%, transparent);
+      gap: 0.35rem;
+    }
+
+    html[data-shell-rail="collapsed"] .shell__rail .theme-switcher.is-embedded .theme-switcher__modes button,
+    html[data-shell-rail="collapsed"] .shell__rail .theme-switcher.is-embedded .theme-switcher__gallery {
+      flex: 1 1 0;
+      width: auto;
+      min-width: 1.7rem;
     }
 
     html[data-shell-rail="expanded"] .shell__rail .theme-switcher.is-embedded {
@@ -1381,6 +1242,55 @@ const railBootstrap =
       opacity: 0.75;
       background: color-mix(in srgb, var(--accent) 80%, transparent);
     }
+
+  @media (min-width: 861px) and (max-width: 1120px) {
+    .shell__rail-slot {
+      gap: 0.65rem;
+    }
+
+    .shell__rail-group--utilities {
+      min-height: 9rem;
+    }
+
+    .shell__rail .theme-switcher.is-embedded {
+      width: 100%;
+      max-width: 100%;
+      padding: 0.45rem 0.5rem;
+    }
+
+    .shell__rail .theme-switcher.is-embedded .theme-switcher__panel {
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: stretch;
+      justify-content: flex-start;
+      width: 100%;
+      min-width: 0;
+      gap: 0.5rem;
+    }
+
+    .shell__rail .theme-switcher.is-embedded select {
+      width: 100%;
+      max-width: none;
+    }
+
+    .shell__rail .theme-switcher.is-embedded .theme-switcher__modes {
+      width: 100%;
+      justify-content: space-between;
+      padding-inline-start: 0;
+      padding-top: 0.45rem;
+      border-inline-start: 0;
+      border-top: 1px solid color-mix(in srgb, var(--line-strong) 66%, transparent);
+      gap: 0.35rem;
+    }
+
+    .shell__rail .theme-switcher.is-embedded .theme-switcher__modes button,
+    .shell__rail .theme-switcher.is-embedded .theme-switcher__gallery {
+      flex: 1 1 0;
+      width: auto;
+      min-width: 1.7rem;
+    }
+  }
+
 
     @keyframes shell-diagonal-sweep {
       0% {

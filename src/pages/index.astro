@@ -30,9 +30,17 @@ const introLogoNode = [
   },
 ];
 
+const introStorageKey = "thisisgenaro:homepage-intro-seen";
+
 const introBootstrap =
   "(() => {" +
-  "document.documentElement.dataset.homeIntroState='ready';" +
+  "const key=" + JSON.stringify("thisisgenaro:homepage-intro-seen") + ";" +
+  "const cookiePrefix=key+'=';" +
+  "const readCookie=()=>document.cookie.split('; ').find((entry)=>entry.startsWith(cookiePrefix))?.slice(cookiePrefix.length);" +
+  "const readName=()=>window.name.split('|').find((entry)=>entry.startsWith(cookiePrefix))?.slice(cookiePrefix.length);" +
+  "const readQuery=()=>new URLSearchParams(window.location.search).get('homeIntro');" +
+  "const seenValue=(()=>{try {return (history.state&&history.state.homeIntroSeen)?'true':readQuery() ?? localStorage.getItem(key) ?? sessionStorage.getItem(key) ?? readCookie() ?? readName() ?? null;} catch {return (history.state&&history.state.homeIntroSeen)?'true':readQuery() ?? readCookie() ?? readName() ?? null;}})();" +
+  "document.documentElement.dataset.homeIntroState=seenValue==='true'?'done':'ready';" +
   "})();";
 
 const latestJournal = {
@@ -901,11 +909,49 @@ const latestIncident = {
     introLogoNode.style.pointerEvents = hidden ? "none" : "";
   };
 
+  const markIntroSeen = () => {
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set("homeIntro", "done");
+      history.replaceState({ ...(history.state ?? {}), homeIntroSeen: true }, "", url);
+    } catch {
+      // Ignore persistence failures.
+    }
+
+    try {
+      localStorage.setItem(introStorageKey, "true");
+    } catch {
+      // Ignore persistence failures.
+    }
+
+    try {
+      sessionStorage.setItem(introStorageKey, "true");
+    } catch {
+      // Ignore persistence failures.
+    }
+
+    try {
+      document.cookie = `${introStorageKey}=true; path=/; max-age=31536000; samesite=lax`;
+    } catch {
+      // Ignore persistence failures.
+    }
+
+    try {
+      const token = `${introStorageKey}=true`;
+      const parts = window.name ? window.name.split("|").filter(Boolean) : [];
+      if (!parts.includes(token)) parts.push(token);
+      window.name = parts.join("|");
+    } catch {
+      // Ignore persistence failures.
+    }
+  };
+
   const finishIntro = () => {
     if (logoFrameRaf) cancelAnimationFrame(logoFrameRaf);
     if (logoCleanupTimer) window.clearTimeout(logoCleanupTimer);
     clearLogoActivity(getLogoCells());
     introAnimating = false;
+    markIntroSeen();
     syncState("done");
   };
 
@@ -944,6 +990,7 @@ const latestIncident = {
   const startIntro = () => {
     if (introAnimating) return;
     introAnimating = true;
+    markIntroSeen();
     syncState("signal");
     window.setTimeout(() => {
       syncState("logo");
@@ -954,18 +1001,24 @@ const latestIncident = {
     }, originHoldMs);
   };
 
-  syncState("ready");
+  const introSeen = root.dataset.homeIntroState === "done";
 
-  worldSceneRoot?.addEventListener("click", (event) => {
-    const target = event.target instanceof Element ? event.target.closest("[data-node-id='intro-logo']") : null;
-    if (!target) return;
-    startIntro();
-  }, { passive: true });
+  if (introSeen) {
+    syncState("done");
+  } else {
+    syncState("ready");
 
-  worldSceneRoot?.addEventListener("pointerdown", (event) => {
-    const target = event.target instanceof Element ? event.target.closest("[data-node-id='intro-logo']") : null;
-    if (!target) return;
-    event.preventDefault();
-    startIntro();
-  });
+    worldSceneRoot?.addEventListener("click", (event) => {
+      const target = event.target instanceof Element ? event.target.closest("[data-node-id='intro-logo']") : null;
+      if (!target) return;
+      startIntro();
+    }, { passive: true });
+
+    worldSceneRoot?.addEventListener("pointerdown", (event) => {
+      const target = event.target instanceof Element ? event.target.closest("[data-node-id='intro-logo']") : null;
+      if (!target) return;
+      event.preventDefault();
+      startIntro();
+    });
+  }
 </script>

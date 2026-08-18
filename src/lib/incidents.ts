@@ -167,7 +167,7 @@ export function createIncidentScenePreset(scene: IncidentScene) {
           ? 32
           : 34,
     showGridNodes: false,
-    gridActivity: true,
+    gridActivity: false,
     ambientSignals: true,
   });
 }
