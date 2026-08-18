@@ -1,0 +1,584 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import {
+  createViewportFitHexGrid,
+  prepareTopologyRenderFrame,
+  renderTopologyGridMarkup,
+} from "operational-topology";
+import {
+  createIncidentPresentationSlides,
+  formatIncidentDateTime,
+  getIncidentById,
+  getIncidentStatusTone,
+  getPublishedIncidents,
+} from "../../lib/incidents";
+
+export function getStaticPaths() {
+  return getPublishedIncidents().map((incident) => ({
+    params: { id: incident.id },
+  }));
+}
+
+const incidentId = Astro.params.id ?? "";
+const incident = getIncidentById(incidentId);
+
+if (!incident) {
+  throw new Error(`Incident not found for ${incidentId}`);
+}
+
+const slides = createIncidentPresentationSlides(incident).map((slide, index) => {
+  const sourceScene = incident.scenes[index];
+  const inspector = sourceScene.inspector;
+  return {
+    id: slide.id,
+    label: slide.subtitle ?? slide.title,
+    title: slide.title,
+    summary: slide.summary,
+    status: slide.status,
+    topologyLayout: slide.topologyLayout,
+    sceneLayout: slide.sceneLayout,
+    topology: slide.topology,
+    route: slide.route,
+    transition: slide.transition,
+    inspectorTitle: inspector.title,
+    inspectorBody: inspector.body,
+    inspectorFacts: inspector.facts,
+    actions: sourceScene.actions,
+    highlights: sourceScene.highlights,
+  };
+});
+
+const activeSlide = slides[0];
+const deckRadius = 34;
+const initialCells = createViewportFitHexGrid({ radius: deckRadius, width: 1280, height: 760 });
+const initialFrame = prepareTopologyRenderFrame({
+  cells: initialCells,
+  occupants: activeSlide.topology.nodes,
+  relationships: activeSlide.topology.relationships ?? [],
+});
+const initialMarkup = renderTopologyGridMarkup({
+  frame: initialFrame,
+  radius: deckRadius,
+  showNodes: true,
+  connectorRouting: activeSlide.topology.connectorRouting ?? "obstacle-aware",
+  className: "incident-deck__scene-grid",
+});
+const serializedSlides = JSON.stringify(slides);
+---
+<BaseLayout
+  title={`${incident.incidentId} | Incident Library | thisisgenaro.com`}
+  description={incident.summary}
+>
+  <main class="incident-deck">
+    <header class="incident-deck__header">
+      <a class="incident-deck__back mono" href="/incidents">← BACK TO INCIDENT LIBRARY</a>
+      <p class="incident-deck__eyebrow">INCIDENT PRESENTATION DECK</p>
+      <h1 class="incident-deck__title">{incident.title}</h1>
+      <p class="incident-deck__summary">{incident.executiveSummary}</p>
+      <div class="incident-deck__meta-row">
+        <span class:list={["incident-status-pill", `is-${getIncidentStatusTone(incident.status)}`]}>{incident.status}</span>
+        <span class="incident-deck__meta mono">{incident.incidentId}</span>
+        <span class="incident-deck__meta mono">{incident.category}</span>
+        <span class="incident-deck__meta mono">{incident.duration}</span>
+      </div>
+      <div class="incident-deck__record-row">
+        <div>
+          <span>Created</span>
+          <strong>{formatIncidentDateTime(incident.created)}</strong>
+        </div>
+        <div>
+          <span>Closed</span>
+          <strong>{incident.closed ? formatIncidentDateTime(incident.closed) : "Open"}</strong>
+        </div>
+        <div>
+          <span>Organization</span>
+          <strong>{incident.organization}</strong>
+        </div>
+        <div>
+          <span>Requester</span>
+          <strong>{incident.requester}</strong>
+        </div>
+      </div>
+    </header>
+
+    <section class="incident-deck__shell">
+      <div class="incident-deck__scene-shell surface" data-incident-deck-shell>
+        <div class="incident-deck__scene" data-incident-deck-scene data-deck-radius={deckRadius} data-active-slide={activeSlide.id}>
+          <div class="incident-deck__scene-markup" set:html={initialMarkup}></div>
+        </div>
+
+        <nav class="incident-deck__slides" aria-label="Incident scenes">
+          {slides.map((slide, index) => (
+            <button
+              type="button"
+              class:list={["incident-deck__slide", index === 0 && "is-active"]}
+              data-incident-deck-target={slide.id}
+              aria-pressed={index === 0 ? "true" : "false"}
+            >
+              <span class="incident-deck__slide-index mono">0{index + 1}</span>
+              <span class="incident-deck__slide-copy">
+                <strong>{slide.label}</strong>
+                <em>{slide.topologyLayout}</em>
+              </span>
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      <aside class="incident-deck__inspector surface surface-pad" data-incident-deck-inspector>
+        <div class="incident-deck__inspector-head">
+          <div>
+            <p class="incident-deck__inspector-label mono">{activeSlide.label}</p>
+            <h2 data-incident-inspector-title>{activeSlide.inspectorTitle}</h2>
+          </div>
+          <div class="incident-deck__inspector-layout mono" data-incident-inspector-layout>
+            {activeSlide.sceneLayout} · {activeSlide.topologyLayout}
+          </div>
+        </div>
+
+        <p class="incident-deck__inspector-body" data-incident-inspector-body>{activeSlide.inspectorBody}</p>
+
+        <div class="incident-deck__facts" data-incident-inspector-facts>
+          {activeSlide.inspectorFacts.map((fact) => <p>{fact}</p>)}
+        </div>
+
+        {activeSlide.highlights.length ? (
+          <ul class="incident-deck__highlights" data-incident-inspector-highlights>
+            {activeSlide.highlights.map((highlight) => <li>{highlight}</li>)}
+          </ul>
+        ) : null}
+
+        <div class="incident-deck__actions" data-incident-inspector-actions>
+          {activeSlide.actions.map((action) => (
+            <a href={`#${action.target}`}>{action.label} →</a>
+          ))}
+        </div>
+      </aside>
+
+      <section class="incident-deck__rail surface surface-pad">
+        <div class="incident-deck__rail-copy">
+          <p class="incident-deck__rail-label">Simple Presentation Deck</p>
+          <p>
+            The incident is read as a slide deck inside one viewport. The topology carries the presentation, while the shared inspector below keeps the narrative and evidence visible.
+          </p>
+        </div>
+        <div class="incident-deck__rail-grid">
+          <div>
+            <span>Camera</span>
+            <strong>Fit scene</strong>
+          </div>
+          <div>
+            <span>Minimap</span>
+            <strong>Deck overview</strong>
+          </div>
+          <div>
+            <span>Layout</span>
+            <strong>{activeSlide.topologyLayout}</strong>
+          </div>
+          <div>
+            <span>Viewport</span>
+            <strong>Topological dominant</strong>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <script type="application/json" data-incident-deck-slides set:html={serializedSlides}></script>
+    <script>
+      import { createViewportFitHexGrid } from "operational-topology";
+      import { createTopologyDatasetTransition } from "operational-topology/browser";
+
+      const shell = document.querySelector("[data-incident-deck-shell]");
+      const sceneHost = document.querySelector("[data-incident-deck-scene]");
+      const slidesPayload = document.querySelector("[data-incident-deck-slides]");
+      const inspectorTitle = document.querySelector("[data-incident-inspector-title]");
+      const inspectorBody = document.querySelector("[data-incident-inspector-body]");
+      const inspectorLayout = document.querySelector("[data-incident-inspector-layout]");
+      const inspectorFacts = document.querySelector("[data-incident-inspector-facts]");
+      const inspectorHighlights = document.querySelector("[data-incident-inspector-highlights]");
+      const inspectorActions = document.querySelector("[data-incident-inspector-actions]");
+      const slideButtons = Array.from(document.querySelectorAll("[data-incident-deck-target]"));
+      const sceneSvg = sceneHost?.querySelector(".topology-grid");
+      const deckRadius = Number(sceneHost?.getAttribute("data-deck-radius") ?? 34);
+      const slides = slidesPayload ? JSON.parse(slidesPayload.textContent || "[]") : [];
+
+      if (shell && sceneHost && sceneSvg && slides.length) {
+        let activeSlide = slides[0];
+        let transition = null;
+
+      const updateInspector = (slide) => {
+        if (inspectorTitle) inspectorTitle.textContent = slide.inspectorTitle;
+        if (inspectorBody) inspectorBody.textContent = slide.inspectorBody;
+        if (inspectorLayout) inspectorLayout.textContent = `${slide.sceneLayout} · ${slide.topologyLayout}`;
+
+        if (inspectorFacts) {
+          inspectorFacts.replaceChildren(...slide.inspectorFacts.map((fact) => {
+            const p = document.createElement("p");
+            p.textContent = fact;
+            return p;
+          }));
+        }
+
+        if (inspectorHighlights) {
+          inspectorHighlights.replaceChildren(...(slide.highlights ?? []).map((highlight) => {
+            const li = document.createElement("li");
+            li.textContent = highlight;
+            return li;
+          }));
+          inspectorHighlights.hidden = !(slide.highlights && slide.highlights.length);
+        }
+
+        if (inspectorActions) {
+          inspectorActions.replaceChildren(...slide.actions.map((action) => {
+            const link = document.createElement("a");
+            link.href = `#${action.target}`;
+            link.textContent = `${action.label} →`;
+            return link;
+          }));
+        }
+      };
+
+      const updateSlideButtons = (slideId) => {
+        slideButtons.forEach((button) => {
+          const active = button.getAttribute("data-incident-deck-target") === slideId;
+          button.classList.toggle("is-active", active);
+          button.setAttribute("aria-pressed", String(active));
+        });
+      };
+
+      const buildCells = () => {
+        const rect = sceneHost.getBoundingClientRect();
+        return createViewportFitHexGrid({
+          radius: deckRadius,
+          width: Math.max(1, Math.round(rect.width || shell.getBoundingClientRect().width || 1280)),
+          height: Math.max(1, Math.round(rect.height || 760)),
+        });
+      };
+
+      const rebuildTransition = () => {
+        transition?.destroy?.();
+        transition = createTopologyDatasetTransition({
+          sceneGrid: sceneSvg,
+          cells: buildCells(),
+          radius: deckRadius,
+          connectorRouting: activeSlide.topology.connectorRouting ?? "obstacle-aware",
+        });
+      };
+
+      const selectSlide = async (slideId) => {
+        const nextSlide = slides.find((slide) => slide.id === slideId);
+        if (!nextSlide || nextSlide.id === activeSlide.id) return;
+
+        activeSlide = nextSlide;
+        updateInspector(nextSlide);
+        updateSlideButtons(nextSlide.id);
+        await transition.transition(nextSlide.topology);
+      };
+
+      slideButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const slideId = button.getAttribute("data-incident-deck-target");
+          if (slideId) selectSlide(slideId);
+        });
+      });
+
+      const resizeObserver = new ResizeObserver(() => {
+        rebuildTransition();
+      });
+
+      rebuildTransition();
+      updateInspector(activeSlide);
+      updateSlideButtons(activeSlide.id);
+      transition.transition(activeSlide.topology);
+      resizeObserver.observe(sceneHost);
+
+      window.addEventListener("pagehide", () => {
+        resizeObserver.disconnect();
+        transition?.destroy?.();
+      }, { once: true });
+    }
+    </script>
+  </main>
+</BaseLayout>
+
+<style>
+  .incident-deck {
+    width: min(100%, 84rem);
+    margin: 0 auto;
+    padding: clamp(1rem, 3.5vw, 2.4rem);
+    display: grid;
+    gap: clamp(1rem, 2.4vw, 1.75rem);
+  }
+
+  .incident-deck__header {
+    display: grid;
+    gap: 0.6rem;
+    max-width: 52rem;
+  }
+
+  .incident-deck__back,
+  .incident-deck__eyebrow,
+  .incident-deck__meta,
+  .incident-deck__record-row span,
+  .incident-deck__record-row strong,
+  .incident-deck__inspector-label,
+  .incident-deck__inspector-layout,
+  .incident-deck__rail-label,
+  .incident-deck__slide-index,
+  .incident-deck__rail-grid span {
+    font-family: var(--font-mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .incident-deck__back,
+  .incident-deck__eyebrow,
+  .incident-deck__meta,
+  .incident-deck__inspector-label,
+  .incident-deck__inspector-layout,
+  .incident-deck__rail-label,
+  .incident-deck__slide-index,
+  .incident-deck__rail-grid span {
+    color: var(--accent);
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+
+  .incident-deck__back {
+    width: fit-content;
+    text-decoration: none;
+  }
+
+  .incident-deck__eyebrow {
+    margin: 0;
+  }
+
+  .incident-deck__title {
+    margin: 0;
+    font-size: clamp(3rem, 7vw, 5.6rem);
+    line-height: 0.92;
+    letter-spacing: -0.07em;
+  }
+
+  .incident-deck__summary {
+    max-width: 46rem;
+    margin: 0;
+    color: var(--muted);
+    font-size: clamp(1rem, 1.4vw, 1.16rem);
+    line-height: 1.72;
+  }
+
+  .incident-deck__meta-row,
+  .incident-deck__record-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    align-items: center;
+  }
+
+  .incident-status-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    padding: 0.2rem 0.65rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 42%, transparent);
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent-soft) 35%, transparent);
+    white-space: nowrap;
+  }
+
+  .incident-status-pill.is-resolved,
+  .incident-status-pill.is-identified {
+    color: var(--text);
+    border-color: color-mix(in srgb, var(--line-strong) 72%, transparent);
+    background: color-mix(in srgb, var(--surface-raised) 74%, transparent);
+  }
+
+  .incident-status-pill.is-watching {
+    color: #f4c152;
+  }
+
+  .incident-deck__record-row {
+    justify-content: flex-start;
+    gap: 1rem 1.4rem;
+  }
+
+  .incident-deck__record-row > div,
+  .incident-deck__rail-grid > div {
+    display: grid;
+    gap: 0.2rem;
+  }
+
+  .incident-deck__record-row span,
+  .incident-deck__rail-grid span {
+    color: var(--muted-dim);
+    font-size: 0.64rem;
+  }
+
+  .incident-deck__record-row strong,
+  .incident-deck__rail-grid strong {
+    color: var(--text);
+    font-size: 0.92rem;
+    font-weight: 500;
+  }
+
+  .incident-deck__shell {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .incident-deck__scene-shell {
+    display: grid;
+    gap: 0.9rem;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .incident-deck__scene {
+    min-height: 31rem;
+    overflow: hidden;
+  }
+
+  .incident-deck__scene-grid {
+    min-height: 31rem;
+  }
+
+  .incident-deck__slides {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    gap: 0.55rem;
+    padding: 0 1rem 1rem;
+  }
+
+  .incident-deck__slide {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.7rem;
+    align-items: center;
+    padding: 0.85rem 0.9rem;
+    border: 1px solid color-mix(in srgb, var(--line-strong) 72%, transparent);
+    background: color-mix(in srgb, var(--surface-raised) 64%, transparent);
+    color: var(--text);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .incident-deck__slide.is-active {
+    border-color: color-mix(in srgb, var(--accent) 42%, transparent);
+    background: color-mix(in srgb, var(--accent-soft) 24%, transparent);
+  }
+
+  .incident-deck__slide strong,
+  .incident-deck__slide em {
+    display: block;
+    font-style: normal;
+  }
+
+  .incident-deck__slide strong {
+    color: var(--text);
+    font-size: 0.95rem;
+  }
+
+  .incident-deck__slide em {
+    margin-top: 0.18rem;
+    color: var(--muted);
+    font-size: 0.72rem;
+  }
+
+  .incident-deck__inspector {
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .incident-deck__inspector-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .incident-deck__inspector h2 {
+    margin: 0.25rem 0 0;
+    font-size: clamp(1.45rem, 2.8vw, 2.3rem);
+    line-height: 1;
+    letter-spacing: -0.06em;
+  }
+
+  .incident-deck__inspector-body {
+    margin: 0;
+    color: var(--text);
+    line-height: 1.72;
+  }
+
+  .incident-deck__facts {
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .incident-deck__facts p,
+  .incident-deck__highlights {
+    margin: 0;
+  }
+
+  .incident-deck__highlights {
+    display: grid;
+    gap: 0.5rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .incident-deck__highlights li {
+    padding: 0.8rem 0.95rem;
+    border: 1px solid color-mix(in srgb, var(--line-strong) 72%, transparent);
+    background: color-mix(in srgb, var(--surface-raised) 64%, transparent);
+  }
+
+  .incident-deck__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .incident-deck__actions a,
+  .incident-deck__back {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .incident-deck__rail {
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .incident-deck__rail p {
+    margin: 0;
+    color: var(--text);
+    line-height: 1.72;
+  }
+
+  .incident-deck__rail-copy {
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .incident-deck__rail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem 1rem;
+    padding-top: 0.3rem;
+    border-top: 1px solid color-mix(in srgb, var(--line-strong) 72%, transparent);
+  }
+
+  @media (max-width: 1120px) {
+    .incident-deck__inspector-head,
+    .incident-deck__record-row,
+    .incident-deck__shell {
+      grid-template-columns: 1fr;
+    }
+
+    .incident-deck__scene,
+    .incident-deck__scene-grid {
+      min-height: 24rem;
+    }
+  }
+</style>
