@@ -35,12 +35,10 @@ const introStorageKey = "thisisgenaro:homepage-intro-seen";
 const introBootstrap =
   "(() => {" +
   "const key=" + JSON.stringify("thisisgenaro:homepage-intro-seen") + ";" +
-  "const cookiePrefix=key+'=';" +
-  "const readCookie=()=>document.cookie.split('; ').find((entry)=>entry.startsWith(cookiePrefix))?.slice(cookiePrefix.length);" +
-  "const readName=()=>window.name.split('|').find((entry)=>entry.startsWith(cookiePrefix))?.slice(cookiePrefix.length);" +
-  "const readQuery=()=>new URLSearchParams(window.location.search).get('homeIntro');" +
-  "const seenValue=(()=>{try {return (history.state&&history.state.homeIntroSeen)?'true':readQuery() ?? localStorage.getItem(key) ?? sessionStorage.getItem(key) ?? readCookie() ?? readName() ?? null;} catch {return (history.state&&history.state.homeIntroSeen)?'true':readQuery() ?? readCookie() ?? readName() ?? null;}})();" +
-  "document.documentElement.dataset.homeIntroState=seenValue==='true'?'done':'ready';" +
+  "let seenValue=null;" +
+  "try {seenValue=sessionStorage.getItem(key);} catch {seenValue=null;}" +
+  "if (seenValue !== '1' && seenValue !== 'true') { try { sessionStorage.setItem(key, '1'); seenValue = '1'; } catch {} }" +
+  "document.documentElement.dataset.homeIntroState=seenValue==='1'||seenValue==='true'?'done':'ready';" +
   "})();";
 
 const latestJournal = {
@@ -911,36 +909,7 @@ const latestIncident = {
 
   const markIntroSeen = () => {
     try {
-      const url = new URL(window.location.href);
-      url.searchParams.set("homeIntro", "done");
-      history.replaceState({ ...(history.state ?? {}), homeIntroSeen: true }, "", url);
-    } catch {
-      // Ignore persistence failures.
-    }
-
-    try {
-      localStorage.setItem(introStorageKey, "true");
-    } catch {
-      // Ignore persistence failures.
-    }
-
-    try {
-      sessionStorage.setItem(introStorageKey, "true");
-    } catch {
-      // Ignore persistence failures.
-    }
-
-    try {
-      document.cookie = `${introStorageKey}=true; path=/; max-age=31536000; samesite=lax`;
-    } catch {
-      // Ignore persistence failures.
-    }
-
-    try {
-      const token = `${introStorageKey}=true`;
-      const parts = window.name ? window.name.split("|").filter(Boolean) : [];
-      if (!parts.includes(token)) parts.push(token);
-      window.name = parts.join("|");
+      sessionStorage.setItem(introStorageKey, "1");
     } catch {
       // Ignore persistence failures.
     }
@@ -951,7 +920,6 @@ const latestIncident = {
     if (logoCleanupTimer) window.clearTimeout(logoCleanupTimer);
     clearLogoActivity(getLogoCells());
     introAnimating = false;
-    markIntroSeen();
     syncState("done");
   };
 
