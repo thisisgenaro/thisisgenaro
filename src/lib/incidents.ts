@@ -158,7 +158,7 @@ export function getIncidentSceneEdges(scene: IncidentScene) {
 
 export function createIncidentScenePreset(scene: IncidentScene) {
   return createTopologyScenePreset({
-    layout: "viewport-fit",
+    layout: "world-grid",
     topologyLayout: scene.topologyLayout,
     radius:
       scene.topologyLayout === "matrix"
@@ -179,7 +179,7 @@ export function createIncidentPresentationDeck(incident: IncidentRecord): Presen
     subtitle: incident.incidentId,
     summary: incident.executiveSummary,
     defaultSlideId: incident.scenes[0]?.sceneId ?? "overview",
-    sceneLayout: "viewport-fit",
+    sceneLayout: "world-grid",
     topologyLayout: incident.scenes[0]?.topologyLayout ?? "ring",
     slides: incident.scenes.map((scene) => ({
       id: scene.sceneId,
@@ -189,7 +189,7 @@ export function createIncidentPresentationDeck(incident: IncidentRecord): Presen
       status: incident.status,
       route: `/incidents/${incident.id}#${scene.sceneId}`,
       role: "incident",
-      sceneLayout: "viewport-fit",
+      sceneLayout: "world-grid",
       topologyLayout: scene.topologyLayout,
       topology: {
         nodes: getIncidentSceneNodes(scene),

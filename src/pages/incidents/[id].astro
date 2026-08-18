@@ -29,6 +29,7 @@ if (!incident) {
 const slides = createIncidentPresentationSlides(incident).map((slide, index) => {
   const sourceScene = incident.scenes[index];
   const inspector = sourceScene.inspector;
+
   return {
     id: slide.id,
     label: slide.subtitle ?? slide.title,
@@ -49,7 +50,7 @@ const slides = createIncidentPresentationSlides(incident).map((slide, index) => 
 });
 
 const activeSlide = slides[0];
-const deckRadius = 34;
+const deckRadius = 36;
 const initialCells = createViewportFitHexGrid({ radius: deckRadius, width: 1280, height: 760 });
 const initialFrame = prepareTopologyRenderFrame({
   cells: initialCells,
@@ -70,8 +71,8 @@ const serializedSlides = JSON.stringify(slides);
   description={incident.summary}
 >
   <main class="incident-deck">
-    <header class="incident-deck__header">
-      <a class="incident-deck__back mono" href="/incidents">← BACK TO INCIDENT LIBRARY</a>
+    <header class="incident-deck__intro">
+      <a class="incident-deck__back mono" href="/incidents">← Back to Incident Library</a>
       <p class="incident-deck__eyebrow">INCIDENT PRESENTATION DECK</p>
       <h1 class="incident-deck__title">{incident.title}</h1>
       <p class="incident-deck__summary">{incident.executiveSummary}</p>
@@ -81,106 +82,126 @@ const serializedSlides = JSON.stringify(slides);
         <span class="incident-deck__meta mono">{incident.category}</span>
         <span class="incident-deck__meta mono">{incident.duration}</span>
       </div>
-      <div class="incident-deck__record-row">
-        <div>
-          <span>Created</span>
-          <strong>{formatIncidentDateTime(incident.created)}</strong>
-        </div>
-        <div>
-          <span>Closed</span>
-          <strong>{incident.closed ? formatIncidentDateTime(incident.closed) : "Open"}</strong>
-        </div>
-        <div>
-          <span>Organization</span>
-          <strong>{incident.organization}</strong>
-        </div>
-        <div>
-          <span>Requester</span>
-          <strong>{incident.requester}</strong>
-        </div>
-      </div>
     </header>
 
-    <section class="incident-deck__shell">
-      <div class="incident-deck__scene-shell surface" data-incident-deck-shell>
-        <div class="incident-deck__scene" data-incident-deck-scene data-deck-radius={deckRadius} data-active-slide={activeSlide.id}>
-          <div class="incident-deck__scene-markup" set:html={initialMarkup}></div>
-        </div>
-
-        <nav class="incident-deck__slides" aria-label="Incident scenes">
-          {slides.map((slide, index) => (
-            <button
-              type="button"
-              class:list={["incident-deck__slide", index === 0 && "is-active"]}
-              data-incident-deck-target={slide.id}
-              aria-pressed={index === 0 ? "true" : "false"}
-            >
-              <span class="incident-deck__slide-index mono">0{index + 1}</span>
-              <span class="incident-deck__slide-copy">
-                <strong>{slide.label}</strong>
-                <em>{slide.topologyLayout}</em>
-              </span>
-            </button>
-          ))}
-        </nav>
-      </div>
-
-      <aside class="incident-deck__inspector surface surface-pad" data-incident-deck-inspector>
-        <div class="incident-deck__inspector-head">
+    <section class="incident-deck__presentation">
+      <section class="incident-deck__scene-panel surface surface-pad" data-incident-deck-shell>
+        <div class="incident-deck__scene-head">
           <div>
-            <p class="incident-deck__inspector-label mono">{activeSlide.label}</p>
-            <h2 data-incident-inspector-title>{activeSlide.inspectorTitle}</h2>
+            <p class="incident-deck__scene-eyebrow mono">Scene viewport</p>
+            <h2 data-incident-deck-current-title>{activeSlide.title}</h2>
           </div>
-          <div class="incident-deck__inspector-layout mono" data-incident-inspector-layout>
+          <div class="incident-deck__scene-meta mono" data-incident-deck-current-layout>
             {activeSlide.sceneLayout} · {activeSlide.topologyLayout}
           </div>
         </div>
 
-        <p class="incident-deck__inspector-body" data-incident-inspector-body>{activeSlide.inspectorBody}</p>
-
-        <div class="incident-deck__facts" data-incident-inspector-facts>
-          {activeSlide.inspectorFacts.map((fact) => <p>{fact}</p>)}
+        <div
+          class="incident-deck__scene-frame"
+          data-incident-deck-scene
+          data-deck-radius={deckRadius}
+          data-active-slide={activeSlide.id}
+        >
+          <div class="incident-deck__scene-markup" set:html={initialMarkup}></div>
         </div>
 
-        {activeSlide.highlights.length ? (
-          <ul class="incident-deck__highlights" data-incident-inspector-highlights>
-            {activeSlide.highlights.map((highlight) => <li>{highlight}</li>)}
-          </ul>
-        ) : null}
+        <div class="incident-deck__scene-controls" aria-label="Incident scene navigation">
+          <button
+            type="button"
+            class="incident-deck__scene-step"
+            data-incident-deck-step="previous"
+            aria-label="Previous scene"
+          >
+            <span aria-hidden="true">←</span>
+            <span>Previous</span>
+          </button>
 
-        <div class="incident-deck__actions" data-incident-inspector-actions>
-          {activeSlide.actions.map((action) => (
-            <a href={`#${action.target}`}>{action.label} →</a>
-          ))}
-        </div>
-      </aside>
+          <label class="incident-deck__scene-select-wrap">
+            <span class="mono">Scene</span>
+            <select class="incident-deck__scene-select" data-incident-deck-select aria-label="Select incident scene">
+              {slides.map((slide) => (
+                <option value={slide.id} selected={slide.id === activeSlide.id}>
+                  {slide.label}
+                </option>
+              ))}
+            </select>
+          </label>
 
-      <section class="incident-deck__rail surface surface-pad">
-        <div class="incident-deck__rail-copy">
-          <p class="incident-deck__rail-label">Simple Presentation Deck</p>
-          <p>
-            The incident is read as a slide deck inside one viewport. The topology carries the presentation, while the shared inspector below keeps the narrative and evidence visible.
-          </p>
-        </div>
-        <div class="incident-deck__rail-grid">
-          <div>
-            <span>Camera</span>
-            <strong>Fit scene</strong>
-          </div>
-          <div>
-            <span>Minimap</span>
-            <strong>Deck overview</strong>
-          </div>
-          <div>
-            <span>Layout</span>
-            <strong>{activeSlide.topologyLayout}</strong>
-          </div>
-          <div>
-            <span>Viewport</span>
-            <strong>Topological dominant</strong>
-          </div>
+          <button
+            type="button"
+            class="incident-deck__scene-step"
+            data-incident-deck-step="next"
+            aria-label="Next scene"
+          >
+            <span>Next</span>
+            <span aria-hidden="true">→</span>
+          </button>
         </div>
       </section>
+
+      <aside class="incident-deck__inspector surface surface-pad" data-incident-deck-inspector>
+        <div class="incident-deck__inspector-grid">
+          <section class="incident-deck__identity">
+            <p class="incident-deck__inspector-label mono">Incident identity</p>
+            <h3>{incident.incidentId}</h3>
+            <p class="incident-deck__identity-title">{incident.title}</p>
+            <div class="incident-deck__identity-meta">
+              <div>
+                <span>Status</span>
+                <strong class:list={["incident-status-pill", `is-${getIncidentStatusTone(incident.status)}`]}>{incident.status}</strong>
+              </div>
+              <div>
+                <span>Created</span>
+                <strong>{formatIncidentDateTime(incident.created)}</strong>
+              </div>
+              <div>
+                <span>Closed</span>
+                <strong>{incident.closed ? formatIncidentDateTime(incident.closed) : "Open"}</strong>
+              </div>
+              <div>
+                <span>Organization</span>
+                <strong>{incident.organization}</strong>
+              </div>
+              <div>
+                <span>Requester</span>
+                <strong>{incident.requester}</strong>
+              </div>
+              <div>
+                <span>Service</span>
+                <strong>{incident.service}</strong>
+              </div>
+            </div>
+          </section>
+
+          <section class="incident-deck__scene-note">
+            <div class="incident-deck__inspector-head">
+              <div>
+                <p class="incident-deck__inspector-label mono" data-incident-deck-current-label>{activeSlide.label}</p>
+                <h3 data-incident-inspector-title>{activeSlide.inspectorTitle}</h3>
+              </div>
+              <div class="incident-deck__inspector-layout mono" data-incident-inspector-layout>
+                {activeSlide.sceneLayout} · {activeSlide.topologyLayout}
+              </div>
+            </div>
+
+            <p class="incident-deck__inspector-body" data-incident-inspector-body>{activeSlide.inspectorBody}</p>
+
+            <div class="incident-deck__facts" data-incident-inspector-facts>
+              {activeSlide.inspectorFacts.map((fact) => <p>{fact}</p>)}
+            </div>
+
+            <ul class="incident-deck__highlights" data-incident-inspector-highlights hidden={!activeSlide.highlights.length}>
+              {activeSlide.highlights.map((highlight) => <li>{highlight}</li>)}
+            </ul>
+
+            <div class="incident-deck__actions" data-incident-inspector-actions>
+              {activeSlide.actions.map((action) => (
+                <a href={`#${action.target}`}>{action.label} →</a>
+              ))}
+            </div>
+          </section>
+        </div>
+      </aside>
     </section>
 
     <script type="application/json" data-incident-deck-slides set:html={serializedSlides}></script>
@@ -191,141 +212,186 @@ const serializedSlides = JSON.stringify(slides);
       const shell = document.querySelector("[data-incident-deck-shell]");
       const sceneHost = document.querySelector("[data-incident-deck-scene]");
       const slidesPayload = document.querySelector("[data-incident-deck-slides]");
+      const currentTitle = document.querySelector("[data-incident-deck-current-title]");
+      const currentLabel = document.querySelector("[data-incident-deck-current-label]");
+      const currentLayout = document.querySelector("[data-incident-deck-current-layout]");
       const inspectorTitle = document.querySelector("[data-incident-inspector-title]");
       const inspectorBody = document.querySelector("[data-incident-inspector-body]");
       const inspectorLayout = document.querySelector("[data-incident-inspector-layout]");
       const inspectorFacts = document.querySelector("[data-incident-inspector-facts]");
       const inspectorHighlights = document.querySelector("[data-incident-inspector-highlights]");
       const inspectorActions = document.querySelector("[data-incident-inspector-actions]");
-      const slideButtons = Array.from(document.querySelectorAll("[data-incident-deck-target]"));
+      const select = document.querySelector("[data-incident-deck-select]");
+      const prevButton = document.querySelector('[data-incident-deck-step="previous"]');
+      const nextButton = document.querySelector('[data-incident-deck-step="next"]');
       const sceneSvg = sceneHost?.querySelector(".topology-grid");
-      const deckRadius = Number(sceneHost?.getAttribute("data-deck-radius") ?? 34);
+      const deckRadius = Number(sceneHost?.getAttribute("data-deck-radius") ?? 36);
       const slides = slidesPayload ? JSON.parse(slidesPayload.textContent || "[]") : [];
 
       if (shell && sceneHost && sceneSvg && slides.length) {
         let activeSlide = slides[0];
         let transition = null;
 
-      const updateInspector = (slide) => {
-        if (inspectorTitle) inspectorTitle.textContent = slide.inspectorTitle;
-        if (inspectorBody) inspectorBody.textContent = slide.inspectorBody;
-        if (inspectorLayout) inspectorLayout.textContent = `${slide.sceneLayout} · ${slide.topologyLayout}`;
+        const updateSceneMetadata = (slide) => {
+          if (currentTitle) currentTitle.textContent = slide.title;
+          if (currentLabel) currentLabel.textContent = slide.label;
+          if (currentLayout) currentLayout.textContent = `${slide.sceneLayout} · ${slide.topologyLayout}`;
+        };
 
-        if (inspectorFacts) {
-          inspectorFacts.replaceChildren(...slide.inspectorFacts.map((fact) => {
-            const p = document.createElement("p");
-            p.textContent = fact;
-            return p;
-          }));
-        }
+        const updateInspector = (slide) => {
+          updateSceneMetadata(slide);
+          if (inspectorTitle) inspectorTitle.textContent = slide.inspectorTitle;
+          if (inspectorBody) inspectorBody.textContent = slide.inspectorBody;
+          if (inspectorLayout) inspectorLayout.textContent = `${slide.sceneLayout} · ${slide.topologyLayout}`;
 
-        if (inspectorHighlights) {
-          inspectorHighlights.replaceChildren(...(slide.highlights ?? []).map((highlight) => {
-            const li = document.createElement("li");
-            li.textContent = highlight;
-            return li;
-          }));
-          inspectorHighlights.hidden = !(slide.highlights && slide.highlights.length);
-        }
+          if (inspectorFacts) {
+            inspectorFacts.replaceChildren(
+              ...slide.inspectorFacts.map((fact) => {
+                const p = document.createElement("p");
+                p.textContent = fact;
+                return p;
+              }),
+            );
+          }
 
-        if (inspectorActions) {
-          inspectorActions.replaceChildren(...slide.actions.map((action) => {
-            const link = document.createElement("a");
-            link.href = `#${action.target}`;
-            link.textContent = `${action.label} →`;
-            return link;
-          }));
-        }
-      };
+          if (inspectorHighlights) {
+            inspectorHighlights.hidden = !(slide.highlights && slide.highlights.length);
+            inspectorHighlights.replaceChildren(
+              ...(slide.highlights ?? []).map((highlight) => {
+                const li = document.createElement("li");
+                li.textContent = highlight;
+                return li;
+              }),
+            );
+          }
 
-      const updateSlideButtons = (slideId) => {
-        slideButtons.forEach((button) => {
-          const active = button.getAttribute("data-incident-deck-target") === slideId;
-          button.classList.toggle("is-active", active);
-          button.setAttribute("aria-pressed", String(active));
+          if (inspectorActions) {
+            inspectorActions.replaceChildren(
+              ...slide.actions.map((action) => {
+                const link = document.createElement("a");
+                link.href = `#${action.target}`;
+                link.textContent = `${action.label} →`;
+                return link;
+              }),
+            );
+          }
+
+          if (select) {
+            select.value = slide.id;
+          }
+        };
+
+        const updateButtons = () => {
+          const index = slides.findIndex((slide) => slide.id === activeSlide.id);
+          if (prevButton) {
+            prevButton.disabled = false;
+            prevButton.setAttribute("aria-disabled", "false");
+            prevButton.dataset.target = slides[(index - 1 + slides.length) % slides.length].id;
+          }
+          if (nextButton) {
+            nextButton.disabled = false;
+            nextButton.setAttribute("aria-disabled", "false");
+            nextButton.dataset.target = slides[(index + 1) % slides.length].id;
+          }
+        };
+
+        const buildCells = () => {
+          const rect = sceneHost.getBoundingClientRect();
+          return createViewportFitHexGrid({
+            radius: deckRadius,
+            width: Math.max(1, Math.round(rect.width || shell.getBoundingClientRect().width || 1280)),
+            height: Math.max(1, Math.round(rect.height || 760)),
+          });
+        };
+
+        const rebuildTransition = () => {
+          transition?.destroy?.();
+          transition = createTopologyDatasetTransition({
+            sceneGrid: sceneSvg,
+            cells: buildCells(),
+            radius: deckRadius,
+            connectorRouting: activeSlide.topology.connectorRouting ?? "obstacle-aware",
+          });
+        };
+
+        const moveToSlide = async (slideId) => {
+          const nextSlide = slides.find((slide) => slide.id === slideId);
+          if (!nextSlide || nextSlide.id === activeSlide.id) return;
+
+          activeSlide = nextSlide;
+          updateInspector(nextSlide);
+          updateButtons();
+          await Promise.resolve(transition.transition(nextSlide.topology));
+        };
+
+        prevButton?.addEventListener("click", () => {
+          const index = slides.findIndex((slide) => slide.id === activeSlide.id);
+          const target = slides[(index - 1 + slides.length) % slides.length];
+          moveToSlide(target.id);
         });
-      };
 
-      const buildCells = () => {
-        const rect = sceneHost.getBoundingClientRect();
-        return createViewportFitHexGrid({
-          radius: deckRadius,
-          width: Math.max(1, Math.round(rect.width || shell.getBoundingClientRect().width || 1280)),
-          height: Math.max(1, Math.round(rect.height || 760)),
+        nextButton?.addEventListener("click", () => {
+          const index = slides.findIndex((slide) => slide.id === activeSlide.id);
+          const target = slides[(index + 1) % slides.length];
+          moveToSlide(target.id);
         });
-      };
 
-      const rebuildTransition = () => {
-        transition?.destroy?.();
-        transition = createTopologyDatasetTransition({
-          sceneGrid: sceneSvg,
-          cells: buildCells(),
-          radius: deckRadius,
-          connectorRouting: activeSlide.topology.connectorRouting ?? "obstacle-aware",
+        select?.addEventListener("change", (event) => {
+          const target = event.currentTarget?.value;
+          if (target) moveToSlide(target);
         });
-      };
 
-      const selectSlide = async (slideId) => {
-        const nextSlide = slides.find((slide) => slide.id === slideId);
-        if (!nextSlide || nextSlide.id === activeSlide.id) return;
-
-        activeSlide = nextSlide;
-        updateInspector(nextSlide);
-        updateSlideButtons(nextSlide.id);
-        await transition.transition(nextSlide.topology);
-      };
-
-      slideButtons.forEach((button) => {
-        button.addEventListener("click", () => {
-          const slideId = button.getAttribute("data-incident-deck-target");
-          if (slideId) selectSlide(slideId);
+        const resizeObserver = new ResizeObserver(() => {
+          rebuildTransition();
+          Promise.resolve(transition.transition(activeSlide.topology));
         });
-      });
 
-      const resizeObserver = new ResizeObserver(() => {
         rebuildTransition();
-      });
+        updateInspector(activeSlide);
+        updateButtons();
+        Promise.resolve(transition.transition(activeSlide.topology));
+        resizeObserver.observe(sceneHost);
 
-      rebuildTransition();
-      updateInspector(activeSlide);
-      updateSlideButtons(activeSlide.id);
-      transition.transition(activeSlide.topology);
-      resizeObserver.observe(sceneHost);
-
-      window.addEventListener("pagehide", () => {
-        resizeObserver.disconnect();
-        transition?.destroy?.();
-      }, { once: true });
-    }
+        window.addEventListener(
+          "pagehide",
+          () => {
+            resizeObserver.disconnect();
+            transition?.destroy?.();
+          },
+          { once: true },
+        );
+      }
     </script>
   </main>
 </BaseLayout>
 
 <style>
   .incident-deck {
-    width: min(100%, 84rem);
+    width: min(100%, 86rem);
     margin: 0 auto;
-    padding: clamp(1rem, 3.5vw, 2.4rem);
+    padding: clamp(1rem, 3vw, 2.25rem);
     display: grid;
-    gap: clamp(1rem, 2.4vw, 1.75rem);
+    gap: clamp(1rem, 2.25vw, 1.5rem);
   }
 
-  .incident-deck__header {
+  .incident-deck__intro {
     display: grid;
-    gap: 0.6rem;
-    max-width: 52rem;
+    gap: 0.65rem;
+    max-width: 60rem;
   }
 
   .incident-deck__back,
   .incident-deck__eyebrow,
   .incident-deck__meta,
-  .incident-deck__record-row span,
-  .incident-deck__record-row strong,
+  .incident-deck__scene-eyebrow,
+  .incident-deck__scene-meta,
   .incident-deck__inspector-label,
   .incident-deck__inspector-layout,
-  .incident-deck__rail-label,
-  .incident-deck__slide-index,
-  .incident-deck__rail-grid span {
+  .incident-deck__identity-meta span,
+  .incident-deck__identity-meta strong,
+  .incident-deck__scene-select-wrap .mono,
+  .incident-deck__scene-step,
+  .incident-deck__scene-step span {
     font-family: var(--font-mono);
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -334,13 +400,14 @@ const serializedSlides = JSON.stringify(slides);
   .incident-deck__back,
   .incident-deck__eyebrow,
   .incident-deck__meta,
+  .incident-deck__scene-eyebrow,
+  .incident-deck__scene-meta,
   .incident-deck__inspector-label,
   .incident-deck__inspector-layout,
-  .incident-deck__rail-label,
-  .incident-deck__slide-index,
-  .incident-deck__rail-grid span {
+  .incident-deck__scene-select-wrap .mono,
+  .incident-deck__scene-step {
     color: var(--accent);
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     font-weight: 700;
   }
 
@@ -361,15 +428,14 @@ const serializedSlides = JSON.stringify(slides);
   }
 
   .incident-deck__summary {
-    max-width: 46rem;
+    max-width: 54rem;
     margin: 0;
     color: var(--muted);
     font-size: clamp(1rem, 1.4vw, 1.16rem);
-    line-height: 1.72;
+    line-height: 1.7;
   }
 
-  .incident-deck__meta-row,
-  .incident-deck__record-row {
+  .incident-deck__meta-row {
     display: flex;
     flex-wrap: wrap;
     gap: 0.6rem;
@@ -383,7 +449,7 @@ const serializedSlides = JSON.stringify(slides);
     padding: 0.2rem 0.65rem;
     border: 1px solid color-mix(in srgb, var(--accent) 42%, transparent);
     color: var(--accent);
-    background: color-mix(in srgb, var(--accent-soft) 35%, transparent);
+    background: color-mix(in srgb, var(--accent-soft) 38%, transparent);
     white-space: nowrap;
   }
 
@@ -398,110 +464,147 @@ const serializedSlides = JSON.stringify(slides);
     color: #f4c152;
   }
 
-  .incident-deck__record-row {
-    justify-content: flex-start;
-    gap: 1rem 1.4rem;
-  }
-
-  .incident-deck__record-row > div,
-  .incident-deck__rail-grid > div {
-    display: grid;
-    gap: 0.2rem;
-  }
-
-  .incident-deck__record-row span,
-  .incident-deck__rail-grid span {
-    color: var(--muted-dim);
-    font-size: 0.64rem;
-  }
-
-  .incident-deck__record-row strong,
-  .incident-deck__rail-grid strong {
-    color: var(--text);
-    font-size: 0.92rem;
-    font-weight: 500;
-  }
-
-  .incident-deck__shell {
+  .incident-deck__presentation {
     display: grid;
     gap: 1rem;
   }
 
-  .incident-deck__scene-shell {
-    display: grid;
-    gap: 0.9rem;
-    padding: 0;
-    overflow: hidden;
-  }
-
-  .incident-deck__scene {
-    min-height: 31rem;
-    overflow: hidden;
-  }
-
-  .incident-deck__scene-grid {
-    min-height: 31rem;
-  }
-
-  .incident-deck__slides {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-    gap: 0.55rem;
-    padding: 0 1rem 1rem;
-  }
-
-  .incident-deck__slide {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 0.7rem;
-    align-items: center;
-    padding: 0.85rem 0.9rem;
-    border: 1px solid color-mix(in srgb, var(--line-strong) 72%, transparent);
-    background: color-mix(in srgb, var(--surface-raised) 64%, transparent);
-    color: var(--text);
-    text-align: left;
-    cursor: pointer;
-  }
-
-  .incident-deck__slide.is-active {
-    border-color: color-mix(in srgb, var(--accent) 42%, transparent);
-    background: color-mix(in srgb, var(--accent-soft) 24%, transparent);
-  }
-
-  .incident-deck__slide strong,
-  .incident-deck__slide em {
-    display: block;
-    font-style: normal;
-  }
-
-  .incident-deck__slide strong {
-    color: var(--text);
-    font-size: 0.95rem;
-  }
-
-  .incident-deck__slide em {
-    margin-top: 0.18rem;
-    color: var(--muted);
-    font-size: 0.72rem;
-  }
-
+  .incident-deck__scene-panel,
   .incident-deck__inspector {
     display: grid;
-    gap: 0.85rem;
+    gap: 0.95rem;
   }
 
+  .incident-deck__scene-head,
   .incident-deck__inspector-head {
     display: flex;
     justify-content: space-between;
-    gap: 1rem;
     align-items: flex-start;
+    gap: 1rem;
   }
 
-  .incident-deck__inspector h2 {
-    margin: 0.25rem 0 0;
-    font-size: clamp(1.45rem, 2.8vw, 2.3rem);
+  .incident-deck__scene-head h2,
+  .incident-deck__inspector h3 {
+    margin: 0.2rem 0 0;
+    font-size: clamp(1.4rem, 2.8vw, 2.35rem);
     line-height: 1;
     letter-spacing: -0.06em;
+  }
+
+  .incident-deck__scene-frame {
+    position: relative;
+    min-height: clamp(28rem, 58vh, 44rem);
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--line-strong) 72%, transparent);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--surface-raised) 72%, transparent), color-mix(in srgb, var(--surface) 82%, transparent)),
+      var(--surface);
+  }
+
+  .incident-deck__scene-markup {
+    min-height: inherit;
+  }
+
+  .incident-deck__scene-markup :global(svg),
+  .incident-deck__scene-markup :global(.topology-grid) {
+    width: 100%;
+    height: 100%;
+    min-height: inherit;
+    display: block;
+  }
+
+  .incident-deck__scene-controls {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  .incident-deck__scene-step,
+  .incident-deck__scene-select {
+    min-height: 2.8rem;
+    border: 1px solid color-mix(in srgb, var(--line-strong) 72%, transparent);
+    background: color-mix(in srgb, var(--surface-raised) 68%, transparent);
+    color: var(--text);
+  }
+
+  .incident-deck__scene-step {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.65rem 0.95rem;
+    cursor: pointer;
+  }
+
+  .incident-deck__scene-step span {
+    font-size: 0.68rem;
+  }
+
+  .incident-deck__scene-select-wrap {
+    min-width: 0;
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .incident-deck__scene-select {
+    width: 100%;
+    padding: 0.68rem 0.85rem;
+  }
+
+  .incident-deck__inspector-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+  }
+
+  .incident-deck__identity,
+  .incident-deck__scene-note {
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .incident-deck__identity h3 {
+    margin: 0;
+    font-size: clamp(1.6rem, 3vw, 2.4rem);
+    line-height: 1;
+    letter-spacing: -0.05em;
+  }
+
+  .incident-deck__identity-title {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.65;
+  }
+
+  .incident-deck__identity-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem 1rem;
+  }
+
+  .incident-deck__identity-meta > div,
+  .incident-deck__facts,
+  .incident-deck__actions {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .incident-deck__identity-meta span,
+  .incident-deck__identity-meta strong {
+    font-size: 0.66rem;
+  }
+
+  .incident-deck__identity-meta span {
+    color: var(--muted-dim);
+  }
+
+  .incident-deck__identity-meta strong {
+    color: var(--text);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-transform: none;
   }
 
   .incident-deck__inspector-body {
@@ -511,13 +614,17 @@ const serializedSlides = JSON.stringify(slides);
   }
 
   .incident-deck__facts {
-    display: grid;
     gap: 0.45rem;
   }
 
   .incident-deck__facts p,
   .incident-deck__highlights {
     margin: 0;
+  }
+
+  .incident-deck__facts p {
+    color: var(--muted);
+    line-height: 1.55;
   }
 
   .incident-deck__highlights {
@@ -539,46 +646,40 @@ const serializedSlides = JSON.stringify(slides);
     gap: 0.75rem;
   }
 
-  .incident-deck__actions a,
-  .incident-deck__back {
+  .incident-deck__actions a {
     color: var(--accent);
     text-decoration: none;
   }
 
-  .incident-deck__rail {
-    display: grid;
-    gap: 0.8rem;
+  @media (max-width: 980px) {
+    .incident-deck__scene-frame {
+      min-height: 24rem;
+    }
+
+    .incident-deck__inspector-grid,
+    .incident-deck__scene-head,
+    .incident-deck__inspector-head {
+      grid-template-columns: 1fr;
+      display: grid;
+    }
+
+    .incident-deck__scene-controls {
+      grid-template-columns: 1fr;
+    }
   }
 
-  .incident-deck__rail p {
-    margin: 0;
-    color: var(--text);
-    line-height: 1.72;
-  }
+  @media (max-width: 720px) {
+    .incident-deck {
+      padding: 1rem;
+    }
 
-  .incident-deck__rail-copy {
-    display: grid;
-    gap: 0.55rem;
-  }
-
-  .incident-deck__rail-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.75rem 1rem;
-    padding-top: 0.3rem;
-    border-top: 1px solid color-mix(in srgb, var(--line-strong) 72%, transparent);
-  }
-
-  @media (max-width: 1120px) {
-    .incident-deck__inspector-head,
-    .incident-deck__record-row,
-    .incident-deck__shell {
+    .incident-deck__identity-meta {
       grid-template-columns: 1fr;
     }
 
-    .incident-deck__scene,
-    .incident-deck__scene-grid {
-      min-height: 24rem;
+    .incident-deck__scene-step,
+    .incident-deck__scene-select {
+      width: 100%;
     }
   }
 </style>
