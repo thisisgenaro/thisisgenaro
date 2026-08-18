@@ -1,0 +1,369 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import TopologyScene from "operational-topology/astro/TopologyScene";
+import {
+  createIncidentScenePreset,
+  formatIncidentDate,
+  formatIncidentDateTime,
+  getIncidentSceneEdges,
+  getIncidentSceneNodes,
+  getIncidentStatusTone,
+  getPublishedIncidents,
+} from "../../lib/incidents";
+
+const incidents = getPublishedIncidents();
+const latest = incidents[0] ?? null;
+const latestScene = latest?.scenes[0] ?? null;
+const latestPreset = latestScene ? createIncidentScenePreset(latestScene) : null;
+---
+<BaseLayout
+  title="Incident Library | thisisgenaro.com"
+  description="Operational records arranged as scenes, evidence, and lessons."
+>
+  <main class="incident-index">
+    <header class="incident-index__header">
+      <p class="incident-index__eyebrow">INCIDENT LIBRARY</p>
+      <h1 class="incident-index__title">Incident Library</h1>
+      <p class="incident-index__lede">
+        Operational records arranged as scenes, evidence, and lessons.
+      </p>
+    </header>
+
+    <section class="incident-index__feature" aria-labelledby="latest-incident-title">
+      {latest && latestScene && latestPreset ? (
+        <>
+          <article class="incident-index__spotlight surface surface-pad">
+            <div class="incident-index__spotlight-head">
+              <div>
+                <p class="incident-index__section-label">LATEST INCIDENT</p>
+                <h2 id="latest-incident-title" class="incident-index__spotlight-title">{latest.title}</h2>
+              </div>
+              <span class:list={["incident-status-pill", `is-${getIncidentStatusTone(latest.status)}`]}>{latest.status}</span>
+            </div>
+
+            <div class="incident-index__spotlight-grid">
+              <div class="incident-index__scene" aria-hidden="true">
+                <TopologyScene
+                  class="incident-index__scene-view"
+                  nodes={getIncidentSceneNodes(latestScene)}
+                  edges={getIncidentSceneEdges(latestScene)}
+                  {...latestPreset}
+                  signalTransitionSpeed={0.95}
+                />
+              </div>
+
+              <aside class="incident-index__inspector">
+                <p class="incident-index__spotlight-meta mono">{latest.incidentId}</p>
+                <p class="incident-index__spotlight-summary">{latest.summary}</p>
+                <div class="incident-index__fact-list">
+                  <div><span>Opened</span><strong>{formatIncidentDateTime(latest.opened)}</strong></div>
+                  <div><span>Restored</span><strong>{formatIncidentDateTime(latest.restored)}</strong></div>
+                  <div><span>Organization</span><strong>{latest.organization}</strong></div>
+                  <div><span>Requester</span><strong>{latest.requester}</strong></div>
+                </div>
+                <a class="incident-index__cta" href={`/incidents/${latest.id}`}>Open presentation →</a>
+              </aside>
+            </div>
+          </article>
+
+          <aside class="incident-index__rail" aria-label="Incident overview">
+            <section class="incident-index__rail-card surface surface-pad">
+              <p class="incident-index__rail-label">OVERVIEW</p>
+              <p class="incident-index__rail-copy">
+                Scenes are arranged for reading, comparison, and handoff. Each record keeps the visible state, the hidden dependency, and the operational lesson together.
+              </p>
+              <div class="incident-index__stats">
+                <div>
+                  <span>Records</span>
+                  <strong>{incidents.length}</strong>
+                </div>
+                <div>
+                  <span>Latest</span>
+                  <strong>{formatIncidentDate(latest.created)}</strong>
+                </div>
+                <div>
+                  <span>State</span>
+                  <strong>{latest.status}</strong>
+                </div>
+              </div>
+            </section>
+
+            <section class="incident-index__rail-card surface surface-pad">
+              <p class="incident-index__rail-label">SCENES</p>
+              <div class="incident-index__scene-links">
+                {latest.scenes.map((scene, index) => (
+                  <a class="incident-index__scene-link" href={`/incidents/${latest.id}#${scene.sceneId}`}>
+                    <span class="mono">0{index + 1}</span>
+                    <span>
+                      <strong>{scene.label}</strong>
+                      <em>{scene.topologyLayout}</em>
+                    </span>
+                  </a>
+                ))}
+              </div>
+            </section>
+          </aside>
+        </>
+      ) : (
+        <article class="incident-index__empty surface surface-pad">
+          <p class="incident-index__section-label">LATEST INCIDENT</p>
+          <h2>No incidents published yet.</h2>
+          <p>When the first record is added, it will appear here with its scenes, inspector, and operational summary.</p>
+        </article>
+      )}
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .incident-index {
+    width: min(100%, 84rem);
+    margin: 0 auto;
+    padding: clamp(1rem, 3.5vw, 2.4rem);
+    display: grid;
+    gap: clamp(1.25rem, 2.8vw, 2rem);
+  }
+
+  .incident-index__header {
+    display: grid;
+    gap: 0.55rem;
+    max-width: 44rem;
+  }
+
+  .incident-index__eyebrow,
+  .incident-index__section-label,
+  .incident-index__rail-label,
+  .incident-index__cta,
+  .incident-index__spotlight-meta,
+  .incident-index__scene-link span:first-child,
+  .incident-status-pill {
+    font-family: var(--font-mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .incident-index__eyebrow,
+  .incident-index__section-label,
+  .incident-index__rail-label {
+    margin: 0;
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .incident-index__title {
+    margin: 0;
+    font-size: clamp(3rem, 7vw, 5.6rem);
+    line-height: 0.92;
+    letter-spacing: -0.07em;
+  }
+
+  .incident-index__lede {
+    max-width: 38rem;
+    margin: 0;
+    color: var(--muted);
+    font-size: clamp(1rem, 1.4vw, 1.12rem);
+    line-height: 1.72;
+  }
+
+  .incident-index__feature {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 21rem);
+    gap: clamp(1rem, 2.6vw, 1.8rem);
+    align-items: start;
+  }
+
+  .incident-index__spotlight {
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+  }
+
+  .incident-index__spotlight-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .incident-index__spotlight-title {
+    margin: 0.2rem 0 0;
+    font-size: clamp(1.8rem, 3.8vw, 3.2rem);
+    line-height: 0.98;
+    letter-spacing: -0.06em;
+    max-width: 20ch;
+  }
+
+  .incident-status-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    padding: 0.2rem 0.65rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 42%, transparent);
+    color: var(--accent);
+    font-size: 0.68rem;
+    background: color-mix(in srgb, var(--accent-soft) 35%, transparent);
+    white-space: nowrap;
+  }
+
+  .incident-status-pill.is-resolved,
+  .incident-status-pill.is-identified {
+    color: var(--text);
+    border-color: color-mix(in srgb, var(--line-strong) 72%, transparent);
+    background: color-mix(in srgb, var(--surface-raised) 74%, transparent);
+  }
+
+  .incident-status-pill.is-watching {
+    color: #f4c152;
+  }
+
+  .incident-index__spotlight-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(16rem, 0.9fr);
+    gap: 1rem;
+    align-items: stretch;
+  }
+
+  .incident-index__scene {
+    min-height: 20rem;
+    border: 1px solid color-mix(in srgb, var(--line-strong) 68%, transparent);
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    overflow: hidden;
+  }
+
+  .incident-index__scene-view {
+    min-height: 20rem;
+  }
+
+  .incident-index__inspector {
+    display: grid;
+    gap: 0.9rem;
+    align-content: start;
+    padding: 0.2rem 0 0.2rem 0.25rem;
+    border-left: 1px solid color-mix(in srgb, var(--accent) 34%, transparent);
+  }
+
+  .incident-index__spotlight-meta {
+    margin: 0;
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .incident-index__spotlight-summary,
+  .incident-index__rail-copy {
+    margin: 0;
+    color: var(--text);
+    font-size: 0.98rem;
+    line-height: 1.72;
+  }
+
+  .incident-index__fact-list,
+  .incident-index__stats {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .incident-index__fact-list div,
+  .incident-index__stats div {
+    display: grid;
+    gap: 0.2rem;
+  }
+
+  .incident-index__fact-list span,
+  .incident-index__stats span {
+    color: var(--muted-dim);
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .incident-index__fact-list strong,
+  .incident-index__stats strong {
+    color: var(--text);
+    font-size: 0.92rem;
+    font-weight: 500;
+  }
+
+  .incident-index__cta {
+    width: fit-content;
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .incident-index__rail {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .incident-index__rail-card {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .incident-index__scene-links {
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .incident-index__scene-link {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.75rem;
+    padding: 0.8rem 0.9rem;
+    border: 1px solid color-mix(in srgb, var(--line-strong) 72%, transparent);
+    color: var(--text);
+    text-decoration: none;
+    background: color-mix(in srgb, var(--surface-raised) 62%, transparent);
+  }
+
+  .incident-index__scene-link strong,
+  .incident-index__scene-link em {
+    display: block;
+    font-style: normal;
+  }
+
+  .incident-index__scene-link strong {
+    color: var(--text);
+    font-size: 0.92rem;
+  }
+
+  .incident-index__scene-link em {
+    margin-top: 0.18rem;
+    color: var(--muted);
+    font-size: 0.72rem;
+  }
+
+  .incident-index__scene-link span:first-child {
+    color: var(--accent);
+    font-size: 0.66rem;
+    padding-top: 0.05rem;
+  }
+
+  .incident-index__scene-link:hover,
+  .incident-index__scene-link:focus-visible {
+    outline: none;
+    border-color: color-mix(in srgb, var(--accent) 38%, transparent);
+    background: color-mix(in srgb, var(--accent-soft) 28%, transparent);
+  }
+
+  .incident-index__empty {
+    max-width: 48rem;
+  }
+
+  @media (max-width: 980px) {
+    .incident-index__feature,
+    .incident-index__spotlight-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .incident-index__scene,
+    .incident-index__scene-view {
+      min-height: 18rem;
+    }
+  }
+</style>

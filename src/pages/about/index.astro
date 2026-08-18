@@ -1,0 +1,229 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+---
+<BaseLayout
+  title="About Me | thisisgenaro.com"
+  description="Genaro Hernandez shares practical thinking about infrastructure, automation, and incident lessons."
+>
+  <main class="about-page">
+    <header class="about-page__hero">
+      <p class="about-page__eyebrow">ABOUT ME</p>
+      <h1 class="about-page__title">Genaro Hernández</h1>
+      <p class="about-page__lede">
+        I share practical thinking about systems that stay understandable while they keep running. The site is a place to leave useful notes for people who care about infrastructure, incident response, and the work behind the work.
+      </p>
+    </header>
+
+    <section class="about-page__grid">
+      <article class="about-card surface surface-pad about-card--portrait">
+        <div class="about-card__mark" aria-hidden="true">
+          <img src="/gh-logo.png" alt="" />
+        </div>
+        <div>
+          <p class="about-card__label">The person</p>
+          <h2>One engineer, shared clearly</h2>
+          <p>
+            This page is intentionally direct. It gives the reader enough context to understand the point of view, the craft, and the kind of material that appears elsewhere on the site.
+          </p>
+        </div>
+      </article>
+
+      <article class="about-card surface surface-pad">
+        <p class="about-card__label">Knowledge system</p>
+        <h2>Patterns and evidence</h2>
+        <p>
+          The Journal follows the patterns that emerge from the work. The Incident Library preserves the evidence left behind by events. Together, they make experience easier to examine, understand, and carry forward.
+        </p>
+        <div class="about-card__split">
+          <section>
+            <h3>Journal</h3>
+            <p>Where observations become ideas. Editorial and reflective, it keeps the reasoning visible and explores the patterns, questions, and lessons behind the work.</p>
+          </section>
+          <section>
+            <h3>Incident Library</h3>
+            <p>Where events become records. Structured and operational, it captures what happened, what mattered, and what was learned with enough precision to remain useful later.</p>
+          </section>
+        </div>
+      </article>
+
+      <article class="about-card surface surface-pad">
+        <p class="about-card__label">What I share</p>
+        <ul class="about-card__list">
+          <li>Infrastructure patterns that stay readable under pressure.</li>
+          <li>Automation choices that reduce drift and keep work repeatable.</li>
+          <li>Incident lessons that explain cause, context, and consequence.</li>
+          <li>Operational notes that help others carry the work forward.</li>
+        </ul>
+      </article>
+
+      <article class="about-card surface surface-pad">
+        <p class="about-card__label">What the reader gets</p>
+        <ul class="about-card__list">
+          <li>Clear thinking instead of platform noise.</li>
+          <li>Evidence that can be revisited later.</li>
+          <li>Short, useful writing that respects the reader’s time.</li>
+          <li>A working model of how systems behave when they are changed.</li>
+        </ul>
+      </article>
+
+      <article class="about-card surface surface-pad about-card--wide">
+        <p class="about-card__label">Where to start</p>
+        <div class="about-card__links">
+          <a href="/journal">Read the Journal</a>
+          <a href="/incidents">Open the Incident Library</a>
+        </div>
+      </article>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .about-page {
+    width: min(100%, 84rem);
+    margin: 0 auto;
+    padding: clamp(1rem, 3.5vw, 2.4rem);
+    display: grid;
+    gap: clamp(1rem, 2.4vw, 1.75rem);
+  }
+
+  .about-page__hero {
+    display: grid;
+    gap: 0.6rem;
+    max-width: 50rem;
+  }
+
+  .about-page__eyebrow,
+  .about-card__label,
+  .about-card__links a {
+    font-family: var(--font-mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .about-page__eyebrow,
+  .about-card__label {
+    margin: 0;
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .about-page__title {
+    margin: 0;
+    font-size: clamp(3rem, 7vw, 5.6rem);
+    line-height: 0.92;
+    letter-spacing: -0.07em;
+  }
+
+  .about-page__lede {
+    max-width: 46rem;
+    margin: 0;
+    color: var(--muted);
+    font-size: clamp(1rem, 1.4vw, 1.12rem);
+    line-height: 1.72;
+  }
+
+  .about-page__grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .about-card {
+    grid-column: span 6;
+    display: grid;
+    gap: 0.9rem;
+    min-width: 0;
+  }
+
+  .about-card--portrait {
+    grid-template-columns: minmax(8rem, 10rem) minmax(0, 1fr);
+    align-items: center;
+  }
+
+  .about-card--wide {
+    grid-column: span 12;
+  }
+
+  .about-card__mark {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    min-height: 10rem;
+    border: 1px solid color-mix(in srgb, var(--line-strong) 68%, transparent);
+    background: color-mix(in srgb, var(--surface-raised) 72%, transparent);
+  }
+
+  .about-card__mark img {
+    display: block;
+    width: min(100%, 7rem);
+    height: auto;
+  }
+
+  .about-card h2,
+  .about-card h3 {
+    margin: 0;
+  }
+
+  .about-card h2 {
+    font-size: clamp(1.45rem, 2.6vw, 2.2rem);
+    line-height: 1;
+  }
+
+  .about-card p,
+  .about-card li {
+    color: var(--text);
+    line-height: 1.72;
+  }
+
+  .about-card__split {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem;
+    padding-top: 0.3rem;
+    border-top: 1px solid color-mix(in srgb, var(--line-strong) 72%, transparent);
+  }
+
+  .about-card__split section {
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .about-card__split h3 {
+    color: var(--accent);
+    font-size: 0.95rem;
+  }
+
+  .about-card__list {
+    margin: 0;
+    padding-left: 1.1rem;
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .about-card__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+  }
+
+  .about-card__links a {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  @media (max-width: 900px) {
+    .about-card,
+    .about-card--wide {
+      grid-column: span 12;
+    }
+
+    .about-card--portrait,
+    .about-card__split {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
