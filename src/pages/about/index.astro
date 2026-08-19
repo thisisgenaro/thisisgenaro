@@ -1,229 +1,464 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import JournalTopology from "../../components/journal/JournalTopology.astro";
 
+const shareItems = [
+  "Infrastructure patterns that stay readable under pressure.",
+  "Automation choices that reduce drift and keep work repeatable.",
+  "Incident lessons that explain cause, context, and consequence.",
+  "Operational notes that help others carry the work forward.",
+];
+
+const leaveItems = [
+  "Clear reasoning instead of platform noise.",
+  "Evidence that can be revisited later.",
+  "Lessons that remain useful beyond a single incident.",
+  "Models that help other engineers understand systems faster.",
+];
 ---
 <BaseLayout
   title="About Me | thisisgenaro.com"
-  description="Genaro Hernandez shares practical thinking about infrastructure, automation, and incident lessons."
+  description="Genaro Hernandez shares practical thinking about infrastructure, operations, and the philosophy behind the work."
 >
+  <JournalTopology class="about-page__topology" />
+
   <main class="about-page">
-    <header class="about-page__hero">
+    <header class="about-page__hero" aria-labelledby="about-title">
       <p class="about-page__eyebrow">ABOUT ME</p>
-      <h1 class="about-page__title">Genaro Hernández</h1>
-      <p class="about-page__lede">
-        I share practical thinking about systems that stay understandable while they keep running. The site is a place to leave useful notes for people who care about infrastructure, incident response, and the work behind the work.
-      </p>
+      <h1 class="about-page__title" id="about-title">Genaro Hernández</h1>
+      <div class="about-page__hero-copy">
+        <p>I write about infrastructure, incidents, and the decisions that keep systems understandable under pressure.</p>
+        <p>This site is where I leave useful notes, operational lessons, and working models behind.</p>
+      </div>
     </header>
 
-    <section class="about-page__grid">
-      <article class="about-card surface surface-pad about-card--portrait">
-        <div class="about-card__mark" aria-hidden="true">
-          <img src="/gh-logo.png" alt="" />
-        </div>
-        <div>
-          <p class="about-card__label">The person</p>
-          <h2>One engineer, shared clearly</h2>
-          <p>
-            This page is intentionally direct. It gives the reader enough context to understand the point of view, the craft, and the kind of material that appears elsewhere on the site.
-          </p>
+    <section class="about-page__intro-grid" aria-label="About Genaro Hernandez">
+      <article class="about-panel about-panel--person">
+        <p class="about-panel__label">THE PERSON</p>
+        <div class="about-person">
+          <div class="about-person__mark" aria-hidden="true">
+            <img src="/gh-logo.png" alt="" />
+          </div>
+          <div class="about-person__copy">
+            <h2>One engineer, shared clearly</h2>
+            <p>
+              I’m an engineer who works on the systems people rely on when things matter.
+              This site reflects my point of view, shaped by production experience, late-night incidents,
+              reviews, and the conversations that make complex systems make sense.
+            </p>
+          </div>
         </div>
       </article>
 
-      <article class="about-card surface surface-pad">
-        <p class="about-card__label">Knowledge system</p>
-        <h2>Patterns and evidence</h2>
-        <p>
-          The Journal follows the patterns that emerge from the work. The Incident Library preserves the evidence left behind by events. Together, they make experience easier to examine, understand, and carry forward.
+      <article class="about-panel about-panel--thinking">
+        <p class="about-panel__label">HOW I THINK</p>
+        <h2>Systems before components</h2>
+        <p class="about-panel__lede">
+          I look at dependencies, signals, failure paths, and operational decisions rather than isolated servers.
+          That keeps the real behavior of a system visible and helps us make better choices under pressure.
         </p>
-        <div class="about-card__split">
-          <section>
-            <h3>Journal</h3>
-            <p>Where observations become ideas. Editorial and reflective, it keeps the reasoning visible and explores the patterns, questions, and lessons behind the work.</p>
-          </section>
-          <section>
-            <h3>Incident Library</h3>
-            <p>Where events become records. Structured and operational, it captures what happened, what mattered, and what was learned with enough precision to remain useful later.</p>
-          </section>
+
+        <div class="about-questions" role="list" aria-label="Working questions">
+          <div class="about-question" role="listitem">
+            <span class="about-question__mark" aria-hidden="true">⬡</span>
+            <p>What is the system actually trying to deliver?</p>
+          </div>
+          <div class="about-question" role="listitem">
+            <span class="about-question__mark" aria-hidden="true">⬡</span>
+            <p>What evidence tells us whether it is healthy?</p>
+          </div>
+          <div class="about-question" role="listitem">
+            <span class="about-question__mark" aria-hidden="true">⬡</span>
+            <p>What happens when one dependency stops behaving normally?</p>
+          </div>
         </div>
       </article>
+    </section>
 
-      <article class="about-card surface surface-pad">
-        <p class="about-card__label">What I share</p>
-        <ul class="about-card__list">
-          <li>Infrastructure patterns that stay readable under pressure.</li>
-          <li>Automation choices that reduce drift and keep work repeatable.</li>
-          <li>Incident lessons that explain cause, context, and consequence.</li>
-          <li>Operational notes that help others carry the work forward.</li>
+    <section class="about-page__dual" aria-label="What Genaro shares and leaves behind">
+      <article class="about-list">
+        <p class="about-panel__label">WHAT I SHARE</p>
+        <ul>
+          {shareItems.map((item) => <li>{item}</li>)}
         </ul>
       </article>
 
-      <article class="about-card surface surface-pad">
-        <p class="about-card__label">What the reader gets</p>
-        <ul class="about-card__list">
-          <li>Clear thinking instead of platform noise.</li>
-          <li>Evidence that can be revisited later.</li>
-          <li>Short, useful writing that respects the reader’s time.</li>
-          <li>A working model of how systems behave when they are changed.</li>
+      <article class="about-list about-list--leaving">
+        <p class="about-panel__label">WHAT I TRY TO LEAVE BEHIND</p>
+        <ul>
+          {leaveItems.map((item) => <li>{item}</li>)}
         </ul>
       </article>
+    </section>
 
-      <article class="about-card surface surface-pad about-card--wide">
-        <p class="about-card__label">Where to start</p>
-        <div class="about-card__links">
-          <a href="/journal">Read the Journal</a>
-          <a href="/incidents">Open the Incident Library</a>
-        </div>
-      </article>
+    <section class="about-start" aria-labelledby="where-to-start-title">
+      <p class="about-panel__label">WHERE TO START</p>
+      <h2 id="where-to-start-title" class="about-start__title">Choose the path that fits what you want to learn.</h2>
+
+      <div class="about-start__grid">
+        <article class="about-start__path about-start__path--thinking">
+          <div class="about-start__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3 20 8v8l-8 5-8-5V8Z" />
+            </svg>
+          </div>
+          <div class="about-start__body">
+            <p class="about-start__eyebrow">START WITH THE THINKING</p>
+            <a class="about-start__action" href="/journal">Read the Journal →</a>
+            <p>Reflect, learn, and build better mental models.</p>
+          </div>
+        </article>
+
+        <article class="about-start__path about-start__path--evidence">
+          <div class="about-start__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 3 20 8v8l-8 5-8-5V8Z" />
+              <path d="M9 12h6" />
+            </svg>
+          </div>
+          <div class="about-start__body">
+            <p class="about-start__eyebrow">START WITH THE EVIDENCE</p>
+            <a class="about-start__action" href="/incidents">Explore the Incident Library →</a>
+            <p>Browse incidents, patterns, and operational outcomes.</p>
+          </div>
+        </article>
+      </div>
     </section>
   </main>
 </BaseLayout>
 
 <style>
   .about-page {
+    position: relative;
+    z-index: 1;
     width: min(100%, 84rem);
     margin: 0 auto;
     padding: clamp(1rem, 3.5vw, 2.4rem);
     display: grid;
-    gap: clamp(1rem, 2.4vw, 1.75rem);
+    gap: clamp(1.15rem, 2.6vw, 2rem);
+  }
+
+  .about-page__topology {
+    opacity: 0.12;
   }
 
   .about-page__hero {
     display: grid;
-    gap: 0.6rem;
+    gap: 0.65rem;
     max-width: 50rem;
+    padding-top: 0.25rem;
   }
 
   .about-page__eyebrow,
-  .about-card__label,
-  .about-card__links a {
+  .about-panel__label,
+  .about-start__eyebrow {
+    margin: 0;
+    color: var(--accent);
     font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
   }
 
-  .about-page__eyebrow,
-  .about-card__label {
-    margin: 0;
-    color: var(--accent);
-    font-size: 0.72rem;
-    font-weight: 700;
-  }
-
   .about-page__title {
     margin: 0;
-    font-size: clamp(3rem, 7vw, 5.6rem);
-    line-height: 0.92;
-    letter-spacing: -0.07em;
+    font-size: clamp(3.2rem, 7.5vw, 6rem);
+    line-height: 0.9;
+    letter-spacing: -0.075em;
   }
 
-  .about-page__lede {
-    max-width: 46rem;
+  .about-page__hero-copy {
+    display: grid;
+    gap: 0.8rem;
+    max-width: 48rem;
+  }
+
+  .about-page__hero-copy p {
     margin: 0;
     color: var(--muted);
     font-size: clamp(1rem, 1.4vw, 1.12rem);
-    line-height: 1.72;
+    line-height: 1.74;
   }
 
-  .about-page__grid {
+  .about-page__intro-grid {
     display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    gap: 1rem;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    gap: clamp(1rem, 2.8vw, 2rem);
+    align-items: start;
+    padding-top: 0.5rem;
+    border-top: 1px solid color-mix(in srgb, var(--line-strong) 72%, transparent);
   }
 
-  .about-card {
-    grid-column: span 6;
+  .about-panel {
+    min-width: 0;
     display: grid;
     gap: 0.9rem;
-    min-width: 0;
   }
 
-  .about-card--portrait {
-    grid-template-columns: minmax(8rem, 10rem) minmax(0, 1fr);
+  .about-panel--person {
+    padding-right: clamp(0.75rem, 1.8vw, 1.35rem);
+    border-inline-end: 1px solid color-mix(in srgb, var(--line-strong) 64%, transparent);
+  }
+
+  .about-panel--thinking {
+    padding-left: clamp(0.75rem, 1.8vw, 1.35rem);
+  }
+
+  .about-person {
+    display: grid;
+    grid-template-columns: minmax(8.5rem, 10rem) minmax(0, 1fr);
+    gap: 1rem;
     align-items: center;
   }
 
-  .about-card--wide {
-    grid-column: span 12;
-  }
-
-  .about-card__mark {
+  .about-person__mark {
     display: grid;
     place-items: center;
-    width: 100%;
-    min-height: 10rem;
+    min-height: 10.25rem;
     border: 1px solid color-mix(in srgb, var(--line-strong) 68%, transparent);
-    background: color-mix(in srgb, var(--surface-raised) 72%, transparent);
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--surface-2) 76%, transparent), transparent 65%),
+      color-mix(in srgb, var(--surface) 72%, transparent);
   }
 
-  .about-card__mark img {
+  .about-person__mark img {
     display: block;
     width: min(100%, 7rem);
     height: auto;
   }
 
-  .about-card h2,
-  .about-card h3 {
+  .about-panel h2 {
     margin: 0;
+    font-size: clamp(1.55rem, 2.7vw, 2.4rem);
+    line-height: 0.98;
+    letter-spacing: -0.06em;
   }
 
-  .about-card h2 {
-    font-size: clamp(1.45rem, 2.6vw, 2.2rem);
-    line-height: 1;
-  }
-
-  .about-card p,
-  .about-card li {
+  .about-person__copy,
+  .about-panel__lede,
+  .about-list li,
+  .about-start__body p {
     color: var(--text);
     line-height: 1.72;
   }
 
-  .about-card__split {
+  .about-person__copy {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.9rem;
-    padding-top: 0.3rem;
+    gap: 0.75rem;
+  }
+
+  .about-panel__lede {
+    margin: 0;
+    max-width: 38rem;
+    color: var(--muted);
+  }
+
+  .about-questions {
+    display: grid;
+    margin-top: 0.2rem;
     border-top: 1px solid color-mix(in srgb, var(--line-strong) 72%, transparent);
   }
 
-  .about-card__split section {
+  .about-question {
     display: grid;
-    gap: 0.45rem;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.85rem;
+    align-items: start;
+    padding: 0.95rem 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--line-strong) 50%, transparent);
   }
 
-  .about-card__split h3 {
+  .about-question:last-child {
+    border-bottom: 0;
+  }
+
+  .about-question__mark {
     color: var(--accent);
-    font-size: 0.95rem;
+    font-size: 0.9rem;
+    line-height: 1;
+    transform: translateY(0.1rem);
   }
 
-  .about-card__list {
+  .about-question p {
     margin: 0;
-    padding-left: 1.1rem;
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .about-page__dual {
     display: grid;
-    gap: 0.6rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(1rem, 2.4vw, 1.8rem);
+    padding-top: 0.5rem;
+    border-top: 1px solid color-mix(in srgb, var(--line-strong) 72%, transparent);
   }
 
-  .about-card__links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem 1rem;
+  .about-list {
+    display: grid;
+    gap: 0.9rem;
+    padding-top: 0.15rem;
   }
 
-  .about-card__links a {
+  .about-list--leaving {
+    padding-left: clamp(0.75rem, 1.8vw, 1.35rem);
+    border-inline-start: 1px solid color-mix(in srgb, var(--line-strong) 64%, transparent);
+  }
+
+  .about-list ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .about-list li {
+    position: relative;
+    padding-left: 1.05rem;
+  }
+
+  .about-list li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.7em;
+    width: 0.35rem;
+    height: 0.35rem;
+    border-radius: 999px;
+    background: var(--accent);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 24%, transparent);
+  }
+
+  .about-start {
+    display: grid;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid color-mix(in srgb, var(--line-strong) 78%, transparent);
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--surface) 74%, transparent), color-mix(in srgb, var(--surface-2) 62%, transparent));
+  }
+
+  .about-start__title {
+    margin: 0;
+    max-width: 40rem;
+    font-size: clamp(1.35rem, 2.2vw, 1.95rem);
+    line-height: 1.06;
+    letter-spacing: -0.05em;
+  }
+
+  .about-start__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+    align-items: stretch;
+  }
+
+  .about-start__path {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.9rem;
+    align-items: start;
+    padding: 0.9rem 1rem;
+  }
+
+  .about-start__path--thinking {
+    padding-right: 1.15rem;
+    border-inline-end: 1px solid color-mix(in srgb, var(--line-strong) 64%, transparent);
+  }
+
+  .about-start__icon {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
     color: var(--accent);
-    text-decoration: none;
-    font-size: 0.72rem;
-    font-weight: 700;
+    flex: 0 0 auto;
   }
 
-  @media (max-width: 900px) {
-    .about-card,
-    .about-card--wide {
-      grid-column: span 12;
+  .about-start__icon svg {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  .about-start__body {
+    display: grid;
+    gap: 0.4rem;
+    min-width: 0;
+  }
+
+  .about-start__action {
+    color: var(--text);
+    font-family: var(--font-title);
+    font-size: clamp(1.1rem, 1.6vw, 1.3rem);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    transition: color 180ms ease, transform 180ms ease;
+  }
+
+  .about-start__body p:last-child {
+    margin: 0;
+    max-width: 24rem;
+    color: var(--muted);
+  }
+
+  .about-start__action:hover,
+  .about-start__action:focus-visible {
+    color: var(--accent);
+    transform: translateX(0.15rem);
+  }
+
+  @media (max-width: 980px) {
+    .about-page__intro-grid,
+    .about-page__dual,
+    .about-start__grid {
+      grid-template-columns: 1fr;
     }
 
-    .about-card--portrait,
-    .about-card__split {
+    .about-panel--person,
+    .about-panel--thinking,
+    .about-list--leaving,
+    .about-start__path--thinking {
+      padding-left: 0;
+      padding-right: 0;
+      border-inline: 0;
+      border-top: 1px solid color-mix(in srgb, var(--line-strong) 64%, transparent);
+    }
+
+    .about-panel--person {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .about-person,
+    .about-start__path {
       grid-template-columns: 1fr;
+    }
+
+    .about-person__mark {
+      min-height: 8.75rem;
+      width: min(100%, 14rem);
+    }
+  }
+
+  @media (max-width: 640px) {
+    .about-page {
+      padding-top: 0.95rem;
+      gap: 1rem;
+    }
+
+    .about-page__hero-copy,
+    .about-panel__lede,
+    .about-start__title {
+      max-width: none;
+    }
+
+    .about-page__title {
+      font-size: clamp(2.6rem, 12vw, 3.8rem);
+    }
+
+    .about-start {
+      padding: 0.9rem;
     }
   }
 </style>
