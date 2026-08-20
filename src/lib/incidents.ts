@@ -124,6 +124,7 @@ export function getIncidentSceneNodes(scene: IncidentScene) {
 
   if (scene.topologyLayout === "ring") {
     const positions = [
+      { q: 0, r: 0 },
       { q: 0, r: -5 },
       { q: 5, r: 0 },
       { q: 0, r: 5 },
@@ -162,10 +163,10 @@ export function createIncidentScenePreset(scene: IncidentScene) {
     topologyLayout: scene.topologyLayout,
     radius:
       scene.topologyLayout === "matrix"
-        ? 30
+        ? 28
         : scene.topologyLayout === "linear"
-          ? 32
-          : 34,
+          ? 30
+          : 32,
     showGridNodes: false,
     gridActivity: false,
     ambientSignals: true,
