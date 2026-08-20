@@ -89,7 +89,7 @@ export const incidents = [
         sceneId: "executive-report",
         label: "Executive Report",
         title: "Business Impact",
-        topologyLayout: "swimlanes",
+        topologyLayout: "orbital-clusters",
         summary:
           "Business, operational, and status lanes separate what the incident meant for the organization from how the technical work progressed.",
         camera: {
