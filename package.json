@@ -8,7 +8,7 @@
       "preview": "astro preview --host 0.0.0.0"
     },
     "dependencies": {
-      "astro": "^5.0.0",
-      "operational-topology": "0.0.10"
+      "astro": "7.2.4",
+      "operational-topology": "0.0.12"
     }
   }
