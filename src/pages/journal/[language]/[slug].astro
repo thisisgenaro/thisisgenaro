@@ -1,5 +1,5 @@
 ---
-import { getCollection } from "astro:content";
+import { getCollection, render } from "astro:content";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import JournalTopology from "../../../components/journal/JournalTopology.astro";
 import {
@@ -35,7 +35,7 @@ if (!entry) {
 }
 
 const record = createJournalEntryRecord(entry);
-const { Content } = await entry.render();
+const { Content } = await render(entry);
 ---
 <BaseLayout
   title={`${record.title} | Journal | thisisgenaro.com`}
