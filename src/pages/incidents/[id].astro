@@ -544,6 +544,22 @@ const serializedSlides = JSON.stringify(slides);
     min-height: 100%;
   }
 
+  .incident-deck :global(.grid-occupant[data-node-id="affected-service"]) {
+    color: color-mix(in srgb, var(--signal-red) 84%, white 16%);
+  }
+
+  .incident-deck :global(.grid-occupant[data-node-id="affected-service"] .grid-occupant-fill) {
+    fill: color-mix(in srgb, var(--signal-red) 22%, var(--surface));
+    stroke: var(--signal-red);
+    stroke-width: 2.1;
+    filter: drop-shadow(0 0 14px color-mix(in srgb, var(--signal-red) 42%, transparent));
+  }
+
+  .incident-deck :global(.grid-occupant[data-node-id="affected-service"] .grid-occupant-subtitle) {
+    font-weight: 800;
+    letter-spacing: 0.18em;
+  }
+
   .incident-deck__scene-map {
     position: absolute;
     top: 1rem;

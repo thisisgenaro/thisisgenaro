@@ -97,15 +97,11 @@ export function getIncidentSceneNodes(scene: IncidentScene) {
   }
 
   if (scene.topologyLayout === "fan") {
-    const positions = [
-      { q: -4, r: 0 },
-      { q: 3, r: -4 },
-      { q: 5, r: 0 },
-      { q: 3, r: 4 },
-    ];
+    const branchCount = Math.max(0, count - 1);
     return scene.nodes.map((node, index) => ({
       ...node,
-      ...positions[index % positions.length],
+      q: index === 0 ? -6 : 4,
+      r: index === 0 ? 0 : 2 * (index - 1) - (branchCount - 1),
     }));
   }
 
