@@ -1,0 +1,1032 @@
+---
+import type { CollectionEntry } from "astro:content";
+import TopologyScene from "operational-topology/astro/TopologyScene";
+import type { IncidentRecord } from "../../lib/incidents";
+import {
+  formatIncidentDate,
+  getIncidentStatusTone,
+} from "../../lib/incidents";
+
+interface Props {
+  organization: CollectionEntry<"organizations">["data"];
+  incidents: IncidentRecord[];
+}
+
+const { organization, incidents } = Astro.props as Props;
+const formatNumber = (value: number) => new Intl.NumberFormat("en").format(value);
+const initials = (name: string) => name.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase();
+const hasRecurringPatterns = incidents.length >= 3;
+---
+<article class="organization-dossier">
+  <a class="organization-dossier__back" href="/incidents#organizations">← INCIDENT LIBRARY</a>
+
+  <nav class="organization-dossier__nav" aria-label="Dossier sections">
+    <span>{organization.acronym} DOSSIER</span>
+    <div>
+      <a href="#overview">Overview</a>
+      <a href="#topology">Topology</a>
+      <a href="#systems">Systems</a>
+      <a href="#people">People</a>
+      <a href="#incidents">Incidents</a>
+      <a href="#patterns">Patterns</a>
+    </div>
+  </nav>
+
+  <header class="organization-dossier__hero" id="overview">
+    <div class="organization-dossier__identity">
+      <div class="organization-dossier__logo-frame">
+        <img src={organization.logo} alt={`${organization.name} logo`} />
+      </div>
+      <div>
+        <p class="organization-dossier__eyebrow">ORGANIZATION DOSSIER · FICTIONAL CASE-STUDY ENVIRONMENT</p>
+        <p class="organization-dossier__classification">{organization.acronym} · {organization.industry}</p>
+        <h1>{organization.name}</h1>
+        <p class="organization-dossier__descriptor">{organization.descriptor}</p>
+      </div>
+    </div>
+
+    <dl class="organization-dossier__stats" aria-label="Organization summary">
+      <div>
+        <dt>Headquarters</dt>
+        <dd>{organization.headquarters}</dd>
+      </div>
+      <div>
+        <dt>Locations</dt>
+        <dd>{organization.branches} branches</dd>
+      </div>
+      <div>
+        <dt>Employees</dt>
+        <dd>{formatNumber(organization.employees)}</dd>
+      </div>
+      <div>
+        <dt>Published cases</dt>
+        <dd>{incidents.length}</dd>
+      </div>
+    </dl>
+  </header>
+
+  <section class="dossier-section dossier-section--profile" aria-labelledby="profile-title">
+    <div class="dossier-section__heading">
+      <p>OPERATIONAL PROFILE</p>
+      <h2 id="profile-title">What technology keeps running</h2>
+    </div>
+
+    <div class="operational-profile">
+      <div class="operational-profile__context">
+        <article>
+          <h3>What the business does</h3>
+          <p>{organization.businessDescription}</p>
+        </article>
+        <article>
+          <h3>What technology supports</h3>
+          <ul>
+            {organization.technologySupports.map((service) => <li>{service}</li>)}
+          </ul>
+        </article>
+      </div>
+
+      <aside class="failure-consequences">
+        <p>WHEN TECHNOLOGY FAILS</p>
+        <div>
+          {organization.failureConsequences.map((consequence) => <strong>{consequence}</strong>)}
+        </div>
+        <span>Technical failure becomes operational delay.</span>
+      </aside>
+    </div>
+  </section>
+
+  <section class="dossier-section dossier-section--topology" id="topology" aria-labelledby="topology-title">
+    <div class="dossier-section__heading dossier-section__heading--split">
+      <div>
+        <p>PERSISTENT ENVIRONMENT</p>
+        <h2 id="topology-title">Infrastructure topology</h2>
+      </div>
+      <p class="dossier-section__note">
+        The normal operating model behind GLC incidents. Select a node to trace how identity, applications, data, sites, and visibility relate.
+      </p>
+    </div>
+
+    <figure class="organization-topology">
+      <TopologyScene
+        class="organization-topology__scene"
+        nodes={organization.topology.nodes}
+        edges={organization.topology.relationships}
+        layout="viewport-fit"
+        viewportFit={true}
+        topologyLayout="territories"
+        radius={23}
+        showGridNodes={false}
+        gridActivity={false}
+        ambientSignals={true}
+        connectorRouting="obstacle-aware"
+        signalTransitionSpeed={0.9}
+      />
+      <figcaption>
+        <span><i class="is-healthy"></i> Normal operating context</span>
+        <span><i class="is-watch"></i> Known operational constraint</span>
+        <span>OTL-0014 · TERRITORIES</span>
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="dossier-section" id="systems" aria-labelledby="systems-title">
+    <div class="dossier-section__heading">
+      <p>TECHNOLOGY & OPERATIONAL RISK</p>
+      <h2 id="systems-title">Landscape and known weak points</h2>
+    </div>
+
+    <div class="technology-risk">
+      <div class="technology-landscape">
+        {organization.infrastructureDomains.map((domain) => (
+          <article>
+            <p>{domain.id.toUpperCase()}</p>
+            <h3>{domain.label}</h3>
+            <ul>{domain.systems.map((system) => <li>{system}</li>)}</ul>
+          </article>
+        ))}
+      </div>
+
+      <aside class="known-risks">
+        <header>
+          <span>KNOWN CHARACTERISTICS</span>
+          <strong>{organization.weakPoints.length}</strong>
+        </header>
+        <div>
+          {organization.weakPoints.map((risk) => (
+            <article>
+              <p>{risk.label}</p>
+              <span>{risk.detail}</span>
+            </article>
+          ))}
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="dossier-section" id="people" aria-labelledby="people-title">
+    <div class="dossier-section__heading dossier-section__heading--split">
+      <div>
+        <p>OPERATIONAL ROLES</p>
+        <h2 id="people-title">People who shape the environment</h2>
+      </div>
+      <p class="dossier-section__note">Roles explain how signals, decisions, knowledge, and business impact move during an incident.</p>
+    </div>
+
+    <div class="operational-roles">
+      {organization.people.map((person) => (
+        <article>
+          <div class="operational-role__mark" aria-hidden="true">{initials(person.name)}</div>
+          <div class="operational-role__identity">
+            <p>{person.role}</p>
+            <h3>{person.name}</h3>
+          </div>
+          <p>{person.operationalImportance}</p>
+          <span>{person.characteristic}</span>
+          {person.question && (
+            <blockquote>
+              <small>TYPICAL QUESTION</small>
+              “{person.question}”
+            </blockquote>
+          )}
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="dossier-section" id="incidents" aria-labelledby="incidents-title">
+    <div class="dossier-section__heading dossier-section__heading--split">
+      <div>
+        <p>OPERATIONAL HISTORY</p>
+        <h2 id="incidents-title">Incident history</h2>
+      </div>
+      <p class="dossier-section__note">Cases associated with this environment, ordered from the latest published record.</p>
+    </div>
+
+    {incidents.length ? (
+      <div class="organization-incidents">
+        {incidents.map((incident) => (
+          <article>
+            <header>
+              <div>
+                <p>{incident.incidentId}</p>
+                <h3>{incident.title}</h3>
+              </div>
+              <span class:list={["dossier-status", `is-${getIncidentStatusTone(incident.status)}`]}>{incident.status}</span>
+            </header>
+            <dl>
+              <div><dt>Date</dt><dd>{formatIncidentDate(incident.created)}</dd></div>
+              <div><dt>Service</dt><dd>{incident.service}</dd></div>
+              <div><dt>Duration</dt><dd>{incident.duration}</dd></div>
+              <div><dt>Severity</dt><dd>{incident.severity}</dd></div>
+            </dl>
+            <div class="organization-incidents__tags">
+              {incident.technicalDomains.map((domain) => <span>{domain}</span>)}
+              {incident.operationalThemes.map((theme) => <span>{theme}</span>)}
+            </div>
+            <p>{incident.learning}</p>
+            <a href={`/incidents/${incident.id}`}>VIEW INCIDENT →</a>
+          </article>
+        ))}
+      </div>
+    ) : (
+      <p class="dossier-empty">No published incidents are associated with this organization yet.</p>
+    )}
+  </section>
+
+  <section class="dossier-section" id="patterns" aria-labelledby="patterns-title">
+    <div class="dossier-section__heading">
+      <p>LONGITUDINAL CONTEXT</p>
+      <h2 id="patterns-title">Recurring patterns</h2>
+    </div>
+
+    {hasRecurringPatterns ? (
+      <div class="pattern-grid">
+        <article><span>DEPENDENCY VISIBILITY</span><p>Repeated incidents show dependencies that were undocumented or poorly understood.</p></article>
+        <article><span>DETECTION</span><p>Operational symptoms repeatedly appear before service-oriented monitoring identifies the condition.</p></article>
+      </div>
+    ) : (
+      <div class="patterns-pending">
+        <strong>Not enough incident history to establish recurring patterns.</strong>
+        <p>
+          The dossier will synthesize dependency, identity, detection, ownership, and recovery patterns after enough published cases provide evidence.
+        </p>
+        <span>{incidents.length} of 3 cases available for initial pattern synthesis</span>
+      </div>
+    )}
+  </section>
+</article>
+
+<style>
+  .organization-dossier {
+    width: min(100%, 92rem);
+    margin: 0 auto;
+    padding: clamp(1rem, 3vw, 2.6rem);
+    display: grid;
+    gap: clamp(3.8rem, 7vw, 7rem);
+  }
+
+  .organization-dossier__back,
+  .organization-dossier__nav,
+  .organization-dossier__eyebrow,
+  .organization-dossier__classification,
+  .dossier-section__heading > p,
+  .dossier-section__heading > div > p,
+  .failure-consequences > p,
+  .known-risks header,
+  .technology-landscape article > p,
+  .operational-role__identity p,
+  .organization-incidents header p,
+  .organization-incidents__tags,
+  .organization-incidents a,
+  .patterns-pending span,
+  .dossier-status {
+    font-family: var(--font-mono);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .organization-dossier__back {
+    width: fit-content;
+    color: var(--muted);
+    font-size: 0.62rem;
+    text-decoration: none;
+  }
+
+  .organization-dossier__back:hover,
+  .organization-dossier__back:focus-visible {
+    color: var(--accent);
+  }
+
+  .organization-dossier__nav {
+    position: sticky;
+    top: 0.75rem;
+    z-index: 10;
+    min-width: 0;
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid color-mix(in srgb, var(--line-strong) 82%, transparent);
+    background: color-mix(in srgb, var(--ink-raised) 90%, transparent);
+    backdrop-filter: blur(14px);
+    font-size: 0.57rem;
+  }
+
+  .organization-dossier__nav > span {
+    color: var(--accent);
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  .organization-dossier__nav div {
+    min-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.85rem;
+  }
+
+  .organization-dossier__nav a {
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  .organization-dossier__nav a:hover,
+  .organization-dossier__nav a:focus-visible {
+    color: var(--text);
+  }
+
+  .organization-dossier__hero {
+    position: relative;
+    display: grid;
+    gap: clamp(2rem, 5vw, 4rem);
+    padding-top: clamp(1rem, 3vw, 2.5rem);
+  }
+
+  .organization-dossier__hero::before {
+    content: "";
+    position: absolute;
+    inset: -2rem 0 auto auto;
+    width: min(42vw, 34rem);
+    height: 24rem;
+    background: radial-gradient(circle, color-mix(in srgb, var(--accent) 8%, transparent), transparent 68%);
+    pointer-events: none;
+  }
+
+  .organization-dossier__identity {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(11rem, 16rem) minmax(0, 1fr);
+    gap: clamp(1.5rem, 4vw, 3.5rem);
+    align-items: center;
+  }
+
+  .organization-dossier__logo-frame {
+    min-height: 11rem;
+    display: grid;
+    place-items: center;
+    padding: 1.4rem;
+    border: 1px solid var(--line-strong);
+    background:
+      linear-gradient(145deg, color-mix(in srgb, var(--accent) 9%, transparent), transparent 38%),
+      radial-gradient(ellipse at 50% 44%, #85898a 0%, #696f72 58%, #4b5155 100%);
+    box-shadow:
+      inset 0 0 0 1px rgba(0, 0, 0, 0.22),
+      inset 0 -2.5rem 5rem rgba(0, 0, 0, 0.14);
+  }
+
+  .organization-dossier__logo-frame img {
+    width: 100%;
+    max-height: 7.5rem;
+    object-fit: contain;
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.32));
+  }
+
+  .organization-dossier__identity > div:last-child {
+    min-width: 0;
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .organization-dossier__eyebrow,
+  .dossier-section__heading > p,
+  .dossier-section__heading > div > p {
+    margin: 0;
+    color: var(--accent);
+    font-size: 0.66rem;
+    font-weight: 800;
+  }
+
+  .organization-dossier__classification {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.64rem;
+  }
+
+  .organization-dossier__identity h1 {
+    max-width: 19ch;
+    margin: 0;
+    font-size: clamp(2.8rem, 6.4vw, 6.3rem);
+    line-height: 0.9;
+    letter-spacing: -0.07em;
+  }
+
+  .organization-dossier__descriptor {
+    max-width: 48rem;
+    margin: 0.4rem 0 0;
+    color: var(--muted);
+    font-size: clamp(1rem, 1.5vw, 1.16rem);
+    line-height: 1.65;
+  }
+
+  .organization-dossier__stats {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    border-top: 1px solid var(--line-strong);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .organization-dossier__stats div {
+    min-width: 0;
+    display: grid;
+    gap: 0.35rem;
+    padding: 1.05rem 1.2rem;
+    border-inline-start: 1px solid var(--line);
+  }
+
+  .organization-dossier__stats div:first-child {
+    border-inline-start: 0;
+    padding-inline-start: 0;
+  }
+
+  .organization-dossier__stats dt,
+  .organization-incidents dt {
+    color: var(--muted-dim);
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+  }
+
+  .organization-dossier__stats dd {
+    margin: 0;
+    color: var(--text);
+    font-size: clamp(1rem, 2vw, 1.35rem);
+    font-weight: 700;
+  }
+
+  .dossier-section {
+    min-width: 0;
+    display: grid;
+    gap: 1.5rem;
+    scroll-margin-top: 5rem;
+  }
+
+  .dossier-section__heading {
+    display: grid;
+    gap: 0.38rem;
+  }
+
+  .dossier-section__heading--split {
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.65fr);
+    align-items: end;
+    gap: 2rem;
+  }
+
+  .dossier-section__heading--split > div {
+    display: grid;
+    gap: 0.38rem;
+  }
+
+  .dossier-section__heading h2 {
+    max-width: 22ch;
+    margin: 0;
+    font-size: clamp(2rem, 4vw, 3.7rem);
+    line-height: 0.96;
+    letter-spacing: -0.055em;
+  }
+
+  .dossier-section__note {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.83rem;
+    line-height: 1.62;
+  }
+
+  .operational-profile {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 0.72fr);
+    gap: clamp(1.2rem, 3vw, 2.5rem);
+  }
+
+  .operational-profile__context {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .operational-profile__context article {
+    padding-top: 1rem;
+    border-top: 1px solid var(--line-strong);
+  }
+
+  .operational-profile h3,
+  .technology-landscape h3,
+  .operational-roles h3,
+  .organization-incidents h3 {
+    margin: 0;
+    color: var(--text);
+  }
+
+  .operational-profile__context h3 {
+    font-size: 1rem;
+  }
+
+  .operational-profile__context p,
+  .operational-profile__context li {
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1.65;
+  }
+
+  .operational-profile__context p {
+    margin: 0.8rem 0 0;
+  }
+
+  .operational-profile__context ul,
+  .technology-landscape ul {
+    margin: 0.8rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .operational-profile__context li {
+    padding: 0.32rem 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--line) 62%, transparent);
+  }
+
+  .failure-consequences {
+    position: relative;
+    display: grid;
+    gap: 1.1rem;
+    align-content: start;
+    padding: 1.35rem;
+    border-inline-start: 2px solid var(--signal-red);
+    background:
+      radial-gradient(circle at 0 0, color-mix(in srgb, var(--signal-red) 10%, transparent), transparent 55%),
+      var(--surface);
+  }
+
+  .failure-consequences > p {
+    margin: 0;
+    color: var(--signal-red);
+    font-size: 0.62rem;
+    font-weight: 800;
+  }
+
+  .failure-consequences > div {
+    display: grid;
+    gap: 0.38rem;
+  }
+
+  .failure-consequences strong {
+    font-size: clamp(1.15rem, 2.2vw, 1.75rem);
+    line-height: 1.12;
+  }
+
+  .failure-consequences > span {
+    color: var(--muted-dim);
+    font-size: 0.74rem;
+  }
+
+  .organization-topology {
+    position: relative;
+    min-width: 0;
+    min-height: clamp(33rem, 64vh, 48rem);
+    margin: 0;
+    overflow: hidden;
+    border-top: 1px solid color-mix(in srgb, var(--accent) 48%, var(--line));
+    border-bottom: 1px solid var(--line);
+    background:
+      radial-gradient(circle at 46% 46%, color-mix(in srgb, var(--signal-blue) 5%, transparent), transparent 32%),
+      color-mix(in srgb, var(--ink) 74%, transparent);
+  }
+
+  .organization-topology__scene {
+    width: 100%;
+    min-height: clamp(33rem, 64vh, 48rem);
+  }
+
+  .organization-topology figcaption {
+    position: absolute;
+    inset: auto 0.8rem 0.8rem;
+    z-index: 2;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.9rem;
+    color: var(--muted-dim);
+    font-family: var(--font-mono);
+    font-size: 0.57rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    pointer-events: none;
+  }
+
+  .organization-topology figcaption span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .organization-topology figcaption i {
+    width: 0.48rem;
+    height: 0.48rem;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+  }
+
+  .organization-topology figcaption .is-healthy { color: var(--signal-blue); }
+  .organization-topology figcaption .is-watch { color: var(--accent); }
+
+  .organization-topology :global(.topology-grid) {
+    color: color-mix(in srgb, var(--accent) 9%, transparent);
+  }
+
+  .organization-topology :global(.grid-connector) {
+    opacity: 0.42;
+  }
+
+  .organization-topology :global(.grid-connector.connector-state-active),
+  .organization-topology :global(.grid-connector.is-active),
+  .organization-topology :global(.grid-connector[data-edge-signal-state]:not([data-edge-signal-state="idle"])),
+  .organization-topology :global(.grid-connector.relationship-context-related),
+  .organization-topology :global(.grid-connector.relationship-context-ancestor),
+  .organization-topology :global(.grid-connector.relationship-context-descendant) {
+    opacity: 1;
+  }
+
+  .organization-topology :global(.grid-occupant[data-node-operational-state="degraded"]) {
+    color: var(--accent);
+  }
+
+  .organization-topology :global(.grid-occupant[data-node-operational-state="degraded"] .grid-occupant-fill) {
+    fill: color-mix(in srgb, var(--accent) 9%, var(--surface));
+    stroke: color-mix(in srgb, var(--accent) 76%, white 8%);
+  }
+
+  .organization-topology :global(.grid-occupant[data-node-operational-state="healthy"]) {
+    color: color-mix(in srgb, var(--signal-blue) 66%, var(--text) 34%);
+  }
+
+  .organization-topology :global(.grid-occupant[data-node-operational-state="healthy"] .grid-occupant-fill) {
+    fill: color-mix(in srgb, var(--signal-blue) 5%, var(--surface));
+    stroke: color-mix(in srgb, var(--signal-blue) 48%, var(--line-strong));
+  }
+
+  .technology-risk {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(20rem, 0.85fr);
+    gap: clamp(1.2rem, 3vw, 2.5rem);
+  }
+
+  .technology-landscape {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem;
+  }
+
+  .technology-landscape article {
+    min-width: 0;
+    padding: 1rem;
+    border-top: 1px solid var(--line-strong);
+    background: linear-gradient(145deg, color-mix(in srgb, var(--surface-raised) 44%, transparent), transparent 72%);
+  }
+
+  .technology-landscape article > p,
+  .operational-role__identity p,
+  .organization-incidents header p {
+    margin: 0;
+    color: var(--accent);
+    font-size: 0.57rem;
+    font-weight: 800;
+  }
+
+  .technology-landscape h3 {
+    margin-top: 0.28rem;
+    font-size: 1rem;
+  }
+
+  .technology-landscape li {
+    padding: 0.28rem 0;
+    color: var(--muted);
+    font-size: 0.76rem;
+  }
+
+  .known-risks {
+    border-top: 1px solid color-mix(in srgb, var(--accent) 46%, var(--line));
+  }
+
+  .known-risks header {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 0;
+    color: var(--muted);
+    font-size: 0.59rem;
+  }
+
+  .known-risks header strong {
+    color: var(--accent);
+  }
+
+  .known-risks > div {
+    display: grid;
+  }
+
+  .known-risks article {
+    display: grid;
+    grid-template-columns: minmax(8rem, 0.42fr) minmax(0, 1fr);
+    gap: 1rem;
+    padding: 0.75rem 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .known-risks article p {
+    margin: 0;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.57rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+  }
+
+  .known-risks article span {
+    color: var(--muted);
+    font-size: 0.76rem;
+    line-height: 1.5;
+  }
+
+  .operational-roles {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.8rem;
+  }
+
+  .operational-roles > article {
+    min-width: 0;
+    display: grid;
+    align-content: start;
+    gap: 0.85rem;
+    padding: 1rem;
+    border-top: 1px solid var(--line-strong);
+    background: linear-gradient(155deg, color-mix(in srgb, var(--surface-raised) 48%, transparent), transparent 70%);
+  }
+
+  .operational-role__mark {
+    width: 2.8rem;
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    color: var(--accent);
+    border: 1px solid color-mix(in srgb, var(--accent) 48%, transparent);
+    font-family: var(--font-mono);
+    font-size: 0.63rem;
+    font-weight: 900;
+  }
+
+  .operational-role__identity {
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .operational-roles h3 {
+    font-size: 1rem;
+  }
+
+  .operational-roles > article > p,
+  .operational-roles > article > span {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.76rem;
+    line-height: 1.55;
+  }
+
+  .operational-roles > article > span {
+    color: var(--muted-dim);
+  }
+
+  .operational-roles blockquote {
+    margin: 0.2rem 0 0;
+    padding-top: 0.75rem;
+    display: grid;
+    gap: 0.3rem;
+    border-top: 1px solid var(--line);
+    color: var(--text);
+    font-size: 0.78rem;
+    line-height: 1.45;
+  }
+
+  .operational-roles blockquote small {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.52rem;
+    letter-spacing: 0.08em;
+  }
+
+  .organization-incidents {
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .organization-incidents > article {
+    display: grid;
+    gap: 1rem;
+    padding: 1.15rem 0;
+    border-top: 1px solid var(--line-strong);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .organization-incidents header {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .organization-incidents header > div {
+    display: grid;
+    gap: 0.32rem;
+  }
+
+  .organization-incidents h3 {
+    font-size: clamp(1.25rem, 2.4vw, 1.9rem);
+  }
+
+  .dossier-status {
+    height: fit-content;
+    padding: 0.28rem 0.48rem;
+    border: 1px solid var(--line-strong);
+    color: var(--text);
+    font-size: 0.57rem;
+  }
+
+  .organization-incidents dl {
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.8rem;
+  }
+
+  .organization-incidents dl div {
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .organization-incidents dd {
+    margin: 0;
+    color: var(--text);
+    font-size: 0.77rem;
+  }
+
+  .organization-incidents__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .organization-incidents__tags span {
+    padding: 0.22rem 0.4rem;
+    border: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 0.52rem;
+  }
+
+  .organization-incidents > article > p {
+    max-width: 62rem;
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.84rem;
+    line-height: 1.6;
+  }
+
+  .organization-incidents a {
+    width: fit-content;
+    color: var(--accent);
+    font-size: 0.62rem;
+    font-weight: 800;
+    text-decoration: none;
+  }
+
+  .patterns-pending {
+    display: grid;
+    gap: 0.7rem;
+    padding: 1.2rem 0;
+    border-top: 1px solid var(--line-strong);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .patterns-pending strong {
+    font-size: clamp(1.15rem, 2.5vw, 1.65rem);
+  }
+
+  .patterns-pending p {
+    max-width: 52rem;
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.84rem;
+    line-height: 1.6;
+  }
+
+  .patterns-pending span {
+    color: var(--accent);
+    font-size: 0.56rem;
+  }
+
+  .pattern-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .pattern-grid article {
+    padding: 1rem;
+    border-top: 1px solid var(--line-strong);
+  }
+
+  .pattern-grid span {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.09em;
+  }
+
+  .pattern-grid p,
+  .dossier-empty {
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  @media (max-width: 1100px) {
+    .operational-profile,
+    .technology-risk {
+      grid-template-columns: 1fr;
+    }
+
+    .operational-roles {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 760px) {
+    .organization-dossier {
+      gap: 4rem;
+      padding-inline: 0.85rem;
+    }
+
+    .organization-dossier__nav {
+      position: static;
+      overflow-x: auto;
+    }
+
+    .organization-dossier__nav > span {
+      display: none;
+    }
+
+    .organization-dossier__nav div {
+      flex-wrap: nowrap;
+      justify-content: flex-start;
+    }
+
+    .organization-dossier__nav a {
+      white-space: nowrap;
+    }
+
+    .organization-dossier__identity,
+    .dossier-section__heading--split,
+    .operational-profile__context,
+    .technology-landscape,
+    .operational-roles,
+    .pattern-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .organization-dossier__logo-frame {
+      width: min(14rem, 72vw);
+      min-height: 9rem;
+    }
+
+    .organization-dossier__stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .organization-dossier__stats div:nth-child(3) {
+      padding-inline-start: 0;
+      border-inline-start: 0;
+    }
+
+    .organization-topology,
+    .organization-topology__scene {
+      min-height: 34rem;
+    }
+
+    .organization-topology figcaption {
+      justify-content: flex-start;
+      inset-inline: 0.55rem;
+    }
+
+    .known-risks article {
+      grid-template-columns: 1fr;
+      gap: 0.35rem;
+    }
+
+    .organization-incidents header {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .organization-incidents dl {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+</style>

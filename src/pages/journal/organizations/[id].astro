@@ -1,0 +1,31 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { getCollection } from "astro:content";
+import OrganizationDossier from "../../../components/organizations/OrganizationDossier.astro";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getPublishedIncidents } from "../../../lib/incidents";
+
+export async function getStaticPaths() {
+  const organizations = await getCollection("organizations", ({ data }) => data.language === "en");
+
+  return organizations.map((organization) => ({
+    params: { id: organization.data.id },
+    props: { organization },
+  }));
+}
+
+interface Props {
+  organization: CollectionEntry<"organizations">;
+}
+
+const { organization } = Astro.props as Props;
+const incidents = getPublishedIncidents().filter((incident) =>
+  organization.data.incidentIds.includes(incident.id),
+);
+---
+<BaseLayout
+  title={`${organization.data.name} Organization Dossier | thisisgenaro.com`}
+  description={organization.data.summary}
+>
+  <OrganizationDossier organization={organization.data} incidents={incidents} />
+</BaseLayout>

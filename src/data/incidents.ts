@@ -23,6 +23,8 @@ export const incidents = [
     ],
     peopleIds: ["miguel-pena", "laura-santana", "yessenia", "rafael-cabrera"],
     tags: ["authentication", "dns", "dependency-failure"],
+    technicalDomains: ["Identity", "DNS"],
+    operationalThemes: ["Hidden Dependency", "Monitoring Gap", "Technical Debt"],
     symptom:
       "Operational users could not authenticate to critical logistics applications even though the main systems appeared healthy.",
     rootCause:
