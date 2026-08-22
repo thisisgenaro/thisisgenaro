@@ -796,7 +796,10 @@ const featuredEdges = latest ? [
   }
 
   .incident-index__scene :global(.grid-connector) {
-    opacity: 0.52;
+    color: color-mix(in srgb, var(--signal-blue) 44%, var(--text) 56%);
+    stroke-width: 1.35;
+    stroke-opacity: 0.62;
+    opacity: 0.82;
   }
 
   .incident-index__scene :global(.grid-connector.connector-state-active),
@@ -811,6 +814,9 @@ const featuredEdges = latest ? [
   .incident-index__scene :global(.grid-connector[data-edge-target-operational-state="failed"]),
   .incident-index__scene :global(.grid-connector[data-edge-source-operational-state="failed"]) {
     stroke: color-mix(in srgb, var(--signal-red) 62%, var(--accent) 38%);
+    stroke-width: 1.6;
+    stroke-opacity: 0.82;
+    opacity: 0.94;
   }
 
   .incident-index__feature-detail {
