@@ -1,4 +1,4 @@
-import { createPresentationDeck, createPresentationSlides, type PresentationDeck, type PresentationSlide } from "operational-topology";
+import { createPresentationDeck, createPresentationSlides, createPresentationTopology, type PresentationDeck, type PresentationSlide } from "operational-topology";
 import { createTopologyScenePreset } from "operational-topology/presets";
 import { incidents as incidentRecords } from "../data/incidents";
 
@@ -46,106 +46,241 @@ export function getIncidentStatusTone(status: string) {
   return "identified";
 }
 
-export function getIncidentSceneNodes(scene: IncidentScene) {
-  const count = scene.nodes.length;
+interface IncidentTopologyNode {
+  id: string;
+  label: string;
+  subtitle?: string;
+  role: string;
+  selected?: boolean;
+}
 
-  if (scene.topologyLayout === "linear") {
-    return scene.nodes.map((node, index) => ({
-      ...node,
-      q: -6 + index * 4,
-      r: 0,
-    }));
+interface IncidentTopologyConnector {
+  from: string;
+  to: string;
+  label: string;
+}
+
+function getSceneNodes(scene: IncidentScene) {
+  return scene.nodes as readonly IncidentTopologyNode[];
+}
+
+function getSceneConnectors(scene: IncidentScene) {
+  return scene.connectors as readonly IncidentTopologyConnector[];
+}
+
+function getIncidentLayoutRoot(scene: IncidentScene) {
+  const nodes = getSceneNodes(scene);
+  if (scene.topologyLayout === "linear") return nodes[0];
+
+  const selected = nodes.find((node) => node.selected);
+  if (selected) return selected;
+
+  const connectors = getSceneConnectors(scene);
+  return nodes.reduce((best, node) => {
+    const nodeDegree = connectors.filter((connector) => connector.from === node.id || connector.to === node.id).length;
+    const bestDegree = connectors.filter((connector) => connector.from === best.id || connector.to === best.id).length;
+    return nodeDegree > bestDegree ? node : best;
+  }, nodes[0]);
+}
+
+function mergeGeneratedNode(
+  source: IncidentTopologyNode,
+  generated: { q: number; r: number; variant?: string; size?: string; active?: boolean },
+) {
+  return {
+    ...source,
+    q: generated.q,
+    r: generated.r,
+    variant: generated.variant,
+    size: generated.size,
+    active: generated.active ?? true,
+    selected: source.selected ?? false,
+  };
+}
+
+function createMatrixIncidentTopology(scene: IncidentScene) {
+  const nodes = getSceneNodes(scene);
+  const connectors = getSceneConnectors(scene);
+  const nodeById = new Map(nodes.map((node) => [node.id, node]));
+  const sourceIds = [...new Set(connectors.map((connector) => connector.from))];
+  const mappedIds = new Set<string>();
+
+  const anchors = sourceIds.flatMap((sourceId) => {
+    const source = nodeById.get(sourceId);
+    if (!source) return [];
+
+    mappedIds.add(source.id);
+    const children = connectors
+      .filter((connector) => connector.from === source.id)
+      .flatMap((connector) => {
+        const target = nodeById.get(connector.to);
+        if (!target) return [];
+        mappedIds.add(target.id);
+        return [{ id: target.id, label: target.label, subtitle: target.role }];
+      });
+
+    return [{ id: source.id, label: source.label, subtitle: source.role, children }];
+  });
+
+  for (const node of nodes) {
+    if (mappedIds.has(node.id)) continue;
+    anchors.push({ id: node.id, label: node.label, subtitle: node.role, children: [] });
+    mappedIds.add(node.id);
   }
 
-  if (scene.topologyLayout === "swimlanes") {
-    const positions = [
-      { q: -6, r: -3 },
-      { q: -2, r: -3 },
-      { q: 2, r: 3 },
-      { q: 6, r: 3 },
-    ];
-    return scene.nodes.map((node, index) => ({
-      ...node,
-      ...positions[index % positions.length],
-    }));
+  const layoutId = `incident-${scene.sceneId}`;
+  const generated = createPresentationTopology({
+    id: layoutId,
+    title: scene.title,
+    subtitle: scene.label,
+    sceneLayout: "world-grid",
+    topologyLayout: "matrix",
+    anchors,
+  });
+  const generatedBySourceId = new Map<string, (typeof generated.nodes)[number]>();
+
+  for (const anchor of anchors) {
+    const generatedAnchor = generated.nodes.find((node) => node.id === `presentation-${layoutId}-anchor-${anchor.id}`);
+    if (generatedAnchor) generatedBySourceId.set(anchor.id, generatedAnchor);
+
+    for (const child of anchor.children) {
+      const generatedCell = generated.nodes.find(
+        (node) => node.id === `presentation-${layoutId}-node-${anchor.id}-${child.id}`,
+      );
+      if (generatedCell && !generatedBySourceId.has(child.id)) {
+        generatedBySourceId.set(child.id, generatedCell);
+      }
+    }
   }
 
+  return {
+    nodes: nodes.map((node) => {
+      const generatedNode = generatedBySourceId.get(node.id);
+      if (!generatedNode) throw new Error(`OTF matrix did not position incident node ${node.id}`);
+      return mergeGeneratedNode(node, generatedNode);
+    }),
+    relationships: getIncidentSceneEdges(scene),
+    connectorRouting: generated.connectorRouting,
+  };
+}
+
+function createTerritoriesIncidentTopology(scene: IncidentScene) {
+  const nodes = getSceneNodes(scene);
+  const layoutId = `incident-${scene.sceneId}`;
+  const generated = createPresentationTopology({
+    id: layoutId,
+    title: scene.title,
+    subtitle: scene.label,
+    sceneLayout: "world-grid",
+    topologyLayout: "territories",
+    anchors: [],
+    territories: nodes.map((node) => ({
+      id: node.id,
+      label: node.label,
+      subtitle: node.role,
+      anchors: [{ id: `${node.id}-context`, label: node.role, children: [] }],
+    })),
+  });
+
+  return {
+    nodes: nodes.map((node) => {
+      const generatedNode = generated.nodes.find(
+        (candidate) => candidate.id === `presentation-${layoutId}-${node.id}-root`,
+      );
+      if (!generatedNode) throw new Error(`OTF territories did not position incident node ${node.id}`);
+      return mergeGeneratedNode(node, generatedNode);
+    }),
+    relationships: getIncidentSceneEdges(scene),
+    connectorRouting: generated.connectorRouting,
+  };
+}
+
+export function createIncidentSceneTopology(scene: IncidentScene) {
   if (scene.topologyLayout === "matrix") {
-    const positions = [
-      { q: -4, r: -3 },
-      { q: 4, r: -3 },
-      { q: -4, r: 3 },
-      { q: 4, r: 3 },
-    ];
-    return scene.nodes.map((node, index) => ({
-      ...node,
-      ...positions[index % positions.length],
-    }));
-  }
-
-  if (scene.topologyLayout === "basin") {
-    const positions = [
-      { q: 0, r: 0 },
-      { q: -4, r: -3 },
-      { q: 4, r: -3 },
-      { q: 0, r: 4 },
-    ];
-    return scene.nodes.map((node, index) => ({
-      ...node,
-      ...positions[index % positions.length],
-    }));
-  }
-
-  if (scene.topologyLayout === "fan") {
-    const branchCount = Math.max(0, count - 1);
-    return scene.nodes.map((node, index) => ({
-      ...node,
-      q: index === 0 ? -6 : 4,
-      r: index === 0 ? 0 : 2 * (index - 1) - (branchCount - 1),
-    }));
+    return createMatrixIncidentTopology(scene);
   }
 
   if (scene.topologyLayout === "territories") {
-    const positions = [
-      { q: -5, r: -3 },
-      { q: 5, r: -3 },
-      { q: -5, r: 3 },
-      { q: 5, r: 3 },
-    ];
-    return scene.nodes.map((node, index) => ({
-      ...node,
-      ...positions[index % positions.length],
-    }));
+    return createTerritoriesIncidentTopology(scene);
   }
 
-  if (scene.topologyLayout === "ring") {
-    const positions = [
-      { q: 0, r: 0 },
-      { q: 0, r: -5 },
-      { q: 5, r: 0 },
-      { q: 0, r: 5 },
-      { q: -5, r: 0 },
-      { q: 4, r: -3 },
-      { q: 4, r: 3 },
-      { q: -4, r: 3 },
-      { q: -4, r: -3 },
-    ];
-    return scene.nodes.map((node, index) => ({
-      ...node,
-      ...positions[index % positions.length],
-    }));
+  const nodes = getSceneNodes(scene);
+  const root = getIncidentLayoutRoot(scene);
+  if (!root) {
+    return { nodes: [], relationships: [], connectorRouting: "obstacle-aware" as const };
   }
 
-  const radius = Math.max(2, Math.min(5, Math.ceil(count / 2)));
-  return scene.nodes.map((node, index) => ({
-    ...node,
-    q: index - Math.floor(count / 2),
-    r: index % 2 === 0 ? radius : -radius,
-  }));
+  const anchors = nodes
+    .filter((node) => node.id !== root.id)
+    .map((node) => ({
+      id: node.id,
+      label: node.label,
+      subtitle: node.role,
+      children: [],
+    }));
+  const layoutId = `incident-${scene.sceneId}`;
+  const generated = createPresentationTopology({
+    id: layoutId,
+    title: root.label,
+    subtitle: root.role,
+    sceneLayout: "world-grid",
+    topologyLayout: scene.topologyLayout,
+    fanDirection: "E",
+    anchors,
+  });
+  const generatedRootId = `presentation-${layoutId}-root`;
+
+  return {
+    nodes: nodes.map((node) => {
+      const generatedId = node.id === root.id
+        ? generatedRootId
+        : `presentation-${layoutId}-anchor-${node.id}`;
+      const generatedNode = generated.nodes.find((candidate) => candidate.id === generatedId);
+      if (!generatedNode) throw new Error(`OTF ${scene.topologyLayout} did not position incident node ${node.id}`);
+      return mergeGeneratedNode(node, generatedNode);
+    }),
+    relationships: getIncidentSceneEdges(scene),
+    connectorRouting: generated.connectorRouting,
+  };
+}
+
+export function createIncidentPreviewTopology(incident: IncidentRecord) {
+  const scene = incident.scenes.find((candidate) => candidate.sceneId === "overview") ?? incident.scenes[0];
+  if (!scene) {
+    return {
+      nodes: [],
+      relationships: [],
+      connectorRouting: "obstacle-aware" as const,
+      topologyLayout: "fan" as const,
+    };
+  }
+
+  const topology = createIncidentSceneTopology(scene);
+  const previewScale = 0.4;
+
+  return {
+    ...topology,
+    topologyLayout: scene.topologyLayout,
+    nodes: topology.nodes.map((node) => ({
+      ...node,
+      q: Math.round(node.q * previewScale),
+      r: Math.round(node.r * previewScale),
+      status:
+        node.role === "affected-service"
+          ? "failed"
+          : ["affected-services", "requester", "severity", "category"].includes(node.role)
+            ? "degraded"
+            : "healthy",
+    })),
+  };
+}
+
+export function getIncidentSceneNodes(scene: IncidentScene) {
+  return createIncidentSceneTopology(scene).nodes;
 }
 
 export function getIncidentSceneEdges(scene: IncidentScene) {
-  return scene.connectors.map((connector) => ({
+  return getSceneConnectors(scene).map((connector) => ({
     from: connector.from,
     to: connector.to,
     label: connector.label,
@@ -188,11 +323,7 @@ export function createIncidentPresentationDeck(incident: IncidentRecord): Presen
       role: "incident",
       sceneLayout: "world-grid",
       topologyLayout: scene.topologyLayout,
-      topology: {
-        nodes: getIncidentSceneNodes(scene),
-        relationships: getIncidentSceneEdges(scene),
-        connectorRouting: "obstacle-aware",
-      },
+      topology: createIncidentSceneTopology(scene),
       anchors: scene.nodes.map((node) => ({
         id: node.id,
         label: node.label,

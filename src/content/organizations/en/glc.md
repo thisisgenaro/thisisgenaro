@@ -102,89 +102,76 @@ tags:
 topology:
   nodes:
     - id: active-directory
+      domainId: identity
       label: Active Directory
       subtitle: IDENTITY
-      q: -7
-      r: -2
       status: healthy
       variant: root
       size: lg
       selected: true
     - id: azure-ad-connect
+      domainId: identity
       label: Azure AD Connect
       subtitle: SYNC
-      q: -3
-      r: -4
       status: healthy
       variant: anchor
     - id: microsoft-365
+      domainId: identity
       label: Microsoft 365
       subtitle: CLOUD
-      q: 1
-      r: -5
       status: healthy
     - id: customer-portal
+      domainId: applications
       label: Customer Portal
       subtitle: CUSTOMER
-      q: 5
-      r: -4
       status: healthy
       variant: anchor
     - id: mobile-delivery
+      domainId: applications
       label: Mobile Delivery
       subtitle: DRIVERS
-      q: 8
-      r: -1
       status: healthy
     - id: warehouse-management
+      domainId: applications
       label: WMS
       subtitle: WAREHOUSE
-      q: -5
-      r: 2
       status: healthy
       variant: anchor
     - id: legacy-customs
+      domainId: applications
       label: Legacy Customs
       subtitle: LEGACY
-      q: -1
-      r: 4
       status: degraded
     - id: sql-server
+      domainId: data
       label: SQL Server
       subtitle: DATA
-      q: 3
-      r: 2
       status: healthy
       variant: anchor
     - id: vmware
+      domainId: data
       label: VMware
       subtitle: COMPUTE
-      q: 7
-      r: 3
       status: healthy
     - id: fortigate
+      domainId: network
       label: FortiGate
       subtitle: PERIMETER
-      q: 8
-      r: 6
       status: healthy
     - id: monitoring
+      domainId: visibility
       label: Monitoring
       subtitle: SERVER-CENTRIC
-      q: 2
-      r: 7
       status: degraded
     - id: santo-domingo
+      domainId: visibility
       label: Santo Domingo
       subtitle: DATACENTER
-      q: -6
-      r: 7
       status: healthy
     - id: regional-branches
+      domainId: visibility
       label: Regional Branches
       subtitle: 4 SITES
-      q: -2
-      r: 9
       status: healthy
   relationships:
     - from: active-directory

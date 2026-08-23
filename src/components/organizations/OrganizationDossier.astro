@@ -2,6 +2,7 @@
 import type { CollectionEntry } from "astro:content";
 import TopologyScene from "operational-topology/astro/TopologyScene";
 import type { IncidentRecord } from "../../lib/incidents";
+import { createOrganizationDossierTopology } from "../../lib/organizations";
 import {
   formatIncidentDate,
   getIncidentStatusTone,
@@ -16,9 +17,10 @@ const { organization, incidents } = Astro.props as Props;
 const formatNumber = (value: number) => new Intl.NumberFormat("en").format(value);
 const initials = (name: string) => name.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase();
 const hasRecurringPatterns = incidents.length >= 3;
+const dossierTopology = createOrganizationDossierTopology(organization);
 ---
 <article class="organization-dossier">
-  <a class="organization-dossier__back" href="/incidents#organizations">← INCIDENT LIBRARY</a>
+  <a class="organization-dossier__back" href="/world">← THE WORLD</a>
 
   <nav class="organization-dossier__nav" aria-label="Dossier sections">
     <span>{organization.acronym} DOSSIER</span>
@@ -102,29 +104,30 @@ const hasRecurringPatterns = incidents.length >= 3;
         <h2 id="topology-title">Infrastructure topology</h2>
       </div>
       <p class="dossier-section__note">
-        The normal operating model behind GLC incidents. Select a node to trace how identity, applications, data, sites, and visibility relate.
+        The normal operating model behind {organization.acronym} incidents. Select a node to trace how identity, applications, data, sites, and visibility relate.
       </p>
     </div>
 
     <figure class="organization-topology">
       <TopologyScene
         class="organization-topology__scene"
-        nodes={organization.topology.nodes}
-        edges={organization.topology.relationships}
+        nodes={dossierTopology.nodes}
+        edges={dossierTopology.relationships}
         layout="viewport-fit"
         viewportFit={true}
         topologyLayout="territories"
         radius={23}
         showGridNodes={false}
         gridActivity={false}
-        ambientSignals={true}
-        connectorRouting="obstacle-aware"
+        ambientSignals={false}
+        connectorRouting={dossierTopology.connectorRouting}
+        boundary={dossierTopology.boundary}
         signalTransitionSpeed={0.9}
       />
       <figcaption>
         <span><i class="is-healthy"></i> Normal operating context</span>
         <span><i class="is-watch"></i> Known operational constraint</span>
-        <span>OTL-0014 · TERRITORIES</span>
+        <span>TERRITORIES</span>
       </figcaption>
     </figure>
   </section>

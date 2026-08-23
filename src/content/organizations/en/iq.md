@@ -35,16 +35,16 @@ incidentIds: []
 tags: [Manufacturing, Operational technology, Production, IT OT]
 topology:
   nodes:
-    - { id: production-line, label: Production Line, subtitle: PHYSICAL PROCESS, q: -7, r: -2, status: healthy, variant: root, size: lg, selected: true }
-    - { id: plc, label: PLC Controllers, subtitle: CONTROL, q: -3, r: -4, status: degraded, variant: anchor }
-    - { id: scada, label: SCADA, subtitle: SUPERVISION, q: 2, r: -4, status: healthy, variant: anchor }
-    - { id: hmi, label: HMI Stations, subtitle: OPERATORS, q: 6, r: -2, status: healthy }
-    - { id: historian, label: Historian, subtitle: PROCESS DATA, q: -5, r: 3, status: degraded }
-    - { id: erp, label: ERP, subtitle: BUSINESS, q: 0, r: 2, status: healthy }
-    - { id: wms, label: WMS, subtitle: WAREHOUSE, q: 5, r: 3, status: healthy }
-    - { id: active-directory, label: Active Directory, subtitle: CORPORATE ID, q: -3, r: 7, status: healthy }
-    - { id: industrial-network, label: Industrial Network, subtitle: OT BOUNDARY, q: 3, r: 7, status: healthy }
-    - { id: backup, label: Backup Platform, subtitle: RECOVERY, q: 7, r: 6, status: healthy }
+    - { id: production-line, domainId: ot, label: Production Line, subtitle: PHYSICAL PROCESS, status: healthy, variant: root, size: lg, selected: true }
+    - { id: plc, domainId: ot, label: PLC Controllers, subtitle: CONTROL, status: degraded, variant: anchor }
+    - { id: scada, domainId: ot, label: SCADA, subtitle: SUPERVISION, status: healthy, variant: anchor }
+    - { id: hmi, domainId: ot, label: HMI Stations, subtitle: OPERATORS, status: healthy }
+    - { id: historian, domainId: telemetry, label: Historian, subtitle: PROCESS DATA, status: degraded }
+    - { id: erp, domainId: business, label: ERP, subtitle: BUSINESS, status: healthy }
+    - { id: wms, domainId: business, label: WMS, subtitle: WAREHOUSE, status: healthy }
+    - { id: active-directory, domainId: corporate, label: Active Directory, subtitle: CORPORATE ID, status: healthy }
+    - { id: industrial-network, domainId: resilience, label: Industrial Network, subtitle: OT BOUNDARY, status: healthy }
+    - { id: backup, domainId: resilience, label: Backup Platform, subtitle: RECOVERY, status: healthy }
   relationships:
     - { from: plc, to: production-line, label: controls, active: false }
     - { from: scada, to: plc, label: supervises, active: false }
