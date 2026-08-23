@@ -3,6 +3,7 @@ import TopologyScene from "operational-topology/astro/TopologyScene";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { organizations } from "../../data/organizations";
 import {
+  createIncidentPreviewTopology,
   formatIncidentDate,
   formatIncidentDateTime,
   getIncidentStatusTone,
@@ -14,21 +15,9 @@ const latest = incidents[0] ?? null;
 const organizationById = new Map(organizations.map((organization) => [organization.id, organization]));
 const latestOrganization = latest ? organizationById.get(latest.organizationId) ?? null : null;
 const closedCount = incidents.filter((incident) => incident.status.toLowerCase() === "closed").length;
-const representedOrganizationCount = new Set(incidents.map((incident) => incident.organizationId)).size;
 const domainOptions = [...new Set(incidents.flatMap((incident) => incident.technicalDomains))].sort();
 const themeOptions = [...new Set(incidents.flatMap((incident) => incident.operationalThemes))].sort();
 const stateOptions = [...new Set(incidents.map((incident) => incident.status))].sort();
-const representedOrganizations = organizations.filter((organization) =>
-  incidents.some((incident) => incident.organizationId === organization.id),
-);
-
-const incidentCountByOrganization = new Map(
-  organizations.map((organization) => [
-    organization.id,
-    incidents.filter((incident) => incident.organizationId === organization.id).length,
-  ]),
-);
-
 const getSeverityCode = (severity: string) => {
   const severityMap: Record<string, string> = {
     critical: "SEV-1",
@@ -42,68 +31,7 @@ const getSeverityCode = (severity: string) => {
 const formatDuration = (duration: string) =>
   duration.replace(/minutes?/i, "MIN").replace(/hours?/i, "HR").toUpperCase();
 
-const featuredNodes = latest ? [
-  {
-    id: "affected-service",
-    label: latest.service,
-    subtitle: "FAILED",
-    q: -6,
-    r: 0,
-    status: "failed",
-    variant: "root" as const,
-    size: "lg" as const,
-    selected: true,
-  },
-  {
-    id: "dns-path",
-    label: "DNS Path",
-    subtitle: "DEGRADED",
-    q: 4,
-    r: -6,
-    status: "degraded",
-    variant: "anchor" as const,
-  },
-  {
-    id: "operational-portal",
-    label: "Operational Portal",
-    subtitle: "HEALTHY",
-    q: 4,
-    r: -3,
-    status: "healthy",
-  },
-  {
-    id: "warehouse-operations",
-    label: "Warehouse Ops",
-    subtitle: "IMPACTED",
-    q: 4,
-    r: 0,
-    status: "degraded",
-  },
-  {
-    id: "customer-service",
-    label: "Customer Portal",
-    subtitle: "IMPACTED",
-    q: 4,
-    r: 3,
-    status: "degraded",
-  },
-  {
-    id: "dispatch-processing",
-    label: "Dispatch",
-    subtitle: "IMPACTED",
-    q: 4,
-    r: 6,
-    status: "degraded",
-  },
-] : [];
-
-const featuredEdges = latest ? [
-  { from: "dns-path", to: "affected-service", label: "misroutes", active: false },
-  { from: "affected-service", to: "operational-portal", label: "authenticates", active: false },
-  { from: "affected-service", to: "warehouse-operations", label: "blocks", active: false },
-  { from: "affected-service", to: "customer-service", label: "blocks", active: false },
-  { from: "affected-service", to: "dispatch-processing", label: "blocks", active: false },
-] : [];
+const featuredTopology = latest ? createIncidentPreviewTopology(latest) : null;
 ---
 <BaseLayout
   title="Incident Library | thisisgenaro.com"
@@ -122,10 +50,6 @@ const featuredEdges = latest ? [
           <div>
             <dt>Total incidents</dt>
             <dd>{incidents.length}</dd>
-          </div>
-          <div>
-            <dt>Organizations</dt>
-            <dd>{representedOrganizationCount}</dd>
           </div>
           <div>
             <dt>Latest record</dt>
@@ -171,16 +95,18 @@ const featuredEdges = latest ? [
             <figure class="incident-index__scene">
               <TopologyScene
                 class="incident-index__scene-view"
-                nodes={featuredNodes}
-                edges={featuredEdges}
+                nodes={featuredTopology?.nodes ?? []}
+                edges={featuredTopology?.relationships ?? []}
                 layout="viewport-fit"
                 viewportFit={true}
-                topologyLayout="fan"
-                radius={22}
+                topologyLayout={featuredTopology?.topologyLayout ?? "fan"}
+                radius={18}
+                originQ={-4}
+                originR={-6}
                 showGridNodes={false}
                 gridActivity={false}
-                ambientSignals={true}
-                connectorRouting="obstacle-aware"
+                ambientSignals={false}
+                connectorRouting={featuredTopology?.connectorRouting ?? "obstacle-aware"}
                 signalTransitionSpeed={0.95}
               />
               <figcaption>
@@ -251,18 +177,9 @@ const featuredEdges = latest ? [
         <details class="incident-index__filter-panel">
           <summary>
             <span>Filter archive</span>
-            <span>Organization · Domain · Theme · State</span>
+            <span>Domain · Theme · State</span>
           </summary>
           <form class="incident-index__filters" data-incident-filters>
-            <label>
-              <span>Organization</span>
-              <select name="organization">
-                <option value="">All organizations</option>
-                {representedOrganizations.map((organization) => (
-                  <option value={organization.id}>{organization.acronym}</option>
-                ))}
-              </select>
-            </label>
             <label>
               <span>Technical domain</span>
               <select name="domain">
@@ -335,42 +252,6 @@ const featuredEdges = latest ? [
         <p class="incident-index__no-results" hidden data-no-results>No incidents match the selected filters.</p>
       </section>
     )}
-
-    <section class="incident-index__organizations" aria-labelledby="organizations-title">
-      <div class="incident-index__section-heading">
-        <div>
-          <p class="incident-index__section-label">CASE-STUDY ENVIRONMENTS</p>
-          <h2 id="organizations-title">Organizations</h2>
-        </div>
-        <p class="incident-index__section-note">Persistent context for the systems, people, and weaknesses behind each case.</p>
-      </div>
-
-      <div class="organization-list">
-        {organizations.map((organization) => {
-          const incidentCount = incidentCountByOrganization.get(organization.id) ?? 0;
-          return (
-            <article class="organization-card" id={`organization-${organization.id}`}>
-              <a href={organization.dossierHref} aria-label={`View ${organization.name} organization dossier`}>
-                <span class="organization-mark" data-organization={organization.id} aria-hidden="true">
-                  <span>{organization.acronym}</span>
-                </span>
-                <span class="organization-card__body">
-                  <span class="organization-card__identity">
-                    <strong>{organization.acronym}</strong>
-                    <em>{organization.name}</em>
-                  </span>
-                  <span class="organization-card__meta">
-                    <span>{organization.industry}</span>
-                    <span>{incidentCount} {incidentCount === 1 ? "incident" : "incidents"}</span>
-                  </span>
-                  <span class="organization-card__cta">VIEW DOSSIER →</span>
-                </span>
-              </a>
-            </article>
-          );
-        })}
-      </div>
-    </section>
   </main>
 </BaseLayout>
 
@@ -437,7 +318,6 @@ const featuredEdges = latest ? [
   .incident-card__id,
   .incident-card__status,
   .incident-card__cta,
-  .organization-card__cta,
   .incident-index__filters span,
   .incident-index__stats dt {
     font-family: var(--font-mono);
@@ -474,7 +354,7 @@ const featuredEdges = latest ? [
     margin: 0;
     padding: 1rem 0;
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     border-top: 1px solid var(--line-strong);
     border-bottom: 1px solid var(--line);
   }
@@ -506,8 +386,7 @@ const featuredEdges = latest ? [
   }
 
   .incident-index__featured,
-  .incident-index__browse,
-  .incident-index__organizations {
+  .incident-index__browse {
     min-width: 0;
     display: grid;
     gap: 1.35rem;
@@ -878,8 +757,7 @@ const featuredEdges = latest ? [
   }
 
   .incident-index__cta,
-  .incident-card__cta,
-  .organization-card__cta {
+  .incident-card__cta {
     width: fit-content;
     color: var(--accent);
     font-size: 0.67rem;
@@ -896,26 +774,17 @@ const featuredEdges = latest ? [
   .incident-index__cta:hover,
   .incident-index__cta:focus-visible,
   .incident-card__cta:hover,
-  .incident-card__cta:focus-visible,
-  .organization-card a:hover .organization-card__cta,
-  .organization-card a:focus-visible .organization-card__cta {
+  .incident-card__cta:focus-visible {
     color: var(--text);
   }
 
-  .incident-index__result-count,
-  .incident-index__section-note {
+  .incident-index__result-count {
     max-width: 34rem;
     margin: 0;
     color: var(--muted);
     font-size: 0.68rem;
     line-height: 1.5;
     text-align: right;
-  }
-
-  .incident-index__section-note {
-    font-family: var(--font-body);
-    font-size: 0.82rem;
-    letter-spacing: 0;
   }
 
   .incident-index__filter-panel {
@@ -952,7 +821,7 @@ const featuredEdges = latest ? [
 
   .incident-index__filters {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
     gap: 0.8rem;
     align-items: end;
     padding: 0.2rem 0 1rem;
@@ -1098,79 +967,6 @@ const featuredEdges = latest ? [
     border-bottom: 1px solid var(--line);
   }
 
-  .organization-list {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.8rem;
-  }
-
-  .organization-card {
-    min-width: 0;
-    border-top: 1px solid var(--line-strong);
-    background: linear-gradient(155deg, color-mix(in srgb, var(--surface-raised) 52%, transparent), transparent 72%);
-  }
-
-  .organization-card a {
-    min-height: 13.5rem;
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 1rem;
-    align-content: start;
-    padding: 1.15rem;
-    color: var(--text);
-    text-decoration: none;
-  }
-
-  .organization-card a:hover,
-  .organization-card a:focus-visible {
-    outline: none;
-    background: color-mix(in srgb, var(--accent-soft) 17%, transparent);
-  }
-
-  .organization-card__body {
-    min-width: 0;
-    display: grid;
-    gap: 1rem;
-  }
-
-  .organization-card__identity,
-  .organization-card__meta {
-    display: grid;
-    gap: 0.24rem;
-  }
-
-  .organization-card__identity strong {
-    color: var(--accent);
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    letter-spacing: 0.12em;
-  }
-
-  .organization-card__identity em {
-    color: var(--text);
-    font-style: normal;
-    font-size: 0.88rem;
-    line-height: 1.35;
-  }
-
-  .organization-card__meta {
-    color: var(--muted);
-    font-size: 0.7rem;
-    line-height: 1.4;
-  }
-
-  .organization-card__meta span:last-child {
-    color: var(--muted-dim);
-    font-family: var(--font-mono);
-    font-size: 0.58rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  .organization-card__cta {
-    margin-top: auto;
-  }
-
   @media (max-width: 1100px) {
     .incident-index__feature-titlebar,
     .incident-index__feature-grid {
@@ -1202,10 +998,6 @@ const featuredEdges = latest ? [
     .incident-index__filters button {
       width: fit-content;
     }
-
-    .organization-list {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
   }
 
   @media (max-width: 720px) {
@@ -1232,8 +1024,7 @@ const featuredEdges = latest ? [
     }
 
     .incident-index__state-line,
-    .incident-index__result-count,
-    .incident-index__section-note {
+    .incident-index__result-count {
       text-align: left;
     }
 
@@ -1276,24 +1067,10 @@ const featuredEdges = latest ? [
     .incident-card__cta {
       margin-inline-start: calc(3.1rem + 0.9rem);
     }
-
-    .organization-list {
-      display: flex;
-      gap: 0.75rem;
-      overflow-x: auto;
-      scroll-snap-type: x proximity;
-      padding-bottom: 0.5rem;
-    }
-
-    .organization-card {
-      flex: 0 0 min(85vw, 20rem);
-      scroll-snap-align: start;
-    }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .incident-index__feature-frame,
-    .organization-card a {
+    .incident-index__feature-frame {
       scroll-behavior: auto;
     }
   }

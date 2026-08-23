@@ -1,0 +1,352 @@
+---
+import { getCollection } from "astro:content";
+import { createPresentationTopology } from "operational-topology";
+import TopologyScene from "operational-topology/astro/TopologyScene";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getPublishedIncidents } from "../../lib/incidents";
+
+const organizationOrder = ["glc", "conasa", "rmh", "iq", "cad", "sta"];
+const organizationEntries = await getCollection("organizations", ({ data }) => data.language === "en");
+const organizations = organizationEntries
+  .map(({ data }) => data)
+  .sort((first, second) => organizationOrder.indexOf(first.id) - organizationOrder.indexOf(second.id));
+const incidents = getPublishedIncidents();
+const initialOrganizationId = organizations[0]?.id ?? "glc";
+
+const worldRing = createPresentationTopology({
+  id: "world-organizations",
+  title: "The World",
+  subtitle: "Operational Context",
+  sceneLayout: "viewport-fit",
+  topologyLayout: "ring",
+  anchors: organizations.map((organization) => ({
+    id: organization.id,
+    label: organization.acronym,
+    subtitle: organization.industry.toUpperCase(),
+    children: [],
+  })),
+});
+const generatedRootId = "presentation-world-organizations-root";
+const generatedAnchorPrefix = "presentation-world-organizations-anchor-";
+const ringDisplayScale = 4;
+const organizationById = new Map(organizations.map((organization) => [organization.id, organization]));
+const publicNodeId = (generatedId: string) =>
+  generatedId === generatedRootId ? "world-context" : generatedId.replace(generatedAnchorPrefix, "");
+
+const worldNodes = worldRing.nodes.map((node) => {
+  const id = publicNodeId(node.id);
+  const organization = organizationById.get(id);
+
+  return {
+    ...node,
+    id,
+    q: node.q * ringDisplayScale,
+    r: node.r * ringDisplayScale,
+    label: organization?.acronym ?? "The World",
+    subtitle: organization?.industry.toUpperCase() ?? "OPERATIONAL CONTEXT",
+    status: "healthy",
+    variant: organization ? "anchor" as const : "root" as const,
+    size: organization ? "lg" as const : "md" as const,
+    image: organization?.logo,
+    imageScale: organization ? 0.58 : undefined,
+    imageOffsetY: organization ? -0.08 : undefined,
+    selected: organization?.id === initialOrganizationId,
+  };
+});
+
+const worldEdges = (worldRing.relationships ?? []).map((relationship) => ({
+  ...relationship,
+  from: publicNodeId(relationship.from),
+  to: publicNodeId(relationship.to),
+  label: "dossier context",
+  active: false,
+}));
+
+const incidentCountFor = (organizationId: string) =>
+  incidents.filter((incident) => incident.organizationId === organizationId).length;
+const formatNumber = (value: number) => new Intl.NumberFormat("en-US").format(value);
+---
+
+<BaseLayout
+  title="The World | thisisgenaro.com"
+  description="A connected world of organizations, systems, pressures, and dependencies behind the incidents."
+>
+  <main class="world-page">
+    <header class="world-hero">
+      <a class="world-back" href="/">← HOME</a>
+      <p class="world-eyebrow">EXPLORE THE WORLD</p>
+      <h1>The World</h1>
+      <p>A connected world of organizations, systems, pressures, and dependencies behind the incidents.</p>
+    </header>
+
+    <section class="world-explorer" data-world-explorer aria-labelledby="world-map-title">
+      <header class="world-explorer__header">
+        <div>
+          <p class="world-eyebrow">CONNECTED CONTEXT</p>
+          <h2 id="world-map-title">The world behind the incidents.</h2>
+        </div>
+        <p>Select an organization to see the operating reality that gives its incidents persistent context.</p>
+      </header>
+
+      <div class="world-explorer__layout">
+        <figure class="world-map" data-world-map>
+          <TopologyScene
+            class="world-map__scene"
+            nodes={worldNodes}
+            edges={worldEdges}
+            layout="viewport-fit"
+            viewportFit={true}
+            topologyLayout="ring"
+            radius={18}
+            showGridNodes={false}
+            gridActivity={false}
+            ambientSignals={false}
+            connectorRouting={worldRing.connectorRouting ?? "obstacle-aware"}
+            signalTransitionSpeed={0.9}
+          />
+          <figcaption>
+            Connections represent navigation within the knowledge system, not shared infrastructure between organizations.
+          </figcaption>
+        </figure>
+
+        <aside class="dossier-preview" aria-live="polite" aria-label="Selected organization dossier preview">
+          <p class="world-eyebrow">DOSSIER PREVIEW</p>
+          {organizations.map((organization) => {
+            const incidentCount = incidentCountFor(organization.id);
+            return (
+              <article
+                class="dossier-preview__panel"
+                data-world-preview={organization.id}
+                hidden={organization.id !== initialOrganizationId}
+              >
+                <div class="dossier-preview__identity">
+                  <span class="logo-frame"><img src={organization.logo} alt={`${organization.name} logo`} /></span>
+                  <div>
+                    <span>{organization.acronym} · {organization.industry}</span>
+                    <h3>{organization.name}</h3>
+                  </div>
+                </div>
+                <p class="dossier-preview__description">{organization.descriptor}</p>
+                <dl class="dossier-preview__facts">
+                  <div><dt>Headquarters</dt><dd>{organization.headquarters}</dd></div>
+                  <div><dt>Locations</dt><dd>{organization.branches}</dd></div>
+                  <div><dt>Employees</dt><dd>{formatNumber(organization.employees)}</dd></div>
+                  <div><dt>Incidents</dt><dd>{incidentCount}</dd></div>
+                </dl>
+                <div class="dossier-preview__traits" aria-label="Defining characteristics">
+                  {organization.tags.slice(0, 4).map((tag) => <span>{tag}</span>)}
+                </div>
+                <a class="world-action" href={`/journal/organizations/${organization.id}`}>VIEW DOSSIER →</a>
+              </article>
+            );
+          })}
+        </aside>
+      </div>
+    </section>
+
+    <section class="world-index" aria-labelledby="world-index-title">
+      <header>
+        <div>
+          <p class="world-eyebrow">EXPLORE THE WORLD</p>
+          <h2 id="world-index-title">Choose an operational context.</h2>
+        </div>
+        <p>The index is an accessible route through the same connected world. Selection stays synchronized with the topology and dossier preview.</p>
+      </header>
+      <div class="world-index__track" aria-label="Organizations">
+        {organizations.map((organization) => {
+          const incidentCount = incidentCountFor(organization.id);
+          const isInitial = organization.id === initialOrganizationId;
+          return (
+            <button
+              class:list={["world-index__item", { "is-selected": isInitial }]}
+              type="button"
+              data-world-select={organization.id}
+              aria-pressed={isInitial ? "true" : "false"}
+            >
+              <span class="world-index__logo"><img src={organization.logo} alt="" /></span>
+              <span class="world-index__copy">
+                <span>{organization.acronym} · {organization.industry}</span>
+                <strong>{organization.name}</strong>
+                <small>{incidentCount} documented {incidentCount === 1 ? "incident" : "incidents"}</small>
+              </span>
+              <span class="world-index__mark" aria-hidden="true">+</span>
+            </button>
+          );
+        })}
+      </div>
+    </section>
+
+    <footer class="world-footer">
+      <p>The World supplies persistent context. The Incident Library preserves what happened inside it.</p>
+      <a href="/incidents">EXPLORE THE INCIDENT LIBRARY →</a>
+    </footer>
+  </main>
+</BaseLayout>
+
+<script>
+  const explorer = document.querySelector<HTMLElement>("[data-world-explorer]");
+  const scene = explorer?.querySelector<HTMLElement>(".topology-scene");
+  const previews = Array.from(document.querySelectorAll<HTMLElement>("[data-world-preview]"));
+  const selectors = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-world-select]"));
+  const organizationIds = new Set(selectors.map((selector) => selector.dataset.worldSelect).filter(Boolean));
+
+  const showOrganization = (organizationId: string, updateAddress = true) => {
+    if (!organizationIds.has(organizationId)) return;
+
+    previews.forEach((preview) => {
+      preview.hidden = preview.dataset.worldPreview !== organizationId;
+    });
+
+    selectors.forEach((selector) => {
+      const selected = selector.dataset.worldSelect === organizationId;
+      selector.classList.toggle("is-selected", selected);
+      selector.setAttribute("aria-pressed", String(selected));
+    });
+
+    scene?.querySelectorAll<HTMLElement>(".grid-occupant").forEach((node) => {
+      node.classList.toggle("world-node-selected", node.dataset.nodeId === organizationId);
+    });
+
+    scene?.querySelectorAll<HTMLElement>(".grid-connector").forEach((connector) => {
+      const related = connector.dataset.edgeFrom === organizationId || connector.dataset.edgeTo === organizationId;
+      connector.classList.toggle("world-connector-selected", related);
+    });
+
+    if (updateAddress) {
+      const nextUrl = new URL(window.location.href);
+      nextUrl.hash = organizationId;
+      window.history.replaceState({}, "", nextUrl);
+    }
+  };
+
+  scene?.addEventListener("topology-node-selected", (event) => {
+    const organizationId = (event as CustomEvent<{ nodeId?: string }>).detail?.nodeId;
+    if (organizationId) showOrganization(organizationId);
+  });
+
+  selectors.forEach((selector) => {
+    selector.addEventListener("click", () => {
+      const organizationId = selector.dataset.worldSelect;
+      if (!organizationId) return;
+
+      showOrganization(organizationId);
+      scene?.dispatchEvent(new CustomEvent("topology-navigate", {
+        bubbles: true,
+        detail: { toId: organizationId, kind: "select" },
+      }));
+    });
+  });
+
+  const requestedOrganization = window.location.hash.slice(1);
+  const initialOrganization = organizationIds.has(requestedOrganization)
+    ? requestedOrganization
+    : selectors[0]?.dataset.worldSelect;
+
+  if (initialOrganization) {
+    window.requestAnimationFrame(() => {
+      showOrganization(initialOrganization, Boolean(requestedOrganization));
+      if (requestedOrganization) {
+        scene?.dispatchEvent(new CustomEvent("topology-navigate", {
+          bubbles: true,
+          detail: { toId: initialOrganization, kind: "select" },
+        }));
+      }
+    });
+  }
+</script>
+
+<style>
+  .world-page { width: min(100%, 94rem); margin: 0 auto; padding: clamp(1.25rem, 3.5vw, 3rem); }
+  .world-page :where(h1, h2, h3, p, figure, dl) { margin: 0; }
+  .world-eyebrow, .world-back, .world-action, .world-footer a, .dossier-preview__identity span, .dossier-preview__facts dt, .dossier-preview__traits span, .world-index__copy > span { font-family: var(--font-mono); letter-spacing: .13em; text-transform: uppercase; }
+  .world-eyebrow { color: var(--accent); font-size: .68rem; font-weight: 800; }
+  .world-back { width: fit-content; color: var(--accent); font-size: .62rem; text-decoration: none; }
+
+  .world-hero { display: grid; gap: .85rem; max-width: 70rem; padding-block: clamp(2.5rem, 8vw, 7rem); }
+  .world-hero h1 { font-size: clamp(4.25rem, 11vw, 9.5rem); line-height: .84; letter-spacing: -.075em; }
+  .world-hero > p:last-child { max-width: 58rem; color: var(--muted); font-size: clamp(1.05rem, 1.8vw, 1.35rem); line-height: 1.7; }
+
+  .world-explorer, .world-index { padding-block: clamp(3.5rem, 7vw, 6rem); border-top: 1px solid var(--line); }
+  .world-explorer__header, .world-index > header { display: grid; grid-template-columns: minmax(0, 1fr) minmax(18rem, .58fr); gap: 2rem; align-items: end; margin-bottom: 1.5rem; }
+  .world-explorer h2, .world-index h2 { max-width: 18ch; font-size: clamp(2.2rem, 4.5vw, 4rem); line-height: .96; letter-spacing: -.055em; }
+  .world-explorer__header > p, .world-index > header > p { color: var(--muted); line-height: 1.7; }
+
+  .world-explorer__layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(18rem, 23rem); min-height: 43rem; border: 1px solid var(--line); background: var(--ink-raised); }
+  .world-map { display: grid; grid-template-rows: minmax(0, 1fr) auto; min-width: 0; overflow: hidden; border-right: 1px solid var(--line); background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--signal-blue) 8%, transparent), transparent 37%), linear-gradient(145deg, rgba(255, 255, 255, .025), transparent 45%), var(--ink-raised); }
+  .world-map__scene { min-height: 39rem; }
+  .world-map figcaption { padding: .7rem 1rem; border-top: 1px solid var(--line); color: var(--muted-dim); font-size: .66rem; line-height: 1.5; }
+  .world-map :global(.topology-grid) { color: color-mix(in srgb, var(--accent) 8%, transparent); }
+  .world-map :global(.grid-connector) { color: color-mix(in srgb, var(--signal-blue) 52%, var(--text)); stroke-width: 1.2; stroke-opacity: .34; opacity: .68; transition: opacity 180ms ease, stroke-width 180ms ease; }
+  .world-map :global(.grid-connector.world-connector-selected) { color: var(--signal-blue); stroke-width: 1.8; stroke-opacity: .95; opacity: 1; }
+  .world-map :global(.grid-occupant[data-node-id]:not([data-node-id="world-context"]) .grid-occupant-fill) { fill: #666d71; stroke: rgba(255, 255, 255, .28); }
+  .world-map :global(.grid-occupant[data-node-id="world-context"] .grid-occupant-fill) { fill: var(--surface); }
+  .world-map :global(.grid-occupant.world-node-selected .grid-occupant-fill), .world-map :global(.grid-occupant.is-selected .grid-occupant-fill) { stroke: var(--accent); stroke-width: 2.4; filter: drop-shadow(0 0 7px rgba(242, 169, 0, .34)); }
+  .world-map :global(.grid-occupant:not(.world-node-selected):not(.is-selected)) { opacity: .78; }
+
+  .dossier-preview { position: relative; min-width: 0; padding: clamp(1.15rem, 2.3vw, 1.75rem); background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 93%, transparent), var(--ink-raised)); }
+  .dossier-preview::before { content: ""; position: absolute; inset: 0 auto auto 0; width: 4rem; height: 2px; background: var(--accent); }
+  .dossier-preview__panel { padding-top: 1.15rem; }
+  .dossier-preview__panel[hidden] { display: none; }
+  .dossier-preview__identity { display: grid; gap: 1rem; margin-bottom: 1.35rem; }
+  .logo-frame { display: grid; place-items: center; width: 100%; min-height: 8.5rem; padding: 1rem; background: radial-gradient(ellipse at 50% 44%, #85898a 0%, #696f72 58%, #4b5155 100%); }
+  .logo-frame img { width: min(100%, 14rem); max-height: 6.5rem; object-fit: contain; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .34)); }
+  .dossier-preview__identity span { color: var(--accent); font-size: .58rem; }
+  .dossier-preview__identity h3 { margin-top: .35rem; font-size: clamp(1.35rem, 2.2vw, 1.8rem); line-height: 1.08; }
+  .dossier-preview__description { color: var(--muted); font-size: .86rem; line-height: 1.65; }
+  .dossier-preview__facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 1.4rem; border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
+  .dossier-preview__facts div { display: grid; gap: .3rem; min-height: 4.6rem; padding: .7rem; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .dossier-preview__facts dt { color: var(--muted-dim); font-size: .49rem; }
+  .dossier-preview__facts dd { margin: 0; font-size: .8rem; }
+  .dossier-preview__traits { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: 1rem; }
+  .dossier-preview__traits span { padding: .35rem .45rem; border: 1px solid var(--line); color: var(--muted); font-size: .48rem; }
+  .world-action { display: inline-block; margin-top: 1.5rem; color: var(--accent); font-size: .63rem; font-weight: 800; text-decoration: none; }
+
+  .world-index { border-bottom: 1px solid var(--line); }
+  .world-index__track { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(17rem, 1fr); overflow-x: auto; overscroll-behavior-inline: contain; scroll-snap-type: inline proximity; border-top: 1px solid var(--line); border-left: 1px solid var(--line); scrollbar-color: var(--accent) var(--surface); }
+  .world-index__item { display: grid; grid-template-columns: 5rem minmax(0, 1fr) auto; gap: .8rem; align-items: center; min-height: 7.2rem; padding: .8rem; scroll-snap-align: start; border: 0; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--surface); color: var(--text); font: inherit; text-align: left; cursor: pointer; transition: background 180ms ease; }
+  .world-index__item:hover, .world-index__item:focus-visible, .world-index__item.is-selected { background: color-mix(in srgb, var(--accent) 7%, var(--surface)); outline: none; }
+  .world-index__item.is-selected { box-shadow: inset 0 2px var(--accent); }
+  .world-index__logo { display: grid; place-items: center; width: 5rem; height: 4rem; padding: .45rem; background: radial-gradient(ellipse at 50% 44%, #85898a 0%, #696f72 58%, #4b5155 100%); }
+  .world-index__logo img { width: 100%; max-height: 3.2rem; object-fit: contain; }
+  .world-index__copy { display: grid; gap: .3rem; min-width: 0; }
+  .world-index__copy > span { color: var(--accent); font-size: .5rem; }
+  .world-index__copy strong { font-size: .82rem; line-height: 1.25; }
+  .world-index__copy small { color: var(--muted); font-size: .64rem; }
+  .world-index__mark { color: var(--accent); font-size: 1.1rem; }
+  .world-index__item.is-selected .world-index__mark { transform: rotate(45deg); }
+
+  .world-footer { display: flex; justify-content: space-between; gap: 2rem; align-items: center; padding-block: 2rem; }
+  .world-footer p { max-width: 42rem; color: var(--muted); line-height: 1.6; }
+  .world-footer a { color: var(--accent); font-size: .62rem; text-decoration: none; }
+
+  @media (max-width: 1000px) {
+    .world-explorer__layout { grid-template-columns: minmax(0, 1fr) minmax(17rem, 20rem); }
+    .world-map__scene { min-height: 35rem; }
+  }
+
+  @media (max-width: 820px) {
+    .world-explorer__header, .world-index > header { grid-template-columns: 1fr; }
+    .world-explorer__layout { grid-template-columns: 1fr; }
+    .world-map { border-right: 0; border-bottom: 1px solid var(--line); }
+    .world-map__scene { min-height: 32rem; }
+    .dossier-preview__identity { grid-template-columns: minmax(10rem, .6fr) 1fr; align-items: center; }
+  }
+
+  @media (max-width: 600px) {
+    .world-page { padding-inline: 1rem; }
+    .world-hero { padding-block: 2.5rem 4rem; }
+    .world-hero h1 { font-size: clamp(4rem, 24vw, 6.4rem); }
+    .world-map__scene { min-height: 28rem; }
+    .world-map figcaption { font-size: .58rem; }
+    .dossier-preview__identity { grid-template-columns: 1fr; }
+    .logo-frame { min-height: 7rem; }
+    .world-index__track { grid-auto-columns: minmax(15.5rem, 84vw); }
+    .world-index__item { grid-template-columns: 4.25rem minmax(0, 1fr) auto; }
+    .world-index__logo { width: 4.25rem; height: 3.5rem; }
+    .world-footer { align-items: flex-start; flex-direction: column; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .world-index__item, .world-map :global(.grid-connector) { transition: none; }
+  }
+</style>
