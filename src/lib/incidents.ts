@@ -195,7 +195,96 @@ function createTerritoriesIncidentTopology(scene: IncidentScene) {
   };
 }
 
-export function createIncidentSceneTopology(scene: IncidentScene) {
+function getTimelineAnchorLabel(label: string, index: number) {
+  return label.match(/^\S+/)?.[0] ?? "T+" + (index + 1);
+}
+
+function getTimelineEventLabel(label: string) {
+  return label.replace(/^\S+\s*/, "");
+}
+
+function createTimelineIncidentTopology(scene: IncidentScene, incidentId: string) {
+  const nodes = getSceneNodes(scene);
+  const layoutId = "incident-" + scene.sceneId;
+  const anchors = nodes.map((node, index) => ({
+    id: node.id + "-time",
+    label: getTimelineAnchorLabel(node.label, index),
+    subtitle: "TIME",
+    children: [{ id: node.id, label: node.label, subtitle: node.role }],
+  }));
+  const generated = createPresentationTopology({
+    id: layoutId,
+    title: incidentId,
+    subtitle: scene.title,
+    sceneLayout: "world-grid",
+    topologyLayout: "linear",
+    anchors,
+  });
+  const generatedRoot = generated.nodes.find((node) => node.id === "presentation-" + layoutId + "-root");
+  if (!generatedRoot) throw new Error("OTF linear did not position incident root " + incidentId);
+
+  const rootId = incidentId;
+  const root = {
+    id: rootId,
+    label: incidentId,
+    subtitle: scene.title,
+    q: generatedRoot.q,
+    r: generatedRoot.r,
+    variant: generatedRoot.variant,
+    size: generatedRoot.size,
+    active: true,
+    selected: true,
+    role: "incident",
+  };
+  const anchorNodes = anchors.map((anchor) => {
+    const generatedAnchor = generated.nodes.find(
+      (node) => node.id === "presentation-" + layoutId + "-anchor-" + anchor.id,
+    );
+    if (!generatedAnchor) throw new Error("OTF linear did not position timeline " + anchor.label);
+    return {
+      id: anchor.id,
+      label: anchor.label,
+      subtitle: anchor.subtitle,
+      q: generatedAnchor.q,
+      r: generatedAnchor.r,
+      variant: generatedAnchor.variant,
+      size: generatedAnchor.size,
+      active: true,
+      role: "time",
+    };
+  });
+  const eventNodes = nodes.map((node, index) => {
+    const generatedEvent = generated.nodes.find(
+      (candidate) => candidate.id === "presentation-" + layoutId + "-node-" + anchors[index].id + "-" + node.id,
+    );
+    if (!generatedEvent) throw new Error("OTF linear did not position timeline event " + node.id);
+    return mergeGeneratedNode({ ...node, label: getTimelineEventLabel(node.label) }, generatedEvent);
+  });
+  const generatedIdToSourceId = new Map<string, string>([
+    [generatedRoot.id, rootId],
+    ...anchors.flatMap((anchor) => [
+      ["presentation-" + layoutId + "-anchor-" + anchor.id, anchor.id],
+      ["presentation-" + layoutId + "-node-" + anchor.id + "-" + anchor.children[0].id, anchor.children[0].id],
+    ] as [string, string][]),
+  ]);
+  const generatedRelationships = generated.relationships.map((relationship) => ({
+    from: generatedIdToSourceId.get(relationship.from) ?? relationship.from,
+    to: generatedIdToSourceId.get(relationship.to) ?? relationship.to,
+    active: relationship.active,
+  }));
+
+  return {
+    nodes: [root, ...anchorNodes, ...eventNodes],
+    relationships: generatedRelationships,
+    connectorRouting: generated.connectorRouting,
+  };
+}
+
+export function createIncidentSceneTopology(scene: IncidentScene, incidentId = scene.sceneId) {
+  if (scene.sceneId === "timeline") {
+    return createTimelineIncidentTopology(scene, incidentId);
+  }
+
   if (scene.topologyLayout === "matrix") {
     return createMatrixIncidentTopology(scene);
   }
@@ -323,7 +412,7 @@ export function createIncidentPresentationDeck(incident: IncidentRecord): Presen
       role: "incident",
       sceneLayout: "world-grid",
       topologyLayout: scene.topologyLayout,
-      topology: createIncidentSceneTopology(scene),
+      topology: createIncidentSceneTopology(scene, incident.incidentId),
       anchors: scene.nodes.map((node) => ({
         id: node.id,
         label: node.label,
