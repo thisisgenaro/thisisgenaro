@@ -61,6 +61,7 @@ const organizations = defineCollection({
         id: z.string(),
         label: z.string(),
         subtitle: z.string().optional(),
+        domainId: z.string(),
         status: z.string().optional(),
         variant: z.enum(["root", "anchor", "cluster", "entity", "reference", "primary", "secondary", "data"]).optional(),
         size: z.enum(["xs", "sm", "md", "lg", "xl", "root"]).optional(),

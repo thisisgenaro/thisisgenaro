@@ -35,16 +35,16 @@ incidentIds: []
 tags: [Retail, E-commerce, Payments, External dependency]
 topology:
   nodes:
-    - { id: storefront, label: Storefront, subtitle: CUSTOMER EDGE, status: healthy, variant: root, size: lg, selected: true }
-    - { id: cdn, label: CDN, subtitle: DELIVERY, status: healthy }
-    - { id: checkout, label: Checkout API, subtitle: PURCHASE FLOW, status: healthy, variant: anchor }
-    - { id: payment, label: Payment Gateway, subtitle: EXTERNAL, status: degraded, variant: anchor }
-    - { id: loyalty, label: Loyalty Platform, subtitle: CUSTOMER, status: healthy }
-    - { id: erp, label: ERP, subtitle: OPERATIONS, status: healthy }
-    - { id: inventory, label: Inventory Sync, subtitle: AVAILABILITY, status: degraded }
-    - { id: wms, label: WMS, subtitle: FULFILLMENT, status: healthy }
-    - { id: stores, label: Store Network, subtitle: 25 LOCATIONS, status: healthy }
-    - { id: monitoring, label: Monitoring, subtitle: INTERNAL VIEW, status: healthy }
+    - { id: storefront, domainId: commerce, label: Storefront, subtitle: CUSTOMER EDGE, status: healthy, variant: root, size: lg, selected: true }
+    - { id: cdn, domainId: edge, label: CDN, subtitle: DELIVERY, status: healthy }
+    - { id: checkout, domainId: transaction, label: Checkout API, subtitle: PURCHASE FLOW, status: healthy, variant: anchor }
+    - { id: payment, domainId: transaction, label: Payment Gateway, subtitle: EXTERNAL, status: degraded, variant: anchor }
+    - { id: loyalty, domainId: commerce, label: Loyalty Platform, subtitle: CUSTOMER, status: healthy }
+    - { id: erp, domainId: operations, label: ERP, subtitle: OPERATIONS, status: healthy }
+    - { id: inventory, domainId: fulfillment, label: Inventory Sync, subtitle: AVAILABILITY, status: degraded }
+    - { id: wms, domainId: fulfillment, label: WMS, subtitle: FULFILLMENT, status: healthy }
+    - { id: stores, domainId: operations, label: Store Network, subtitle: 25 LOCATIONS, status: healthy }
+    - { id: monitoring, domainId: edge, label: Monitoring, subtitle: INTERNAL VIEW, status: healthy }
   relationships:
     - { from: cdn, to: storefront, label: delivers, active: false }
     - { from: storefront, to: checkout, label: initiates, active: false }

@@ -102,6 +102,7 @@ tags:
 topology:
   nodes:
     - id: active-directory
+      domainId: identity
       label: Active Directory
       subtitle: IDENTITY
       status: healthy
@@ -109,54 +110,66 @@ topology:
       size: lg
       selected: true
     - id: azure-ad-connect
+      domainId: identity
       label: Azure AD Connect
       subtitle: SYNC
       status: healthy
       variant: anchor
     - id: microsoft-365
+      domainId: identity
       label: Microsoft 365
       subtitle: CLOUD
       status: healthy
     - id: customer-portal
+      domainId: applications
       label: Customer Portal
       subtitle: CUSTOMER
       status: healthy
       variant: anchor
     - id: mobile-delivery
+      domainId: applications
       label: Mobile Delivery
       subtitle: DRIVERS
       status: healthy
     - id: warehouse-management
+      domainId: applications
       label: WMS
       subtitle: WAREHOUSE
       status: healthy
       variant: anchor
     - id: legacy-customs
+      domainId: applications
       label: Legacy Customs
       subtitle: LEGACY
       status: degraded
     - id: sql-server
+      domainId: data
       label: SQL Server
       subtitle: DATA
       status: healthy
       variant: anchor
     - id: vmware
+      domainId: data
       label: VMware
       subtitle: COMPUTE
       status: healthy
     - id: fortigate
+      domainId: network
       label: FortiGate
       subtitle: PERIMETER
       status: healthy
     - id: monitoring
+      domainId: visibility
       label: Monitoring
       subtitle: SERVER-CENTRIC
       status: degraded
     - id: santo-domingo
+      domainId: visibility
       label: Santo Domingo
       subtitle: DATACENTER
       status: healthy
     - id: regional-branches
+      domainId: visibility
       label: Regional Branches
       subtitle: 4 SITES
       status: healthy

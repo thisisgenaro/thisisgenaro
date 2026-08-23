@@ -36,16 +36,16 @@ incidentIds: []
 tags: [Healthcare, Clinical systems, Integration, Patient care]
 topology:
   nodes:
-    - { id: emr, label: EMR, subtitle: CLINICAL RECORD, status: healthy, variant: root, size: lg, selected: true }
-    - { id: active-directory, label: Active Directory, subtitle: IDENTITY, status: healthy }
-    - { id: integration, label: Integration Engine, subtitle: CLINICAL FLOW, status: degraded, variant: anchor }
-    - { id: pacs, label: PACS, subtitle: IMAGING, status: healthy, variant: anchor }
-    - { id: lis, label: Laboratory System, subtitle: DIAGNOSTICS, status: healthy }
-    - { id: sql-server, label: SQL Server, subtitle: CLINICAL DATA, status: healthy }
-    - { id: pacs-storage, label: PACS Storage, subtitle: SINGLE DOMAIN, status: degraded }
-    - { id: vmware, label: VMware, subtitle: COMPUTE, status: healthy }
-    - { id: clinics, label: Care Locations, subtitle: 12 SITES, status: healthy }
-    - { id: backup, label: Backup Platform, subtitle: RECOVERY, status: healthy }
+    - { id: emr, domainId: clinical, label: EMR, subtitle: CLINICAL RECORD, status: healthy, variant: root, size: lg, selected: true }
+    - { id: active-directory, domainId: identity, label: Active Directory, subtitle: IDENTITY, status: healthy }
+    - { id: integration, domainId: data, label: Integration Engine, subtitle: CLINICAL FLOW, status: degraded, variant: anchor }
+    - { id: pacs, domainId: clinical, label: PACS, subtitle: IMAGING, status: healthy, variant: anchor }
+    - { id: lis, domainId: clinical, label: Laboratory System, subtitle: DIAGNOSTICS, status: healthy }
+    - { id: sql-server, domainId: data, label: SQL Server, subtitle: CLINICAL DATA, status: healthy }
+    - { id: pacs-storage, domainId: data, label: PACS Storage, subtitle: SINGLE DOMAIN, status: degraded }
+    - { id: vmware, domainId: infrastructure, label: VMware, subtitle: COMPUTE, status: healthy }
+    - { id: clinics, domainId: sites, label: Care Locations, subtitle: 12 SITES, status: healthy }
+    - { id: backup, domainId: infrastructure, label: Backup Platform, subtitle: RECOVERY, status: healthy }
   relationships:
     - { from: active-directory, to: emr, label: authenticates, active: false }
     - { from: emr, to: integration, label: exchanges, active: false }

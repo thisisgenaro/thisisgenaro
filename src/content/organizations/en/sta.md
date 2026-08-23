@@ -35,16 +35,16 @@ incidentIds: []
 tags: [Managed services, Monitoring, Alert fatigue, Multi-tenant operations]
 topology:
   nodes:
-    - { id: noc, label: NOC, subtitle: OPERATIONS, status: healthy, variant: root, size: lg, selected: true }
-    - { id: zabbix, label: Zabbix, subtitle: MONITORING, status: degraded, variant: anchor }
-    - { id: alert-routing, label: Alert Routing, subtitle: SIGNAL FLOW, status: degraded }
-    - { id: glpi, label: GLPI, subtitle: SERVICE DESK, status: healthy, variant: anchor }
-    - { id: customer-estates, label: Customer Estates, subtitle: MULTI-TENANT, status: healthy }
-    - { id: rmm, label: Tactical RMM, subtitle: REMOTE OPS, status: healthy }
-    - { id: wireguard, label: WireGuard, subtitle: SECURE ACCESS, status: healthy }
-    - { id: bookstack, label: BookStack, subtitle: KNOWLEDGE, status: degraded }
-    - { id: vaultwarden, label: Vaultwarden, subtitle: ACCESS, status: healthy }
-    - { id: reporting, label: Customer Reporting, subtitle: COMMUNICATION, status: healthy }
+    - { id: noc, domainId: monitoring, label: NOC, subtitle: OPERATIONS, status: healthy, variant: root, size: lg, selected: true }
+    - { id: zabbix, domainId: monitoring, label: Zabbix, subtitle: MONITORING, status: degraded, variant: anchor }
+    - { id: alert-routing, domainId: monitoring, label: Alert Routing, subtitle: SIGNAL FLOW, status: degraded }
+    - { id: glpi, domainId: service, label: GLPI, subtitle: SERVICE DESK, status: healthy, variant: anchor }
+    - { id: customer-estates, domainId: platform, label: Customer Estates, subtitle: MULTI-TENANT, status: healthy }
+    - { id: rmm, domainId: remote, label: Tactical RMM, subtitle: REMOTE OPS, status: healthy }
+    - { id: wireguard, domainId: remote, label: WireGuard, subtitle: SECURE ACCESS, status: healthy }
+    - { id: bookstack, domainId: knowledge, label: BookStack, subtitle: KNOWLEDGE, status: degraded }
+    - { id: vaultwarden, domainId: knowledge, label: Vaultwarden, subtitle: ACCESS, status: healthy }
+    - { id: reporting, domainId: service, label: Customer Reporting, subtitle: COMMUNICATION, status: healthy }
   relationships:
     - { from: customer-estates, to: zabbix, label: emits telemetry, active: false }
     - { from: zabbix, to: alert-routing, label: generates, active: false }

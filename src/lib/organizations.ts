@@ -5,39 +5,63 @@ type OrganizationData = CollectionEntry<"organizations">["data"];
 
 export function createOrganizationDossierTopology(organization: OrganizationData) {
   const layoutId = `organization-${organization.id}`;
-  const root = organization.topology.nodes.find((node) => node.selected) ?? organization.topology.nodes[0];
-  if (!root) {
-    return { nodes: [], relationships: [], connectorRouting: "straight" as const };
+  const knownDomainIds = new Set(organization.infrastructureDomains.map((domain) => domain.id));
+
+  for (const node of organization.topology.nodes) {
+    if (!knownDomainIds.has(node.domainId)) {
+      throw new Error(`Unknown organization domain ${node.domainId} for node ${node.id}`);
+    }
   }
 
+  const territories = organization.infrastructureDomains.map((domain) => ({
+    id: domain.id,
+    label: domain.label,
+    subtitle: `${organization.topology.nodes.filter((node) => node.domainId === domain.id).length} SYSTEMS`,
+    topologyLayout: "ring" as const,
+    anchors: organization.topology.nodes
+      .filter((node) => node.domainId === domain.id)
+      .map((node) => ({
+        id: node.id,
+        label: node.label,
+        subtitle: node.subtitle,
+        children: [],
+      })),
+  }));
+  const boundary = {
+    kind: "multi" as const,
+    domains: organization.infrastructureDomains.map((domain) => ({
+      id: domain.id,
+      label: domain.label,
+      kind: "territory" as const,
+    })),
+  };
   const generated = createPresentationTopology({
     id: layoutId,
-    title: root.label,
-    subtitle: root.subtitle ?? organization.industry,
+    title: organization.acronym,
+    subtitle: organization.industry,
     sceneLayout: "viewport-fit",
-    topologyLayout: "fan",
-    fanDirection: "E",
-    anchors: organization.topology.nodes.filter((node) => node.id !== root.id).map((node) => ({
-      id: node.id,
-      label: node.label,
-      subtitle: node.subtitle,
-      children: [],
-    })),
+    topologyLayout: "territories",
+    anchors: [],
+    territories,
+    boundary,
   });
 
   return {
     nodes: organization.topology.nodes.map((node) => {
-      const generatedId = node.id === root.id
-        ? `presentation-${layoutId}-root`
-        : `presentation-${layoutId}-anchor-${node.id}`;
+      const generatedId = `presentation-${layoutId}-${node.domainId}-anchor-${node.id}`;
+      const territoryRootId = `presentation-${layoutId}-${node.domainId}-root`;
       const generatedNode = generated.nodes.find((candidate) => candidate.id === generatedId);
-      if (!generatedNode) throw new Error(`OTF fan did not position organization node ${node.id}`);
+      const territoryRoot = generated.nodes.find((candidate) => candidate.id === territoryRootId);
+      if (!generatedNode || !territoryRoot) {
+        throw new Error(`OTF territories did not position organization node ${node.id}`);
+      }
 
       return {
         ...generatedNode,
         ...node,
-        q: Math.round(generatedNode.q / 2),
-        r: Math.round(generatedNode.r / 2),
+        q: Math.round(territoryRoot.q * 0.6 + (generatedNode.q - territoryRoot.q) * 2),
+        r: Math.round(territoryRoot.r * 0.6 + (generatedNode.r - territoryRoot.r) * 2),
+        boundaryId: node.domainId,
         variant: node.variant ?? generatedNode.variant,
         size: node.size ?? generatedNode.size,
         active: true,
@@ -46,5 +70,6 @@ export function createOrganizationDossierTopology(organization: OrganizationData
     }),
     relationships: organization.topology.relationships,
     connectorRouting: generated.connectorRouting,
+    boundary: generated.boundary,
   };
 }

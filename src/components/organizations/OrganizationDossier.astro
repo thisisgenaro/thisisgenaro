@@ -115,18 +115,19 @@ const dossierTopology = createOrganizationDossierTopology(organization);
         edges={dossierTopology.relationships}
         layout="viewport-fit"
         viewportFit={true}
-        topologyLayout="fan"
+        topologyLayout="territories"
         radius={23}
         showGridNodes={false}
         gridActivity={false}
         ambientSignals={true}
         connectorRouting={dossierTopology.connectorRouting}
+        boundary={dossierTopology.boundary}
         signalTransitionSpeed={0.9}
       />
       <figcaption>
         <span><i class="is-healthy"></i> Normal operating context</span>
         <span><i class="is-watch"></i> Known operational constraint</span>
-        <span>FAN LAYOUT</span>
+        <span>TERRITORIES</span>
       </figcaption>
     </figure>
   </section>
