@@ -36,16 +36,16 @@ incidentIds: []
 tags: [Financial services, Legacy systems, Compliance, Institutional knowledge]
 topology:
   nodes:
-    - { id: active-directory, label: Active Directory, subtitle: IDENTITY, q: -7, r: -2, status: healthy, variant: root, size: lg, selected: true }
-    - { id: core-banking, label: Core Banking, subtitle: MEMBER LEDGER, q: -3, r: -4, status: degraded, variant: anchor }
-    - { id: sql-cluster, label: SQL Cluster, subtitle: FINANCIAL DATA, q: 2, r: -4, status: healthy, variant: anchor }
-    - { id: digital-banking, label: Digital Banking, subtitle: MEMBER ACCESS, q: 6, r: -2, status: healthy }
-    - { id: branch-services, label: Branch Services, subtitle: 18 LOCATIONS, q: -5, r: 3, status: healthy, variant: anchor }
-    - { id: netscaler, label: NetScaler, subtitle: ACCESS, q: 0, r: 2, status: healthy }
-    - { id: exchange, label: Exchange, subtitle: ON-PREMISES, q: 5, r: 3, status: degraded }
-    - { id: vmware, label: VMware, subtitle: COMPUTE, q: -3, r: 7, status: healthy }
-    - { id: backup, label: Backup Platform, subtitle: RECOVERY, q: 3, r: 7, status: healthy }
-    - { id: reporting, label: Reporting, subtitle: COMPLIANCE, q: 7, r: 6, status: healthy }
+    - { id: active-directory, label: Active Directory, subtitle: IDENTITY, status: healthy, variant: root, size: lg, selected: true }
+    - { id: core-banking, label: Core Banking, subtitle: MEMBER LEDGER, status: degraded, variant: anchor }
+    - { id: sql-cluster, label: SQL Cluster, subtitle: FINANCIAL DATA, status: healthy, variant: anchor }
+    - { id: digital-banking, label: Digital Banking, subtitle: MEMBER ACCESS, status: healthy }
+    - { id: branch-services, label: Branch Services, subtitle: 18 LOCATIONS, status: healthy, variant: anchor }
+    - { id: netscaler, label: NetScaler, subtitle: ACCESS, status: healthy }
+    - { id: exchange, label: Exchange, subtitle: ON-PREMISES, status: degraded }
+    - { id: vmware, label: VMware, subtitle: COMPUTE, status: healthy }
+    - { id: backup, label: Backup Platform, subtitle: RECOVERY, status: healthy }
+    - { id: reporting, label: Reporting, subtitle: COMPLIANCE, status: healthy }
   relationships:
     - { from: active-directory, to: core-banking, label: authenticates, active: false }
     - { from: active-directory, to: branch-services, label: authorizes, active: false }
