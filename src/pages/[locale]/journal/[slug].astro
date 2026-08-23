@@ -1,0 +1,23 @@
+---
+import { getCollection } from "astro:content";
+import LocalizedPage from "../../../components/LocalizedPage.astro";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getLocaleFromPath, type Locale, ui } from "../../../lib/i18n";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("entries", ({ data }) => data.language === "en");
+  return entries.flatMap((entry) => {
+    const slug = entry.id.split("/").slice(1).join("/").replace(/\.mdx?$/, "");
+    return ["en", "es"].map((locale) => ({ params: { locale, slug }, props: { slug } }));
+  });
+}
+
+const locale = getLocaleFromPath(`/${Astro.params.locale}`) as Locale;
+const strings = ui[locale];
+const slug = Astro.params.slug ?? "";
+const entries = await getCollection("entries", ({ data }) => data.language === locale);
+const entry = entries.find((candidate) => candidate.id.split("/").slice(1).join("/").replace(/\.mdx?$/, "") === slug);
+---
+<BaseLayout locale={locale} title={`${entry?.data.title ?? strings.nav.journal} | ${strings.nav.journal}`} description={entry?.data.summary ?? strings.labels.unavailable}>
+  {entry ? <LocalizedPage locale={locale} kind="journal" entries={[{ title: entry.data.title, summary: entry.data.summary, excerpt: entry.data.excerpt, slug }]} /> : <LocalizedPage locale={locale} kind="unavailable" />}
+</BaseLayout>

@@ -1,0 +1,14 @@
+---
+import LocalizedPage from "../../../components/LocalizedPage.astro";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getLocaleFromPath, type Locale, ui } from "../../../lib/i18n";
+import { getPublishedIncidents } from "../../../lib/incidents";
+
+export function getStaticPaths() { return ["en", "es"].map((locale) => ({ params: { locale } })); }
+const locale = getLocaleFromPath(`/${Astro.params.locale}`) as Locale;
+const strings = ui[locale];
+const incidents = locale === "en" ? getPublishedIncidents() : [];
+---
+<BaseLayout locale={locale} title={`${strings.nav.incidents} | thisisgenaro.com`} description={strings.pages.incidentsDescription}>
+  <LocalizedPage locale={locale} kind="incidents" incidents={incidents.map((incident) => ({ id: incident.id, incidentId: incident.incidentId, title: incident.title, status: incident.status, duration: incident.duration, organization: incident.organization, summary: incident.summary }))} />
+</BaseLayout>

@@ -1,5 +1,7 @@
 ---
 id: conasa
+translationKey: conasa
+translationStatus: complete
 language: en
 acronym: CONASA
 name: Cooperativa Nacional de Ahorros

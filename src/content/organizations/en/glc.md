@@ -1,5 +1,7 @@
 ---
 id: glc
+translationKey: glc
+translationStatus: complete
 language: en
 acronym: GLC
 name: Grupo Logístico del Caribe

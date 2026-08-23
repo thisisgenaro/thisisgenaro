@@ -1,4 +1,5 @@
 ---
+
 import { getCollection } from "astro:content";
 import { createPresentationTopology } from "operational-topology";
 import TopologyScene from "operational-topology/astro/TopologyScene";
@@ -6,8 +7,15 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import { organizations } from "../data/organizations";
 import { createJournalEntryRecords } from "../lib/journal";
 import { createIncidentPreviewTopology, formatIncidentDate, getPublishedIncidents } from "../lib/incidents";
+import { getLocaleFromPath, localePath, ui, type Locale } from "../lib/i18n";
 
-const entries = await getCollection("entries", ({ data }) => data.language === "en");
+interface Props { locale?: Locale; }
+const { locale: requestedLocale } = Astro.props as Props;
+const locale = requestedLocale ?? getLocaleFromPath(Astro.url.pathname) ?? "en";
+const strings = ui[locale];
+const t = (en: string, es: string) => locale === "es" ? es : en;
+
+const entries = await getCollection("entries", ({ data }) => data.language === locale);
 const journalRecords = createJournalEntryRecords(entries);
 const latestEntry = journalRecords[0] ?? null;
 const incidents = getPublishedIncidents();
@@ -78,40 +86,37 @@ const perspectives = [
   { title: "Automation", copy: "Repeatable work that reduces drift and keeps operations understandable.", path: "M7 5h10v4H7zM5 15h5v4H5zm9 0h5v4h-5zM12 9v3m-4.5 3v-3h9v3" },
 ];
 
+const localizedPerspectives = locale === "es" ? [
+  { title: "Infraestructura", copy: "Arquitectura, continuidad y estructura operativa bajo los servicios.", path: perspectives[0].path },
+  { title: "Observabilidad", copy: "Señales útiles para distinguir el síntoma de la condición real.", path: perspectives[1].path },
+  { title: "Dependencias", copy: "Relaciones que explican cómo un cambio se propaga por el sistema.", path: perspectives[2].path },
+  { title: "Confiabilidad", copy: "Diseño y práctica para mantener servicios previsibles bajo presión.", path: perspectives[3].path },
+  { title: "Análisis de incidentes", copy: "Evidencia, contexto y razonamiento para entender qué ocurrió.", path: perspectives[4].path },
+  { title: "Automatización", copy: "Reducir trabajo repetitivo para dejar más espacio al juicio técnico.", path: perspectives[5].path },
+] : perspectives;
+
 const severityCode = latestIncident?.severity.toLowerCase() === "high" ? "SEV-2" : latestIncident?.severity.toUpperCase();
 ---
 
-<BaseLayout
-  title="Genaro Hernández | Infrastructure, Observability & Reliability"
-  description="Engineering ideas, incident investigations, and the connected world of systems and dependencies behind them."
+<BaseLayout locale={locale}
+  title={`Genaro Hernández | ${locale === "es" ? "Infraestructura, observabilidad y confiabilidad" : "Infrastructure, Observability & Reliability"}`}
+  description={locale === "es" ? strings.pages.homeStatement : "Engineering ideas, incident investigations, and the connected world of systems and dependencies behind them."}
 >
-  <script is:inline>
-    (() => {
-      if (window.location.pathname !== "/") return;
-      try {
-        const saved = localStorage.getItem("siteLocale");
-        const browser = navigator.language.toLowerCase().startsWith("es") ? "es" : "en";
-        const locale = saved === "es" || saved === "en" ? saved : browser;
-        localStorage.setItem("siteLocale", locale);
-        window.location.replace("/" + locale + "/");
-      } catch {}
-    })();
-  </script>
   <main class="home-v2">
     <section class="home-hero" aria-labelledby="home-title">
       <div class="home-hero__copy">
-        <p class="home-eyebrow">INFRASTRUCTURE ENGINEER · SYSTEMS THINKER</p>
+        <p class="home-eyebrow">{strings.pages.homeEyebrow}</p>
         <h1 id="home-title">Genaro Hernández</h1>
         <p class="home-domains" aria-label="Engineering domains">
           <span>Infrastructure</span><i></i><span>Observability</span><i></i><span>Reliability</span><i></i><span>Engineering</span>
         </p>
         <p class="home-hero__statement">
-          Every incident leaves evidence. Every system reveals patterns. Here, we turn both into better engineering.
+          {strings.pages.homeStatement}
         </p>
         <div class="home-hero__actions" aria-label="Explore the knowledge system">
-          <a class="home-button home-button--primary" href="/journal">Explore the Journal <span>→</span></a>
-          <a class="home-button" href="/incidents">Explore the Incident Library <span>→</span></a>
-          <a class="home-button" href="/world">Explore The World <span>→</span></a>
+          <a class="home-button home-button--primary" href={localePath(locale, "/journal")}>{strings.actions.exploreJournal} <span>→</span></a>
+          <a class="home-button" href={localePath(locale, "/incident-library")}>{strings.actions.exploreIncidents} <span>→</span></a>
+          <a class="home-button" href={localePath(locale, "/world")}>{strings.actions.exploreWorld} <span>→</span></a>
         </div>
       </div>
 
@@ -130,32 +135,32 @@ const severityCode = latestIncident?.severity.toLowerCase() === "high" ? "SEV-2"
           connectorRouting="obstacle-aware"
           signalTransitionSpeed={0.95}
         />
-        <figcaption><span>SYSTEMS</span><span>RELATIONSHIPS</span><span>EVIDENCE</span></figcaption>
+        <figcaption><span>{t("SYSTEMS", "SISTEMAS")}</span><span>{t("RELATIONSHIPS", "RELACIONES")}</span><span>{t("EVIDENCE", "EVIDENCIA")}</span></figcaption>
       </figure>
     </section>
 
     <section class="home-section home-knowledge" id="knowledge-system" aria-labelledby="knowledge-title">
       <header class="home-section__header home-section__header--split">
         <div>
-          <p class="home-eyebrow">THE KNOWLEDGE SYSTEM</p>
-          <h2 id="knowledge-title">Thinking and evidence, kept connected.</h2>
+          <p class="home-eyebrow">{t("THE KNOWLEDGE SYSTEM", "EL SISTEMA DE CONOCIMIENTO")}</p>
+          <h2 id="knowledge-title">{t("Thinking and evidence, kept connected.", "Pensamiento y evidencia, conectados.")}</h2>
         </div>
-        <p>Read ideas, study incidents, then explore the organizations and dependencies that give both their context.</p>
+        <p>{t("Read ideas, study incidents, then explore the organizations and dependencies that give both their context.", "Lee ideas, estudia incidentes y explora las organizaciones y dependencias que dan contexto a ambos.")}</p>
       </header>
 
       <nav class="home-path" aria-label="Knowledge system progression">
-        <a href="/journal"><b>01</b><span>Read ideas</span></a>
+        <a href={localePath(locale, "/journal")}><b>01</b><span>{t("Read ideas", "Leer ideas")}</span></a>
         <i>→</i>
-        <a href="/incidents"><b>02</b><span>Study incidents</span></a>
+        <a href={localePath(locale, "/incident-library")}><b>02</b><span>{t("Study incidents", "Estudiar incidentes")}</span></a>
         <i>→</i>
-        <a href="/world"><b>03</b><span>Explore the world behind them</span></a>
+        <a href={localePath(locale, "/world")}><b>03</b><span>{t("Explore the world behind them", "Explorar el mundo detrás de ellos")}</span></a>
       </nav>
 
       <div class="home-knowledge__grid">
         <article class="knowledge-panel knowledge-panel--journal">
           <header class="knowledge-panel__header">
             <p><span>01</span> THE JOURNAL</p>
-            <h3>Ideas, reasoning, and patterns from the work.</h3>
+            <h3>{t("Ideas, reasoning, and patterns from the work.", "Ideas, razonamiento y patrones del trabajo.")}</h3>
           </header>
           <div class="journal-preview" aria-hidden="true">
             <span class="journal-preview__index">FIELD NOTE / {String(journalRecords.length).padStart(2, "0")}</span>
@@ -164,19 +169,19 @@ const severityCode = latestIncident?.severity.toLowerCase() === "high" ? "SEV-2"
           </div>
           {latestEntry ? (
             <div class="knowledge-panel__content">
-              <p class="home-meta">LATEST ENTRY · {latestEntry.publishedLabel.toUpperCase()}{latestEntry.readTime ? ` · ${latestEntry.readTime} MIN READ` : ""}</p>
+              <p class="home-meta">{t("LATEST ENTRY", "ÚLTIMA ENTRADA")} · {latestEntry.publishedLabel.toUpperCase()}{latestEntry.readTime ? ` · ${latestEntry.readTime} ${t("MIN READ", "MIN DE LECTURA")}` : ""}</p>
               <h4>{latestEntry.title}</h4>
               <p>{latestEntry.excerpt}</p>
               <div class="home-tags">{latestEntry.topicLabels.map((topic) => <span>{topic}</span>)}</div>
-              <a class="home-text-link" href={latestEntry.href}>READ ENTRY →</a>
+              <a class="home-text-link" href={latestEntry.href}>{t("READ ENTRY →", "LEER ENTRADA →")}</a>
             </div>
-          ) : <p class="home-empty">The first Journal entry is being prepared.</p>}
+          ) : <p class="home-empty">{t("The first Journal entry is being prepared.", "La primera entrada de La Bitácora está en preparación.")}</p>}
         </article>
 
         <article class="knowledge-panel knowledge-panel--incident">
           <header class="knowledge-panel__header">
             <p><span>02</span> THE INCIDENT LIBRARY</p>
-            <h3>Investigations built from evidence, dependencies, and lessons.</h3>
+            <h3>{t("Investigations built from evidence, dependencies, and lessons.", "Investigaciones construidas con evidencia, dependencias y aprendizajes.")}</h3>
           </header>
           <div class="incident-preview">
             <TopologyScene
@@ -198,39 +203,39 @@ const severityCode = latestIncident?.severity.toLowerCase() === "high" ? "SEV-2"
           </div>
           {latestIncident ? (
             <div class="knowledge-panel__content">
-              <p class="home-meta">FEATURED INCIDENT · {formatIncidentDate(latestIncident.created).toUpperCase()} · {latestOrganization?.acronym}</p>
+              <p class="home-meta">{t("FEATURED INCIDENT", "INCIDENTE DESTACADO")} · {formatIncidentDate(latestIncident.created).toUpperCase()} · {latestOrganization?.acronym}</p>
               <h4>{latestIncident.title}</h4>
               <p>{latestIncident.summary}</p>
               <div class="home-tags">
                 <span>{latestIncident.status}</span><span>{severityCode}</span><span>{latestIncident.duration.toUpperCase()}</span>
               </div>
-              <a class="home-text-link" href={`/incidents/${latestIncident.id}`}>OPEN INCIDENT →</a>
+              <a class="home-text-link" href={localePath(locale, `/incident-library/${latestIncident.id}`)}>{t("OPEN INCIDENT →", "VER INCIDENTE →")}</a>
             </div>
-          ) : <p class="home-empty">The first incident record is being prepared.</p>}
+          ) : <p class="home-empty">{t("The first incident record is being prepared.", "El primer registro de incidente está en preparación.")}</p>}
         </article>
       </div>
     </section>
 
     <section class="home-section home-featured" aria-labelledby="featured-title">
       <header class="home-section__header">
-        <p class="home-eyebrow">FEATURED EVIDENCE</p>
-        <h2 id="featured-title">Three ways into the work.</h2>
+        <p class="home-eyebrow">{t("FEATURED EVIDENCE", "EVIDENCIA DESTACADA")}</p>
+        <h2 id="featured-title">{t("Three ways into the work.", "Tres formas de entrar al trabajo.")}</h2>
       </header>
       <div class="home-featured__grid">
         <article class="evidence-card">
-          <p class="evidence-card__label">LATEST JOURNAL</p>
-          <h3>{latestEntry?.title ?? "Journal entry forthcoming"}</h3>
-          <p class="home-meta">{latestEntry?.publishedLabel.toUpperCase()}{latestEntry?.readTime ? ` · ${latestEntry.readTime} MIN READ` : ""}</p>
-          <p>{latestEntry?.excerpt ?? "Field notes on systems, incidents, and the decisions that shape how we operate them."}</p>
-          <a href={latestEntry?.href ?? "/journal"}>READ ENTRY →</a>
+          <p class="evidence-card__label">{t("LATEST JOURNAL", "LA BITÁCORA MÁS RECIENTE")}</p>
+          <h3>{latestEntry?.title ?? t("Journal entry forthcoming", "Próxima entrada de La Bitácora")}</h3>
+          <p class="home-meta">{latestEntry?.publishedLabel.toUpperCase()}{latestEntry?.readTime ? ` · ${latestEntry.readTime} ${t("MIN READ", "MIN DE LECTURA")}` : ""}</p>
+          <p>{latestEntry?.excerpt ?? t("Field notes on systems, incidents, and the decisions that shape how we operate them.", "Notas de campo sobre sistemas, incidentes y las decisiones que dan forma a su operación.")}</p>
+          <a href={latestEntry?.href ?? "/journal"}>{t("READ ENTRY →", "LEER ENTRADA →")}</a>
         </article>
 
         <article class="evidence-card evidence-card--incident">
-          <p class="evidence-card__label">LATEST INCIDENT</p>
-          <h3>{latestIncident?.title ?? "Incident record forthcoming"}</h3>
+          <p class="evidence-card__label">{t("LATEST INCIDENT", "INCIDENTE MÁS RECIENTE")}</p>
+          <h3>{latestIncident?.title ?? t("Incident record forthcoming", "Próximo registro de incidente")}</h3>
           <p class="home-meta">{latestIncident ? formatIncidentDate(latestIncident.created).toUpperCase() : ""}{latestOrganization ? ` · ${latestOrganization.acronym}` : ""}</p>
-          <p>{latestIncident?.symptom ?? "Structured investigations preserve the evidence and operational context behind failures."}</p>
-          <a href={latestIncident ? `/incidents/${latestIncident.id}` : "/incidents"}>OPEN INCIDENT →</a>
+          <p>{latestIncident?.symptom ?? t("Structured investigations preserve the evidence and operational context behind failures.", "Las investigaciones estructuradas preservan la evidencia y el contexto operativo detrás de los fallos.")}</p>
+          <a href={latestIncident ? localePath(locale, `/incident-library/${latestIncident.id}`) : localePath(locale, "/incident-library")}>{t("OPEN INCIDENT →", "VER INCIDENTE →")}</a>
         </article>
 
         <article class="evidence-card evidence-card--world" id="world">
@@ -240,10 +245,10 @@ const severityCode = latestIncident?.severity.toLowerCase() === "high" ? "SEV-2"
               <circle cx="24" cy="50" r="5" /><circle cx="62" cy="18" r="5" /><circle cx="110" cy="42" r="7" /><circle cx="158" cy="18" r="5" /><circle cx="196" cy="50" r="5" /><circle cx="158" cy="82" r="5" /><circle cx="62" cy="82" r="5" />
             </svg>
           </div>
-          <p class="evidence-card__label">EXPLORE THE WORLD</p>
-          <h3>The World</h3>
-          <p>A connected world of organizations, systems, pressures, and dependencies behind the incidents.</p>
-          <a href="/world">EXPLORE WORLD →</a>
+          <p class="evidence-card__label">{t("EXPLORE THE WORLD", "EXPLORAR EL MUNDO")}</p>
+          <h3>{strings.nav.world}</h3>
+          <p>{strings.pages.worldDescription}</p>
+          <a href={localePath(locale, "/world")}>{t("EXPLORE WORLD →", "EXPLORAR EL MUNDO →")}</a>
         </article>
       </div>
     </section>
@@ -251,13 +256,13 @@ const severityCode = latestIncident?.severity.toLowerCase() === "high" ? "SEV-2"
     <section class="home-section home-perspective" aria-labelledby="perspective-title">
       <header class="home-section__header home-section__header--split">
         <div>
-          <p class="home-eyebrow">OPERATIONAL PERSPECTIVE</p>
-          <h2 id="perspective-title">Core lenses for reading the system.</h2>
+          <p class="home-eyebrow">{t("OPERATIONAL PERSPECTIVE", "PERSPECTIVA OPERATIVA")}</p>
+          <h2 id="perspective-title">{t("Core lenses for reading the system.", "Lentes para leer el sistema.")}</h2>
         </div>
-        <p>Not a skills inventory—a set of practical ways to understand what systems are doing and why.</p>
+        <p>{t("Not a skills inventory—a set of practical ways to understand what systems are doing and why.", "No es un inventario de habilidades: son formas prácticas de entender qué hacen los sistemas y por qué.")}</p>
       </header>
       <div class="perspective-grid">
-        {perspectives.map((item) => (
+        {localizedPerspectives.map((item) => (
           <article class="perspective-card">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" aria-hidden="true"><path d={item.path} /></svg>
             <h3>{item.title}</h3>
@@ -269,23 +274,23 @@ const severityCode = latestIncident?.severity.toLowerCase() === "high" ? "SEV-2"
 
     <section class="home-section home-about" aria-labelledby="about-title">
       <div class="home-about__copy">
-        <p class="home-eyebrow">ABOUT THE ENGINEER</p>
-        <h2 id="about-title">Building, operating, investigating, and writing through complexity.</h2>
-        <p>Genaro Hernández is an infrastructure engineer and systems thinker focused on resilient platforms, useful visibility, dependable operations, and the evidence that helps teams understand failure.</p>
-        <p>This knowledge system shares the patterns behind the work so other engineers can examine the reasoning, not only the outcome.</p>
-        <div class="home-about__links"><a href="/about">ABOUT GENARO →</a><a href="/contact">GET IN TOUCH →</a></div>
+        <p class="home-eyebrow">{t("ABOUT THE ENGINEER", "SOBRE EL INGENIERO")}</p>
+        <h2 id="about-title">{t("Building, operating, investigating, and writing through complexity.", "Construir, operar, investigar y escribir en medio de la complejidad.")}</h2>
+        <p>{t("Genaro Hernández is an infrastructure engineer and systems thinker focused on resilient platforms, useful visibility, dependable operations, and the evidence that helps teams understand failure.", "Genaro Hernández es un ingeniero de infraestructura y pensador de sistemas enfocado en plataformas resilientes, visibilidad útil, operaciones confiables y la evidencia que ayuda a los equipos a entender los fallos.")}</p>
+        <p>{t("This knowledge system shares the patterns behind the work so other engineers can examine the reasoning, not only the outcome.", "Este sistema de conocimiento comparte los patrones detrás del trabajo para que otros ingenieros puedan examinar el razonamiento, no solo el resultado.")}</p>
+        <div class="home-about__links"><a href={localePath(locale, "/about")}>{t("ABOUT GENARO →", "SOBRE GENARO →")}</a><a href={localePath(locale, "/contact")}>{t("GET IN TOUCH →", "PONERSE EN CONTACTO →")}</a></div>
       </div>
       <dl class="home-metrics" aria-label="Knowledge system proof points">
-        <div><dt>{journalRecords.length}</dt><dd>Published Journal {journalRecords.length === 1 ? "entry" : "entries"}</dd></div>
-        <div><dt>{incidents.length}</dt><dd>Documented {incidents.length === 1 ? "incident" : "incidents"}</dd></div>
-        <div><dt>{organizations.length}</dt><dd>World dossiers</dd></div>
-        <div><dt>ACTIVE</dt><dd>Ongoing practice and learning</dd></div>
+        <div><dt>{journalRecords.length}</dt><dd>{locale === "es" ? "Entradas publicadas en La Bitácora" : `Published Journal ${journalRecords.length === 1 ? "entry" : "entries"}`}</dd></div>
+        <div><dt>{incidents.length}</dt><dd>{locale === "es" ? "Incidentes documentados" : `Documented ${incidents.length === 1 ? "incident" : "incidents"}`}</dd></div>
+        <div><dt>{organizations.length}</dt><dd>{t("World dossiers", "Dossiers del Mundo")}</dd></div>
+        <div><dt>{t("ACTIVE", "ACTIVO")}</dt><dd>{t("Ongoing practice and learning", "Práctica y aprendizaje continuos")}</dd></div>
       </dl>
     </section>
 
     <footer class="home-footer" id="contact">
-      <div><p class="home-eyebrow">KEEP EXPLORING</p><p>Read ideas. Study incidents. Explore the world behind them.</p></div>
-      <nav aria-label="Homepage footer navigation"><a href="/journal">Journal</a><a href="/incidents">Incident Library</a><a href="/world">The World</a><a href="/contact">Contact</a></nav>
+      <div><p class="home-eyebrow">{t("KEEP EXPLORING", "SIGUE EXPLORANDO")}</p><p>{t("Read ideas. Study incidents. Explore the world behind them.", "Lee ideas. Estudia incidentes. Explora el mundo detrás de ellos.")}</p></div>
+      <nav aria-label="Homepage footer navigation"><a href={localePath(locale, "/journal")}>{strings.nav.journal}</a><a href={localePath(locale, "/incident-library")}>{strings.nav.incidents}</a><a href={localePath(locale, "/world")}>{strings.nav.world}</a><a href={localePath(locale, "/contact")}>{strings.nav.contact}</a></nav>
     </footer>
   </main>
 </BaseLayout>

@@ -1,5 +1,7 @@
 ---
 id: iq
+translationKey: iq
+translationStatus: complete
 language: en
 acronym: IQ
 name: Industrias Quisqueya

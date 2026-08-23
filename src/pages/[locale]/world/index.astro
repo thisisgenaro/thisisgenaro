@@ -1,0 +1,14 @@
+---
+import { getCollection } from "astro:content";
+import LocalizedPage from "../../../components/LocalizedPage.astro";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getLocaleFromPath, type Locale, ui } from "../../../lib/i18n";
+
+export function getStaticPaths() { return ["en", "es"].map((locale) => ({ params: { locale } })); }
+const locale = getLocaleFromPath(`/${Astro.params.locale}`) as Locale;
+const strings = ui[locale];
+const organizationEntries = locale === "en" ? await getCollection("organizations", ({ data }) => data.language === "en") : [];
+---
+<BaseLayout locale={locale} title={`${strings.nav.world} | thisisgenaro.com`} description={strings.pages.worldDescription}>
+  <LocalizedPage locale={locale} kind="world" organizations={organizationEntries.map(({ data }) => ({ id: data.id, acronym: data.acronym, name: data.name, industry: data.industry, summary: data.summary, logo: data.logo }))} />
+</BaseLayout>

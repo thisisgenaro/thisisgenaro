@@ -1,5 +1,7 @@
 ---
 id: cad
+translationKey: cad
+translationStatus: complete
 language: en
 acronym: CAD
 name: Comercial Aurora Dominicana
