@@ -13,7 +13,7 @@ branches: 25
 employees: 1800
 logo: /images/organizations/logos/cad.webp
 summary: A customer-visible commerce entorno shaped by traffic spikes, fast campaigns, external APIs, payment providers, y tightly coupled inventory flows.
-businessDescription: CAD operates physical stores, digital commerce, loyalty services, warehousing, y national distribution para Dominican consumers.
+businessDescription: CAD opera tiendas físicas, comercio digital, servicios de fidelización, almacenes y distribución nacional para consumidores dominicanos.
 technologySupports: [Online storefront y mobile commerce, Checkout y payments, Store operations, Loyalty services, Inventory synchronization, Warehousing y distribution]
 failureConsequences: [Los clientes abandonan sus carritos., Los ingresos se detienen aunque las páginas sigan en línea., El inventario se vuelve inconsistente., Las quejas llegan antes que las alertas internas.]
 infrastructureDomains:

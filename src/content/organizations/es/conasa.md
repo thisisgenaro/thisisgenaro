@@ -13,7 +13,7 @@ branches: 18
 employees: 650
 logo: /images/organizations/logos/conasa.webp
 summary: A stability-first financial entorno where heredado platforms y concentrated institutional knowledge support daily member services.
-businessDescription: CONASA provides savings, loans, transfers, digital banking, y branch servicios a members across el Dominican Republic.
+businessDescription: CONASA ofrece ahorros, préstamos, transferencias, banca digital y servicios en sucursales a sus miembros en toda la República Dominicana.
 technologySupports: [Member accounts y transactions, Branch operations, Digital banking, Credit y loan processing, Regulatory reporting, Workforce communication]
 failureConsequences: [Los miembros pierden acceso a los servicios financieros., El procesamiento en sucursales se ralentiza o se detiene., La confianza y las obligaciones de cumplimiento quedan bajo presión., El personal recurre a la coordinación manual.]
 infrastructureDomains:

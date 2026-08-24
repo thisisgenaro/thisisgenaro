@@ -13,7 +13,7 @@ branches: 3
 employees: 900
 logo: /images/organizations/logos/iq.webp
 summary: A production-first entorno where corporate IT, industrial systems, warehouse operations, y experienced operators share a narrow operativo boundary.
-businessDescription: IQ manufactures, packages, warehouses, y distributes food products para domestic y export markets.
+businessDescription: IQ fabrica, empaca, almacena y distribuye productos alimenticios para los mercados nacionales y de exportación.
 technologySupports: [Production lines, Industrial control, Materials y inventory, Operaciones de almacén, Quality reporting, Distribution planning]
 failureConsequences: [Las líneas de producción pueden detenerse., Los datos de inventario y procesos dejan de ser confiables., Se pueden desperdiciar materiales., Los compromisos de distribución quedan rezagados.]
 infrastructureDomains:

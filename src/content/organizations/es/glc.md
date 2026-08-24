@@ -13,7 +13,7 @@ branches: 4
 employees: 1200
 logo: /images/organizations/logos/glc.webp
 summary: A fast-growing híbrido entorno where authentication, warehouse systems, mobile operations, y heredado dependencias have immediate operativo consequences.
-businessDescription: GLC coordinates national freight, warehouses, dispatches, customs processes, y last-mile delivery para enterprise clientes across el Dominican Republic.
+businessDescription: GLC coordina el transporte nacional de carga, los almacenes, los despachos, los procesos aduaneros y la entrega de última milla para clientes empresariales en toda la República Dominicana.
 technologySupports:
   - Operaciones de almacén
   - Acceso de clientes y visibilidad de envíos

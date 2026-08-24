@@ -13,7 +13,7 @@ branches: 1
 employees: 120
 logo: /images/organizations/logos/sta.webp
 summary: A compact NOC entorno where alert quality, escalation discipline, customer context, y after-hours capacity determine how quickly incidentes become understood.
-businessDescription: STA provides managed infrastructure, monitoring, remote support, servicio coordination, y operativo reporting across multiple customer environments.
+businessDescription: STA ofrece infraestructura administrada, monitoreo, soporte remoto, coordinación de servicios e informes operativos para múltiples entornos de clientes.
 technologySupports: [Customer monitoring, Remote administration, Ticketing y escalation, Customer communication, Operational documentation, Secure customer connectivity]
 failureConsequences: [Las alertas relevantes desaparecen dentro del ruido., El escalamiento comienza tarde., Los clientes reconocen primero el impacto., Los analistas pierden tiempo reconstruyendo el contexto.]
 infrastructureDomains:

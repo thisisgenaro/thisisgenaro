@@ -13,7 +13,7 @@ branches: 12
 employees: 2400
 logo: /images/organizations/logos/rmh.webp
 summary: A clinically integrated entorno where individually saludable sistemas can still fail el workflows connecting patients, clinicians, laboratories, y imaging.
-businessDescription: RMH coordinates hospital care, outpatient clinics, diagnostics, radiology, laboratories, y que soporta clinical administration.
+businessDescription: RMH coordina la atención hospitalaria, las clínicas ambulatorias, los diagnósticos, la radiología, los laboratorios y la administración clínica de apoyo.
 technologySupports: [Electronic medical records, Diagnostic imaging, Laboratory workflows, Clinical communications, Patient access, Remote clinical connectivity]
 failureConsequences: [La atención a pacientes puede retrasarse., Los profesionales pierden acceso a historiales o imágenes., Los flujos diagnósticos se vuelven manuales., Los síntomas técnicos se convierten en riesgos clínicos.]
 infrastructureDomains:
