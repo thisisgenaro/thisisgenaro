@@ -1,8 +1,10 @@
 ---
 import { getCollection } from "astro:content";
-import LocalizedPage from "../../../components/LocalizedPage.astro";
+import JournalEntry from "../../../components/JournalEntry.astro";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import { getLocaleFromPath, type Locale, ui } from "../../../lib/i18n";
+import { createJournalEntryRecord } from "../../../lib/journal";
+import { render } from "astro:content";
 
 export async function getStaticPaths() {
   const entries = await getCollection("entries", ({ data }) => data.language === "en");
@@ -18,6 +20,4 @@ const slug = Astro.params.slug ?? "";
 const entries = await getCollection("entries", ({ data }) => data.language === locale);
 const entry = entries.find((candidate) => candidate.id.split("/").slice(1).join("/").replace(/\.mdx?$/, "") === slug);
 ---
-<BaseLayout locale={locale} title={`${entry?.data.title ?? strings.nav.journal} | ${strings.nav.journal}`} description={entry?.data.summary ?? strings.labels.unavailable}>
-  {entry ? <LocalizedPage locale={locale} kind="journal" entries={[{ title: entry.data.title, summary: entry.data.summary, excerpt: entry.data.excerpt, slug }]} /> : <LocalizedPage locale={locale} kind="unavailable" />}
-</BaseLayout>
+{entry ? <JournalEntry locale={locale} entry={entry} record={createJournalEntryRecord(entry)} Content={(await render(entry)).Content} /> : <BaseLayout locale={locale} title={strings.nav.journal} description={strings.labels.unavailable}><p>{strings.labels.unavailable}</p></BaseLayout>}
