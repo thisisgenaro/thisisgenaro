@@ -6,7 +6,7 @@ import TopologyScene from "operational-topology/astro/TopologyScene";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { organizations } from "../data/organizations";
 import { createJournalEntryRecords } from "../lib/journal";
-import { createIncidentPreviewTopology, formatIncidentDate, getPublishedIncidents } from "../lib/incidents";
+import { createIncidentPreviewTopology, formatIncidentDate, getLocalizedIncidentById, getPublishedIncidents } from "../lib/incidents";
 import { getLocaleFromPath, localePath, ui, type Locale } from "../lib/i18n";
 
 interface Props { locale?: Locale; }
@@ -19,7 +19,7 @@ const entries = await getCollection("entries", ({ data }) => data.language === l
 const journalRecords = createJournalEntryRecords(entries);
 const latestEntry = journalRecords[0] ?? null;
 const incidents = getPublishedIncidents();
-const latestIncident = incidents[0] ?? null;
+const latestIncident = incidents[0] ? getLocalizedIncidentById(incidents[0].id, locale) : null;
 const latestOrganization = latestIncident
   ? organizations.find((organization) => organization.id === latestIncident.organizationId) ?? null
   : null;
@@ -95,7 +95,7 @@ const localizedPerspectives = locale === "es" ? [
   { title: "Automatización", copy: "Reducir trabajo repetitivo para dejar más espacio al juicio técnico.", path: perspectives[5].path },
 ] : perspectives;
 
-const severityCode = latestIncident?.severity.toLowerCase() === "high" ? "SEV-2" : latestIncident?.severity.toUpperCase();
+const severityCode = ["high", "alto"].includes(latestIncident?.severity.toLowerCase() ?? "") ? "SEV-2" : latestIncident?.severity.toUpperCase();
 ---
 
 <BaseLayout locale={locale}
