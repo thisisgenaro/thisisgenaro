@@ -1,0 +1,1071 @@
+---
+import TopologyScene from "operational-topology/astro/TopologyScene";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { localePath, ui, type Locale } from "../lib/i18n";
+
+import {
+  createIncidentPreviewTopology,
+  formatIncidentDate,
+  formatIncidentDateTime,
+  getIncidentStatusTone,
+  getPublishedIncidents,
+} from "../lib/incidents";
+
+interface Props { locale: Locale; incidents: any[]; organizations: any[]; }
+const { locale, incidents, organizations } = Astro.props as Props;
+const strings = ui[locale];
+const t = (en: string, es: string) => locale === "es" ? es : en;
+const latest = incidents[0] ?? null;
+const organizationById = new Map(organizations.map((organization) => [organization.id, organization]));
+const latestOrganization = latest ? organizationById.get(latest.organizationId) ?? null : null;
+const closedCount = incidents.filter((incident) => incident.status.toLowerCase() === "closed" || incident.status.toLowerCase() === "cerrado").length;
+const domainOptions = [...new Set(incidents.flatMap((incident) => incident.technicalDomains))].sort();
+const themeOptions = [...new Set(incidents.flatMap((incident) => incident.operationalThemes))].sort();
+const stateOptions = [...new Set(incidents.map((incident) => incident.status))].sort();
+const getSeverityCode = (severity: string) => ({ critical: "SEV-1", high: "SEV-2", medium: "SEV-3", low: "SEV-4", crítico: "SEV-1", alto: "SEV-2", medio: "SEV-3", bajo: "SEV-4" } as Record<string,string>)[severity.toLowerCase()] ?? severity.toUpperCase();
+const formatDuration = (duration: string) => duration.replace(/minutes?/i, "MIN").replace(/minutos?/i, "MIN").replace(/hours?/i, "HR").replace(/horas?/i, "HR").toUpperCase();
+
+const featuredTopology = latest ? createIncidentPreviewTopology(latest) : null;
+---
+<BaseLayout locale={locale}
+  title={`${strings.nav.incidents} | thisisgenaro.com`}
+  description={strings.pages.incidentsDescription}
+>
+  <main class="incident-index">
+    <header class="incident-index__intro">
+      <div class="incident-index__intro-copy">
+        <p class="incident-index__eyebrow">{strings.nav.incidents.toUpperCase()}</p>
+        <h1>{strings.nav.incidents}</h1>
+        <p>{strings.pages.incidentsDescription}</p>
+      </div>
+
+      {latest && (
+        <dl class="incident-index__stats" aria-label="Library statistics">
+          <div>
+            <dt>{t("Total incidents", "Total de incidentes")}</dt>
+            <dd>{incidents.length}</dd>
+          </div>
+          <div>
+            <dt>{t("Latest record", "Registro más reciente")}</dt>
+            <dd>{formatIncidentDate(latest.created)}</dd>
+          </div>
+          <div>
+            <dt>{t("Closed", "Cerrados")}</dt>
+            <dd>{closedCount}</dd>
+          </div>
+        </dl>
+      )}
+    </header>
+
+    {latest && latestOrganization ? (
+      <section class="incident-index__featured" aria-labelledby="featured-incident-title">
+        <div class="incident-index__section-heading incident-index__section-heading--feature">
+          <div>
+            <p class="incident-index__section-label">{t("LATEST INCIDENT", "INCIDENTE MÁS RECIENTE")}</p>
+            <p class="incident-index__record-kicker">{latest.incidentId} · {latestOrganization.acronym}</p>
+          </div>
+          <div class="incident-index__state-line" aria-label={`${latest.status} incident, ${getSeverityCode(latest.severity)}, ${latest.duration}`}>
+            <span class:list={["incident-status-pill", `is-${getIncidentStatusTone(latest.status)}`]}>{latest.status}</span>
+            <span>{getSeverityCode(latest.severity)}</span>
+            <span>{formatDuration(latest.duration)}</span>
+          </div>
+        </div>
+
+        <article class="incident-index__feature-frame">
+          <header class="incident-index__feature-titlebar">
+            <div class="organization-lockup">
+              <span class="organization-mark" data-organization={latestOrganization.id} aria-hidden="true">
+                <span>{latestOrganization.acronym}</span>
+              </span>
+              <span>
+                <strong>{latestOrganization.acronym}</strong>
+                <em>{latestOrganization.name}</em>
+              </span>
+            </div>
+            <h2 id="featured-incident-title">{latest.title}</h2>
+          </header>
+
+          <div class="incident-index__feature-grid">
+            <figure class="incident-index__scene">
+              <TopologyScene
+                class="incident-index__scene-view"
+                nodes={featuredTopology?.nodes ?? []}
+                edges={featuredTopology?.relationships ?? []}
+                layout="viewport-fit"
+                viewportFit={true}
+                topologyLayout={featuredTopology?.topologyLayout ?? "fan"}
+                radius={18}
+                originQ={-4}
+                originR={-6}
+                showGridNodes={false}
+                gridActivity={false}
+                ambientSignals={false}
+                connectorRouting={featuredTopology?.connectorRouting ?? "obstacle-aware"}
+                signalTransitionSpeed={0.95}
+              />
+              <figcaption>
+                <span><i class="is-failed"></i> {t("Failed / impacted", "Fallido / afectado")}</span>
+                <span><i class="is-degraded"></i> {t("Degraded path", "Ruta degradada")}</span>
+                <span><i class="is-healthy"></i> {t("Healthy context", "Contexto saludable")}</span>
+              </figcaption>
+            </figure>
+
+            <div class="incident-index__feature-detail">
+              <div class="incident-index__summary">
+                <p>{latest.summary}</p>
+                <p>{latest.symptom}</p>
+              </div>
+
+              <dl class="incident-index__metadata">
+                <div>
+                  <dt>{t("Reported by", "Reportado por")}</dt>
+                  <dd>{latest.requester}</dd>
+                </div>
+                <div>
+                  <dt>{t("Affected service", "Servicio afectado")}</dt>
+                  <dd>{latest.service}</dd>
+                </div>
+                <div class="is-wide">
+                  <dt>{t("Business impact", "Impacto empresarial")}</dt>
+                  <dd>{latest.affectedServices.join(" · ")}</dd>
+                </div>
+                <div>
+                  <dt>{t("Opened", "Abierto")}</dt>
+                  <dd>{formatIncidentDateTime(latest.opened)}</dd>
+                </div>
+                <div>
+                  <dt>{t("Restored", "Restaurado")}</dt>
+                  <dd>{formatIncidentDateTime(latest.restored)}</dd>
+                </div>
+                <div class="is-wide">
+                  <dt>{t("Organization", "Organización")}</dt>
+                  <dd>{latest.organization}</dd>
+                </div>
+              </dl>
+
+              <a class="incident-index__cta" href={localePath(locale, `/incident-library/${latest.id}`)}>{t("VIEW INCIDENT →", "VER INCIDENTE →")}</a>
+            </div>
+          </div>
+        </article>
+      </section>
+    ) : (
+      <section class="incident-index__empty" aria-labelledby="empty-library-title">
+        <p class="incident-index__section-label">{t("LIBRARY STATUS", "ESTADO DEL REGISTRO")}</p>
+        <h2 id="empty-library-title">{t("No incidents published yet.", "Aún no hay incidentes publicados.")}</h2>
+        <p>{t("The first operational case will appear here when its record is ready.", "El primer caso operativo aparecerá aquí cuando su registro esté listo.")}</p>
+      </section>
+    )}
+
+    {incidents.length > 0 && (
+      <section class="incident-index__browse" id="browse-incidents" aria-labelledby="browse-incidents-title" data-incident-browser>
+        <div class="incident-index__section-heading">
+          <div>
+            <p class="incident-index__section-label">{t("CASE ARCHIVE", "ARCHIVO DE CASOS")}</p>
+            <h2 id="browse-incidents-title">{t("Browse incidents", "Explorar incidentes")}</h2>
+          </div>
+          <p class="incident-index__result-count" aria-live="polite" data-result-count>
+            {incidents.length} {incidents.length === 1 ? "record" : "records"}
+          </p>
+        </div>
+
+        <details class="incident-index__filter-panel">
+          <summary>
+            <span>{t("Filter archive", "Filtrar archivo")}</span>
+            <span>{t("Domain · Theme · State", "Dominio · Tema · Estado")}</span>
+          </summary>
+          <form class="incident-index__filters" data-incident-filters>
+            <label>
+              <span>{t("Technical domain", "Dominio técnico")}</span>
+              <select name="domain">
+                <option value="">{t("All domains", "Todos los dominios")}</option>
+                {domainOptions.map((domain) => <option value={domain.toLowerCase()}>{domain}</option>)}
+              </select>
+            </label>
+            <label>
+              <span>{t("Operational theme", "Tema operativo")}</span>
+              <select name="theme">
+                <option value="">{t("All themes", "Todos los temas")}</option>
+                {themeOptions.map((theme) => <option value={theme.toLowerCase()}>{theme}</option>)}
+              </select>
+            </label>
+            <label>
+              <span>{t("State", "Estado")}</span>
+              <select name="state">
+                <option value="">{t("All states", "Todos los estados")}</option>
+                {stateOptions.map((state) => <option value={state.toLowerCase()}>{state}</option>)}
+              </select>
+            </label>
+            <button type="reset">{t("Clear filters", "Limpiar filtros")}</button>
+          </form>
+        </details>
+
+        <div class="incident-index__cards" data-incident-cards>
+          {incidents.map((incident) => {
+            const organization = organizationById.get(incident.organizationId);
+            if (!organization) return null;
+
+            return (
+              <article
+                class="incident-card"
+                data-incident-card
+                data-organization={incident.organizationId}
+                data-domain={incident.technicalDomains.map((domain) => domain.toLowerCase()).join("|")}
+                data-theme={incident.operationalThemes.map((theme) => theme.toLowerCase()).join("|")}
+                data-state={incident.status.toLowerCase()}
+              >
+                <div class="incident-card__identity">
+                  <span class="organization-mark organization-mark--small" data-organization={organization.id} aria-hidden="true">
+                    <span>{organization.acronym}</span>
+                  </span>
+                  <div>
+                    <p class="incident-card__id">{incident.incidentId}</p>
+                    <h3><a href={localePath(locale, `/incident-library/${incident.id}`)}>{incident.title}</a></h3>
+                    <p class="incident-card__organization">{organization.acronym} · {organization.name}</p>
+                  </div>
+                </div>
+
+                <div class="incident-card__status">
+                  <span class:list={["incident-status-pill", `is-${getIncidentStatusTone(incident.status)}`]}>{incident.status}</span>
+                  <span>{formatDuration(incident.duration)}</span>
+                  <span>{formatIncidentDate(incident.created)}</span>
+                </div>
+
+                <p class="incident-card__description">{incident.summary}</p>
+
+                <div class="incident-card__tags" aria-label="Incident domains and themes">
+                  {incident.technicalDomains.map((domain) => <span>{domain}</span>)}
+                  {incident.operationalThemes.map((theme) => <span>{theme}</span>)}
+                </div>
+
+                <a class="incident-card__cta" href={localePath(locale, `/incident-library/${incident.id}`)}>{t("VIEW INCIDENT →", "VER INCIDENTE →")}</a>
+              </article>
+            );
+          })}
+        </div>
+
+        <p class="incident-index__no-results" hidden data-no-results>No incidents match the selected filters.</p>
+      </section>
+    )}
+  </main>
+</BaseLayout>
+
+<script>
+  const browsers = document.querySelectorAll<HTMLElement>("[data-incident-browser]");
+
+  for (const browser of browsers) {
+    const form = browser.querySelector<HTMLFormElement>("[data-incident-filters]");
+    const cards = Array.from(browser.querySelectorAll<HTMLElement>("[data-incident-card]"));
+    const resultCount = browser.querySelector<HTMLElement>("[data-result-count]");
+    const noResults = browser.querySelector<HTMLElement>("[data-no-results]");
+    if (!form) continue;
+
+    const applyFilters = () => {
+      const values = Object.fromEntries(
+        Array.from(new FormData(form).entries()).map(([key, value]) => [key, String(value).toLowerCase()]),
+      );
+      let visible = 0;
+
+      for (const card of cards) {
+        const matches = Object.entries(values).every(([key, value]) => {
+          if (!value) return true;
+          return (card.dataset[key] ?? "").split("|").includes(value);
+        });
+        card.hidden = !matches;
+        if (matches) visible += 1;
+      }
+
+      if (resultCount) resultCount.textContent = `${visible} ${visible === 1 ? "record" : "records"}`;
+      if (noResults) noResults.hidden = visible !== 0;
+    };
+
+    form.addEventListener("change", applyFilters);
+    form.addEventListener("reset", () => window.requestAnimationFrame(applyFilters));
+  }
+</script>
+
+<style>
+  .incident-index {
+    width: min(100%, 92rem);
+    margin: 0 auto;
+    padding: clamp(1.1rem, 3vw, 2.6rem);
+    display: grid;
+    gap: clamp(3.5rem, 7vw, 6.5rem);
+  }
+
+  .incident-index__intro {
+    display: grid;
+    gap: clamp(1.5rem, 3vw, 2.4rem);
+  }
+
+  .incident-index__intro-copy {
+    max-width: 49rem;
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .incident-index__eyebrow,
+  .incident-index__section-label,
+  .incident-index__record-kicker,
+  .incident-index__result-count,
+  .incident-index__state-line,
+  .incident-index__cta,
+  .incident-card__id,
+  .incident-card__status,
+  .incident-card__cta,
+  .incident-index__filters span,
+  .incident-index__stats dt {
+    font-family: var(--font-mono);
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+  }
+
+  .incident-index__eyebrow,
+  .incident-index__section-label,
+  .incident-index__record-kicker {
+    margin: 0;
+    color: var(--accent);
+    font-size: 0.7rem;
+    font-weight: 800;
+  }
+
+  .incident-index__intro h1 {
+    margin: 0;
+    max-width: 12ch;
+    font-size: clamp(2.7rem, 6vw, 4.8rem);
+    line-height: 0.96;
+    letter-spacing: -0.065em;
+  }
+
+  .incident-index__intro-copy > p:last-child {
+    max-width: 43rem;
+    margin: 0;
+    color: var(--muted);
+    font-size: clamp(1rem, 1.5vw, 1.15rem);
+    line-height: 1.65;
+  }
+
+  .incident-index__stats {
+    margin: 0;
+    padding: 1rem 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-top: 1px solid var(--line-strong);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .incident-index__stats div {
+    min-width: 0;
+    display: grid;
+    gap: 0.35rem;
+    padding: 0 1.2rem;
+    border-inline-start: 1px solid var(--line);
+  }
+
+  .incident-index__stats div:first-child {
+    padding-inline-start: 0;
+    border-inline-start: 0;
+  }
+
+  .incident-index__stats dt {
+    color: var(--muted-dim);
+    font-size: 0.62rem;
+  }
+
+  .incident-index__stats dd {
+    margin: 0;
+    color: var(--text);
+    font-family: var(--font-title);
+    font-size: clamp(1.15rem, 2vw, 1.55rem);
+    font-weight: 700;
+  }
+
+  .incident-index__featured,
+  .incident-index__browse {
+    min-width: 0;
+    display: grid;
+    gap: 1.35rem;
+  }
+
+  .incident-index__section-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1.5rem;
+  }
+
+  .incident-index__section-heading > div {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .incident-index__section-heading h2 {
+    margin: 0;
+    font-size: clamp(1.8rem, 3.4vw, 2.8rem);
+    line-height: 1;
+    letter-spacing: -0.045em;
+  }
+
+  .incident-index__section-heading--feature {
+    align-items: start;
+  }
+
+  .incident-index__record-kicker {
+    color: var(--muted);
+  }
+
+  .incident-index__state-line,
+  .incident-card__status {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.65rem;
+    color: var(--muted);
+    font-size: 0.66rem;
+  }
+
+  .incident-status-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.85rem;
+    padding: 0.2rem 0.62rem;
+    border: 1px solid color-mix(in srgb, var(--line-strong) 76%, transparent);
+    color: var(--text);
+    background: color-mix(in srgb, var(--surface-raised) 66%, transparent);
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    font-weight: 800;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .incident-status-pill.is-open,
+  .incident-status-pill.is-watching {
+    color: #f4c152;
+    border-color: color-mix(in srgb, #f4c152 50%, transparent);
+  }
+
+  .incident-index__feature-frame {
+    position: relative;
+    min-width: 0;
+    display: grid;
+    gap: 1.2rem;
+    padding: clamp(1rem, 2.4vw, 1.8rem);
+    border: 1px solid var(--line-strong);
+    border-top-color: color-mix(in srgb, var(--accent) 66%, var(--line));
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--surface-raised) 78%, transparent), transparent 42%),
+      color-mix(in srgb, var(--surface) 94%, var(--ink));
+    box-shadow: 0 26px 70px rgba(0, 0, 0, 0.28);
+  }
+
+  .incident-index__feature-frame::before {
+    content: "";
+    position: absolute;
+    inset: -1px auto auto -1px;
+    width: 7rem;
+    height: 2px;
+    background: var(--accent);
+  }
+
+  .incident-index__feature-titlebar {
+    display: grid;
+    grid-template-columns: minmax(15rem, 0.42fr) minmax(0, 1fr);
+    align-items: end;
+    gap: clamp(1rem, 3vw, 2.4rem);
+  }
+
+  .incident-index__feature-titlebar h2 {
+    margin: 0;
+    max-width: 20ch;
+    font-size: clamp(2rem, 4.2vw, 3.8rem);
+    line-height: 0.98;
+    letter-spacing: -0.06em;
+  }
+
+  .organization-lockup {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+  }
+
+  .organization-lockup > span:last-child {
+    min-width: 0;
+    display: grid;
+    gap: 0.15rem;
+  }
+
+  .organization-lockup strong,
+  .organization-lockup em {
+    display: block;
+    font-style: normal;
+  }
+
+  .organization-lockup strong {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+  }
+
+  .organization-lockup em {
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.35;
+  }
+
+  .organization-mark {
+    position: relative;
+    flex: 0 0 auto;
+    width: 4rem;
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent-soft) 35%, var(--surface));
+    clip-path: polygon(25% 6.7%, 75% 6.7%, 100% 50%, 75% 93.3%, 25% 93.3%, 0 50%);
+  }
+
+  .organization-mark::before {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    background: var(--surface-raised);
+    clip-path: inherit;
+  }
+
+  .organization-mark::after {
+    content: "";
+    position: absolute;
+    inset: 0.52rem;
+    border-top: 1px solid currentColor;
+    border-bottom: 1px solid color-mix(in srgb, currentColor 34%, transparent);
+    opacity: 0.7;
+  }
+
+  .organization-mark > span {
+    position: relative;
+    z-index: 1;
+    max-width: 3rem;
+    overflow: hidden;
+    color: currentColor;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-align: center;
+  }
+
+  .organization-mark--small {
+    width: 3.1rem;
+  }
+
+  .organization-mark[data-organization="conasa"],
+  .organization-mark[data-organization="rmh"] {
+    color: color-mix(in srgb, var(--accent) 82%, white 18%);
+  }
+
+  .organization-mark[data-organization="conasa"] > span {
+    font-size: 0.56rem;
+  }
+
+  .organization-mark[data-organization="iq"],
+  .organization-mark[data-organization="cad"],
+  .organization-mark[data-organization="sta"] {
+    color: color-mix(in srgb, var(--accent) 72%, var(--muted) 28%);
+  }
+
+  .incident-index__feature-grid {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1.65fr) minmax(18rem, 0.72fr);
+    gap: clamp(1.1rem, 2.5vw, 2rem);
+    align-items: stretch;
+  }
+
+  .incident-index__scene {
+    position: relative;
+    min-width: 0;
+    min-height: 31rem;
+    margin: 0;
+    overflow: hidden;
+    border-top: 1px solid color-mix(in srgb, var(--line-strong) 76%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+    background:
+      radial-gradient(circle at 38% 48%, color-mix(in srgb, var(--signal-red) 5%, transparent), transparent 30%),
+      color-mix(in srgb, var(--ink) 68%, transparent);
+  }
+
+  .incident-index__scene-view {
+    width: 100%;
+    min-height: 31rem;
+  }
+
+  .incident-index__scene figcaption {
+    position: absolute;
+    inset: auto 0.75rem 0.75rem;
+    z-index: 2;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.8rem;
+    color: var(--muted-dim);
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    pointer-events: none;
+  }
+
+  .incident-index__scene figcaption span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .incident-index__scene figcaption i {
+    width: 0.48rem;
+    height: 0.48rem;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+  }
+
+  .incident-index__scene figcaption .is-failed { color: var(--signal-red); }
+  .incident-index__scene figcaption .is-degraded { color: var(--accent); }
+  .incident-index__scene figcaption .is-healthy { color: var(--signal-blue); }
+
+  .incident-index__scene :global(.topology-grid) {
+    color: color-mix(in srgb, var(--accent) 10%, transparent);
+  }
+
+  .incident-index__scene :global(.grid-occupant-fill) {
+    fill: color-mix(in srgb, var(--surface-raised) 94%, transparent);
+  }
+
+  .incident-index__scene :global(.grid-occupant[data-node-operational-state="failed"]) {
+    color: color-mix(in srgb, var(--signal-red) 86%, white 14%);
+  }
+
+  .incident-index__scene :global(.grid-occupant[data-node-operational-state="failed"] .grid-occupant-fill) {
+    fill: color-mix(in srgb, var(--signal-red) 19%, var(--surface));
+    stroke: var(--signal-red);
+    stroke-width: 2.2;
+    filter: drop-shadow(0 0 14px color-mix(in srgb, var(--signal-red) 34%, transparent));
+  }
+
+  .incident-index__scene :global(.grid-occupant[data-node-operational-state="degraded"] .grid-occupant-fill) {
+    fill: color-mix(in srgb, var(--accent) 8%, var(--surface));
+    stroke: color-mix(in srgb, var(--accent) 76%, white 8%);
+  }
+
+  .incident-index__scene :global(.grid-occupant[data-node-operational-state="healthy"]) {
+    color: color-mix(in srgb, var(--signal-blue) 65%, var(--text) 35%);
+  }
+
+  .incident-index__scene :global(.grid-occupant[data-node-operational-state="healthy"] .grid-occupant-fill) {
+    fill: color-mix(in srgb, var(--signal-blue) 7%, var(--surface));
+    stroke: color-mix(in srgb, var(--signal-blue) 58%, var(--line-strong));
+  }
+
+  .incident-index__scene :global(.grid-connector) {
+    color: color-mix(in srgb, var(--signal-blue) 44%, var(--text) 56%);
+    stroke-width: 1.35;
+    stroke-opacity: 0.62;
+    opacity: 0.82;
+  }
+
+  .incident-index__scene :global(.grid-connector.connector-state-active),
+  .incident-index__scene :global(.grid-connector.is-active),
+  .incident-index__scene :global(.grid-connector[data-edge-signal-state]:not([data-edge-signal-state="idle"])),
+  .incident-index__scene :global(.grid-connector.relationship-context-related),
+  .incident-index__scene :global(.grid-connector.relationship-context-ancestor),
+  .incident-index__scene :global(.grid-connector.relationship-context-descendant) {
+    opacity: 1;
+  }
+
+  .incident-index__scene :global(.grid-connector[data-edge-target-operational-state="failed"]),
+  .incident-index__scene :global(.grid-connector[data-edge-source-operational-state="failed"]) {
+    stroke: color-mix(in srgb, var(--signal-red) 62%, var(--accent) 38%);
+    stroke-width: 1.6;
+    stroke-opacity: 0.82;
+    opacity: 0.94;
+  }
+
+  .incident-index__feature-detail {
+    min-width: 0;
+    display: grid;
+    align-content: start;
+    gap: 1.35rem;
+    padding-inline-start: clamp(0rem, 1vw, 0.8rem);
+  }
+
+  .incident-index__summary {
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .incident-index__summary p {
+    margin: 0;
+    color: var(--text);
+    font-size: 0.96rem;
+    line-height: 1.7;
+  }
+
+  .incident-index__summary p:last-child {
+    color: var(--muted);
+  }
+
+  .incident-index__metadata {
+    margin: 0;
+    padding-top: 1rem;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .incident-index__metadata div {
+    min-width: 0;
+    display: grid;
+    gap: 0.3rem;
+  }
+
+  .incident-index__metadata .is-wide {
+    grid-column: 1 / -1;
+  }
+
+  .incident-index__metadata dt {
+    color: var(--muted-dim);
+    font-family: var(--font-mono);
+    font-size: 0.59rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .incident-index__metadata dd {
+    margin: 0;
+    color: var(--text);
+    font-size: 0.83rem;
+    line-height: 1.45;
+  }
+
+  .incident-index__cta,
+  .incident-card__cta {
+    width: fit-content;
+    color: var(--accent);
+    font-size: 0.67rem;
+    font-weight: 800;
+    text-decoration: none;
+  }
+
+  .incident-index__cta {
+    margin-top: 0.2rem;
+    padding-bottom: 0.3rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--accent) 52%, transparent);
+  }
+
+  .incident-index__cta:hover,
+  .incident-index__cta:focus-visible,
+  .incident-card__cta:hover,
+  .incident-card__cta:focus-visible {
+    color: var(--text);
+  }
+
+  .incident-index__result-count {
+    max-width: 34rem;
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.68rem;
+    line-height: 1.5;
+    text-align: right;
+  }
+
+  .incident-index__filter-panel {
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .incident-index__filter-panel summary {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 0;
+    color: var(--text);
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .incident-index__filter-panel summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .incident-index__filter-panel summary span:first-child {
+    font-family: var(--font-mono);
+    font-size: 0.67rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .incident-index__filter-panel summary span:last-child {
+    color: var(--muted-dim);
+    font-size: 0.72rem;
+  }
+
+  .incident-index__filters {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+    gap: 0.8rem;
+    align-items: end;
+    padding: 0.2rem 0 1rem;
+  }
+
+  .incident-index__filters label {
+    min-width: 0;
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .incident-index__filters span {
+    color: var(--muted-dim);
+    font-size: 0.56rem;
+  }
+
+  .incident-index__filters select,
+  .incident-index__filters button {
+    min-width: 0;
+    min-height: 2.35rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 0;
+    color: var(--text);
+    background: var(--surface-raised);
+    font: inherit;
+    font-size: 0.76rem;
+  }
+
+  .incident-index__filters select {
+    width: 100%;
+    padding: 0 0.55rem;
+  }
+
+  .incident-index__filters button {
+    padding: 0 0.8rem;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .incident-index__cards {
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .incident-card {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: minmax(18rem, 1.1fr) minmax(12rem, 0.55fr);
+    gap: 0.9rem 1.5rem;
+    padding: 1.15rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .incident-card[hidden] {
+    display: none;
+  }
+
+  .incident-card__identity {
+    min-width: 0;
+    display: flex;
+    gap: 0.9rem;
+    align-items: start;
+  }
+
+  .incident-card__identity > div {
+    min-width: 0;
+  }
+
+  .incident-card__id {
+    margin: 0 0 0.3rem;
+    color: var(--accent);
+    font-size: 0.62rem;
+    font-weight: 800;
+  }
+
+  .incident-card h3 {
+    margin: 0;
+    font-size: clamp(1.15rem, 2vw, 1.5rem);
+    line-height: 1.12;
+  }
+
+  .incident-card h3 a {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .incident-card h3 a:hover,
+  .incident-card h3 a:focus-visible {
+    color: var(--accent);
+  }
+
+  .incident-card__organization {
+    margin: 0.38rem 0 0;
+    color: var(--muted);
+    font-size: 0.76rem;
+  }
+
+  .incident-card__status {
+    justify-content: flex-end;
+    align-self: start;
+  }
+
+  .incident-card__description {
+    max-width: 65rem;
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.84rem;
+    line-height: 1.6;
+  }
+
+  .incident-card__tags {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.38rem;
+  }
+
+  .incident-card__tags span {
+    padding: 0.22rem 0.42rem;
+    border: 1px solid color-mix(in srgb, var(--line-strong) 78%, transparent);
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.54rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .incident-card__cta {
+    grid-column: 1 / -1;
+    margin-inline-start: calc(3.1rem + 0.9rem);
+  }
+
+  .incident-index__no-results,
+  .incident-index__empty {
+    margin: 0;
+    padding: 1.5rem 0;
+    color: var(--muted);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+
+  @media (max-width: 1100px) {
+    .incident-index__feature-titlebar,
+    .incident-index__feature-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .incident-index__feature-titlebar {
+      align-items: start;
+    }
+
+    .incident-index__scene,
+    .incident-index__scene-view {
+      min-height: 28rem;
+    }
+
+    .incident-index__feature-detail {
+      grid-template-columns: minmax(0, 0.8fr) minmax(18rem, 1.2fr);
+      padding-inline-start: 0;
+    }
+
+    .incident-index__cta {
+      grid-column: 1 / -1;
+    }
+
+    .incident-index__filters {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .incident-index__filters button {
+      width: fit-content;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .incident-index {
+      gap: 3.7rem;
+      padding-inline: 0.85rem;
+    }
+
+    .incident-index__stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem 0;
+    }
+
+    .incident-index__stats div:nth-child(3) {
+      padding-inline-start: 0;
+      border-inline-start: 0;
+    }
+
+    .incident-index__section-heading,
+    .incident-index__section-heading--feature,
+    .incident-index__filter-panel summary {
+      align-items: start;
+      flex-direction: column;
+    }
+
+    .incident-index__state-line,
+    .incident-index__result-count {
+      text-align: left;
+    }
+
+    .incident-index__feature-frame {
+      padding-inline: 0.75rem;
+    }
+
+    .incident-index__feature-titlebar h2 {
+      font-size: clamp(2rem, 10vw, 3rem);
+    }
+
+    .incident-index__scene,
+    .incident-index__scene-view {
+      min-height: 25rem;
+    }
+
+    .incident-index__scene figcaption {
+      justify-content: flex-start;
+      inset-inline: 0.5rem;
+    }
+
+    .incident-index__feature-detail,
+    .incident-index__metadata,
+    .incident-index__filters,
+    .incident-card {
+      grid-template-columns: 1fr;
+    }
+
+    .incident-index__metadata .is-wide,
+    .incident-index__cta,
+    .incident-card__cta {
+      grid-column: auto;
+    }
+
+    .incident-card__status,
+    .incident-card__tags {
+      justify-content: flex-start;
+    }
+
+    .incident-card__cta {
+      margin-inline-start: calc(3.1rem + 0.9rem);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .incident-index__feature-frame {
+      scroll-behavior: auto;
+    }
+  }
+</style>
