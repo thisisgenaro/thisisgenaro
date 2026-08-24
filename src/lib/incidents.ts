@@ -20,6 +20,23 @@ export function getIncidentById(id: string) {
   return incidentRecords.find((incident) => incident.id.toLowerCase() === normalized || incident.incidentId.toLowerCase() === normalized) ?? null;
 }
 
+const spanishSceneText: Record<string, string> = {
+  "Overview": "Resumen", "Operational Dashboard": "Panel operativo", "Authentication Service": "Servicio de autenticación", "FAILED": "FALLIDO", "Closed": "Cerrado", "High Severity": "Alta severidad", "92 Minutes": "92 minutos", "Warehouse Operations": "Operaciones de almacén", "Authentication": "Autenticación", "Warehouse, Portal, Dispatch": "Almacén, portal, despachos", "Dependency Failure": "Fallo de dependencia", state: "estado", severity: "severidad", duration: "duración", organization: "organización", requester: "solicitante", service: "servicio", impact: "impacto", cause: "causa",
+  "Executive Report": "Informe ejecutivo", "Business Impact": "Impacto empresarial", "Customer Service Portal": "Portal de atención al cliente", "Dispatch Processing": "Procesamiento de despachos", "Incident Status": "Estado del incidente", delay: "retraso", visibility: "visibilidad", "manual work": "trabajo manual", "Executive summary": "Resumen ejecutivo",
+  "Technical Analysis": "Análisis técnico", "Comparing the Evidence": "Comparación de la evidencia", "Client A": "Cliente A", "Client B": "Cliente B", resolved: "resuelto", "Technical comparison": "Comparación técnica", "Converge on root cause": "Converger en la causa raíz",
+  "Root Cause": "Causa raíz", "Root Cause Analysis": "Análisis de causa raíz", "Legacy DNS Record": "Registro DNS heredado", "Previous Migration": "Migración anterior", "Obsolete Identity Endpoint": "Endpoint de identidad obsoleto", "left behind": "quedó atrás", "routes clients": "dirige clientes", "Root cause": "Causa raíz",
+  "Dependency Map": "Mapa de dependencias", "Dependency Landscape": "Panorama de dependencias", "Customer Service Visibility": "Visibilidad del servicio al cliente", affects: "afecta", "Dependency view": "Vista de dependencias",
+  "Timeline": "Línea de tiempo", "Operational Timeline": "Línea de tiempo operativa", "07:05 First Report": "07:05 Primer reporte", "07:18 Incident Activated": "07:18 Incidente activado", "07:55 Legacy Route Found": "07:55 Ruta heredada encontrada", "08:37 Restored": "08:37 Restaurado", escalates: "escala", investigation: "investigación", correction: "corrección", "Operational timeline": "Línea de tiempo operativa",
+  "Lessons": "Lecciones", "Lessons Learned": "Lecciones aprendidas", Validation: "Validación", Observability: "Observabilidad", "Dependency Management": "Gestión de dependencias", "Change Control": "Control de cambios", supports: "refuerza", "Lessons learned": "Lecciones aprendidas", "Return to overview": "Volver al resumen", "Open executive report": "Abrir informe ejecutivo", "Inspect technical analysis": "Inspeccionar análisis técnico", "See dependency map": "Ver mapa de dependencias", "Walk the timeline": "Recorrer la línea de tiempo", "Review lessons": "Revisar lecciones"
+};
+
+function translateIncidentStrings<T>(value: T): T {
+  if (typeof value === "string") return (spanishSceneText[value] ?? value) as T;
+  if (Array.isArray(value)) return value.map((item) => translateIncidentStrings(item)) as T;
+  if (value && typeof value === "object") return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, translateIncidentStrings(item)])) as T;
+  return value;
+}
+
 const spanishIncidentCopy: Record<string, Partial<IncidentRecord>> = {
   "inc-2026-0001": {
     organization: "Grupo Logístico del Caribe",
@@ -44,7 +61,7 @@ const spanishIncidentCopy: Record<string, Partial<IncidentRecord>> = {
 export function getLocalizedIncidentById(id: string, locale: "en" | "es" = "en") {
   const incident = getIncidentById(id);
   if (!incident || locale === "en") return incident;
-  return incident ? { ...incident, ...spanishIncidentCopy[incident.id] } : null;
+  return incident ? translateIncidentStrings({ ...incident, ...spanishIncidentCopy[incident.id] }) : null;
 }
 
 export function formatIncidentDate(value: string) {
