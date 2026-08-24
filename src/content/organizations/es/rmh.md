@@ -7,7 +7,7 @@ acronym: RMH
 name: Red Médica Horizonte
 industry: Salud
 type: Entorno ficticio de estudio de casos
-descriptor: A hospital, clinic, y diagnostics network where infrastructure health is inseparable desde patient care.
+descriptor: Red de hospitales, clínicas y diagnósticos donde la salud de la infraestructura es inseparable de la atención al paciente.
 headquarters: Santo Domingo
 branches: 12
 employees: 2400
@@ -35,7 +35,7 @@ people:
   - { id: julio, name: Julio, role: Técnico de radiología, operationalImportance: Detecta la degradación de PACS e imágenes antes de las alertas formales de infraestructura., characteristic: Amplio conocimiento del flujo radiológico, expresado mediante síntomas prácticos., question: ¿Por qué las imágenes tardan más? }
   - { id: ana-maria-soto, name: Ana María Soto, role: Supervisora de enfermería, operationalImportance: Escala los problemas tecnológicos cuando empiezan a interrumpir la atención al paciente., characteristic: Gran conciencia del flujo de pacientes fuera de la planificación técnica formal., question: ¿Esto está afectando la atención? }
 incidentIds: []
-tags: [Salud, Clinical systems, Integration, Patient care]
+tags: [Salud, Sistemas clínicos, Integración, Atención al paciente]
 topology:
   nodes:
     - { id: emr, domainId: clinical, label: EMR, subtitle: CLINICAL RECORD, status: healthy, variant: root, size: lg, selected: true }

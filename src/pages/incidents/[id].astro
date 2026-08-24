@@ -466,10 +466,6 @@ const serializedSlides = JSON.stringify(slides);
         select?.addEventListener("input", handleSelect);
         select?.addEventListener("change", handleSelect);
 
-        const resizeObserver = new ResizeObserver(() => {
-          syncSceneGeometry();
-        });
-
         sceneHost.addEventListener("topology-node-selected", (event) => {
           const detail = event.detail;
           const nodeId = detail?.nodeId;
@@ -489,7 +485,8 @@ const serializedSlides = JSON.stringify(slides);
         updateButtons();
         setInspectorCollapsed(false);
         Promise.resolve(transition.transition(activeSlide.topology));
-        resizeObserver.observe(sceneHost);
+        // The OTF navigation controller owns responsive viewport updates.
+        // Avoid rebuilding the dataset transition during mobile pinch/resize gestures.
         syncSceneGeometry();
 
         inspectorToggle?.addEventListener("click", () => setInspectorCollapsed(!inspectorCollapsed));
@@ -497,7 +494,6 @@ const serializedSlides = JSON.stringify(slides);
         window.addEventListener(
           "pagehide",
           () => {
-            resizeObserver.disconnect();
             transition?.destroy?.();
             navigation.destroy();
           },

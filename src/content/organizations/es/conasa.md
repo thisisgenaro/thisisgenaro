@@ -5,9 +5,9 @@ translationStatus: complete
 language: es
 acronym: CONASA
 name: Cooperativa Nacional de Ahorros
-industry: Financial Services
+industry: Servicios financieros
 type: Entorno ficticio de estudio de casos
-descriptor: A conservative financial cooperative balancing member trust, regulatory obligations, y long-lived systems.
+descriptor: Cooperativa financiera conservadora que equilibra la confianza de sus miembros, las obligaciones regulatorias y los sistemas de larga vida.
 headquarters: Santiago de los Caballeros
 branches: 18
 employees: 650
@@ -35,7 +35,7 @@ people:
   - { id: ernesto-lora, name: Ernesto Lora, role: Administrador sénior de sistemas, operationalImportance: Conserva el historial de migraciones y la memoria operativa de los sistemas más antiguos de CONASA., characteristic: Conocimiento profundo de sistemas heredados que también representa un riesgo de concentración., question: ¿Quién configuró esto originalmente? }
   - { id: rosa-martinez, name: Rosa Martínez, role: Supervisora de operaciones de sucursal, operationalImportance: Nota la degradación del servicio en sucursales antes de que los equipos centrales vean una señal decisiva., characteristic: Sensor operativo de cara al cliente, guiado por la experiencia y la intuición., question: Algo se siente más lento de lo normal. }
 incidentIds: []
-tags: [Servicios financieros, Legacy systems, Compliance, Institutional knowledge]
+tags: [Servicios financieros, Sistemas heredados, Cumplimiento, Conocimiento institucional]
 topology:
   nodes:
     - { id: active-directory, domainId: identity, label: Active Directory, subtitle: IDENTITY, status: healthy, variant: root, size: lg, selected: true }

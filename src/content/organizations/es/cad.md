@@ -5,9 +5,9 @@ translationStatus: complete
 language: es
 acronym: CAD
 name: Comercial Aurora Dominicana
-industry: Comercio & E-Commerce
+industry: Comercio y comercio electrónico
 type: Entorno ficticio de estudio de casos
-descriptor: An omnichannel retailer whose storefront can appear saludable while payments, inventory, or external servicios stop revenue underneath it.
+descriptor: Minorista omnicanal cuya tienda puede parecer saludable mientras los pagos, el inventario o los servicios externos detienen los ingresos por debajo.
 headquarters: Santo Domingo
 branches: 25
 employees: 1800
@@ -34,7 +34,7 @@ people:
   - { id: hector-diaz, name: Héctor Díaz, role: Ingeniero de infraestructura, operationalImportance: Investiga fallas de cara al cliente aunque los sistemas internos parezcan saludables., characteristic: Investigador sólido de APIs y coordinador de proveedores, con control limitado sobre terceros., question: ¿Qué parte del flujo de compra está fallando? }
   - { id: sofia-reyes, name: Sofía Reyes, role: Supervisora de experiencia del cliente, operationalImportance: Detecta patrones de incidentes en llamadas, reseñas y redes sociales., characteristic: Muy sensible a los síntomas del cliente, sin acceso directo a las causas técnicas., question: Los clientes se están quejando. }
 incidentIds: []
-tags: [Comercio, E-commerce, Payments, External dependency]
+tags: [Comercio, Comercio electrónico, Pagos, Dependencia externa]
 topology:
   nodes:
     - { id: storefront, domainId: commerce, label: Storefront, subtitle: CUSTOMER EDGE, status: healthy, variant: root, size: lg, selected: true }
