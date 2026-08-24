@@ -2,7 +2,7 @@
 import LocalizedPage from "../../../components/LocalizedPage.astro";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import { getLocaleFromPath, type Locale, ui } from "../../../lib/i18n";
-import { getIncidentById } from "../../../lib/incidents";
+import { getLocalizedIncidentById } from "../../../lib/incidents";
 
 export function getStaticPaths() {
   return ["en", "es"].flatMap((locale) => [{ params: { locale, id: "inc-2026-0001" } }]);
@@ -10,7 +10,7 @@ export function getStaticPaths() {
 
 const locale = getLocaleFromPath(`/${Astro.params.locale}`) as Locale;
 const strings = ui[locale];
-const incident = locale === "en" ? getIncidentById(Astro.params.id ?? "") : null;
+const incident = getLocalizedIncidentById(Astro.params.id ?? "", locale);
 ---
 <BaseLayout locale={locale} title={`${incident?.incidentId ?? strings.nav.incidents} | ${strings.nav.incidents}`} description={incident?.summary ?? strings.labels.unavailable}>
   {incident ? <LocalizedPage locale={locale} kind="incidents" incidents={[{ id: incident.id, incidentId: incident.incidentId, title: incident.title, status: incident.status, duration: incident.duration, organization: incident.organization, summary: incident.summary }]} /> : <LocalizedPage locale={locale} kind="unavailable" />}

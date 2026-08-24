@@ -20,6 +20,33 @@ export function getIncidentById(id: string) {
   return incidentRecords.find((incident) => incident.id.toLowerCase() === normalized || incident.incidentId.toLowerCase() === normalized) ?? null;
 }
 
+const spanishIncidentCopy: Record<string, Partial<IncidentRecord>> = {
+  "inc-2026-0001": {
+    organization: "Grupo Logístico del Caribe",
+    service: "Autenticación",
+    title: "Interrupción del servicio de autenticación",
+    requester: "Operaciones de almacén",
+    category: "Fallo de dependencia",
+    symptom: "Los usuarios operativos no podían autenticarse en aplicaciones logísticas críticas aunque los sistemas principales parecían saludables.",
+    rootCause: "Una ruta DNS heredada continuó enviando algunos clientes a un servicio de identidad obsoleto después de una migración anterior.",
+    learning: "La disponibilidad del servicio debe incluir la validación de dependencias y del recorrido del usuario, no solo la salud de cada componente.",
+    summary: "GLC sufrió una interrupción parcial de autenticación causada por una dependencia DNS no documentada. El servicio correcto estaba saludable, pero algunos usuarios fueron dirigidos a un endpoint de identidad heredado.",
+    executiveSummary: "El incidente afectó las operaciones de almacén, el procesamiento de despachos y la visibilidad del servicio al cliente. No fue una caída total, pero el impacto operativo requirió gestión formal y acciones correctivas posteriores.",
+    status: "Cerrado",
+    severity: "Alto",
+    duration: "92 minutos",
+    technicalDomains: ["Identidad", "DNS"],
+    operationalThemes: ["Dependencia oculta", "Brecha de monitoreo", "Deuda técnica"],
+    tags: ["autenticación", "dns", "fallo-de-dependencia"],
+  },
+};
+
+export function getLocalizedIncidentById(id: string, locale: "en" | "es" = "en") {
+  const incident = getIncidentById(id);
+  if (!incident || locale === "en") return incident;
+  return incident ? { ...incident, ...spanishIncidentCopy[incident.id] } : null;
+}
+
 export function formatIncidentDate(value: string) {
   return new Intl.DateTimeFormat("en", {
     year: "numeric",
