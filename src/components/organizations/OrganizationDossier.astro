@@ -108,7 +108,7 @@ const dossierTopology = createOrganizationDossierTopology(organization);
         <h2 id="topology-title">{t("Infrastructure topology", "Topología de infraestructura")}</h2>
       </div>
       <p class="dossier-section__note">
-        {t("The normal operating model behind {organization.acronym} incidents. Select a node to trace how identity, applications, data, sites, and visibility relate.", "El modelo operativo normal detrás de los incidentes de {organization.acronym}. Selecciona un nodo para seguir cómo se relacionan la identidad, las aplicaciones, los datos, los sitios y la visibilidad.")}
+        {locale === "es" ? `El modelo operativo normal detrás de los incidentes de ${organization.acronym}. Selecciona un nodo para seguir cómo se relacionan la identidad, las aplicaciones, los datos, los sitios y la visibilidad.` : `The normal operating model behind ${organization.acronym} incidents. Select a node to trace how identity, applications, data, sites, and visibility relate.`}
       </p>
     </div>
 
