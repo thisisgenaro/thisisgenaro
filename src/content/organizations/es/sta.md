@@ -15,7 +15,7 @@ logo: /images/organizations/logos/sta.webp
 summary: A compact NOC entorno where alert quality, escalation discipline, customer context, y after-hours capacity determine how quickly incidentes become understood.
 businessDescription: STA provides managed infrastructure, monitoring, remote support, servicio coordination, y operativo reporting across multiple customer environments.
 technologySupports: [Customer monitoring, Remote administration, Ticketing y escalation, Customer communication, Operational documentation, Secure customer connectivity]
-failureConsequences: [Meaningful alerts disappear inside noise., Escalation starts late., Customers recognize impact first., Analysts lose time rebuilding context.]
+failureConsequences: [Las alertas relevantes desaparecen dentro del ruido., El escalamiento comienza tarde., Los clientes reconocen primero el impacto., Los analistas pierden tiempo reconstruyendo el contexto.]
 infrastructureDomains:
   - { id: monitoring, label: Monitoreo & Alerting, systems: [Zabbix, NOC Dashboards, Alert Routing] }
   - { id: service, label: Service Operations, systems: [GLPI, Customer Reporting, Escalation Workflows] }
@@ -23,16 +23,16 @@ infrastructureDomains:
   - { id: knowledge, label: Knowledge & Access, systems: [BookStack, Vaultwarden, Runbooks] }
   - { id: platform, label: Internal Platform, systems: [Proxmox, Microsoft 365, Backup, Customer VPNs] }
 weakPoints:
-  - { label: SIGNAL RISK, detail: High alert volume makes meaningful conditions harder a distinguish. }
-  - { label: DOCUMENTATION GAP, detail: Customer runbooks y entorno notes lag operativo growth. }
-  - { label: RESTRICCIÓN DE PERSONAL, detail: A small NOC carries a growing multi-tenant workload. }
-  - { label: ESCALATION RISK, detail: Customer-specific escalation practices permanecen inconsistent. }
-  - { label: KNOWLEDGE RISK, detail: Important customer context is concentrated among experienced analysts. }
-  - { label: COVERAGE RISK, detail: After-hours capacity is thinner than daytime operations. }
+  - { label: RIESGO DE SEÑAL, detail: El alto volumen de alertas dificulta distinguir las condiciones relevantes. }
+  - { label: BRECHA DE DOCUMENTACIÓN, detail: Los runbooks de clientes y las notas de entorno se quedan atrás del crecimiento operativo. }
+  - { label: RESTRICCIÓN DE PERSONAL, detail: Un NOC pequeño sostiene una carga de trabajo multiinquilino cada vez mayor. }
+  - { label: RIESGO DE ESCALAMIENTO, detail: Las prácticas de escalamiento específicas de cada cliente siguen siendo inconsistentes. }
+  - { label: RIESGO DE CONOCIMIENTO, detail: El contexto importante de los clientes está concentrado entre analistas experimentados. }
+  - { label: RIESGO DE COBERTURA, detail: La capacidad fuera de horario es más limitada que durante la operación diurna. }
 people:
-  - { id: karla-fernyez, name: Karla Fernández, role: Service Delivery Manager, operationalImportance: Coordinates el incidente story that clientes hear while technical work continues., characteristic: Strong communicator managing constant context switching across customers., question: What does el client know so far? }
-  - { id: yres-guerrero, name: Andrés Guerrero, role: NOC Lead, operationalImportance: Finds meaningful patterns inside noisy multi-customer telemetry., characteristic: Experienced monitoring investigator exposed continuously a alert fatigue., question: Is this noise or signal? }
-  - { id: junior, name: Junior, role: NOC L1 Analyst, operationalImportance: Notices conditions that experienced operators may have learned a dismiss., characteristic: Curious new perspective con low confidence during escalation., question: This should not look like this, right? }
+  - { id: karla-fernandez, name: Karla Fernández, role: Gerente de entrega de servicios, operationalImportance: Coordina la historia del incidente que escuchan los clientes mientras continúa el trabajo técnico., characteristic: Comunicadora sólida que gestiona cambios constantes de contexto entre clientes., question: ¿Qué sabe el cliente hasta ahora? }
+  - { id: andres-guerrero, name: Andrés Guerrero, role: Líder del NOC, operationalImportance: Encuentra patrones relevantes dentro de la telemetría ruidosa de múltiples clientes., characteristic: Investigador experimentado de monitoreo, expuesto continuamente a la fatiga de alertas., question: ¿Esto es ruido o señal? }
+  - { id: junior, name: Junior, role: Analista NOC L1, operationalImportance: Nota condiciones que los operadores experimentados quizá aprendieron a descartar., characteristic: Perspectiva nueva y curiosa, con poca confianza durante el escalamiento., question: Esto no debería verse así, ¿verdad? }
 incidentIds: []
 tags: [Managed services, Monitoreo, Alert fatigue, Multi-tenant operations]
 topology:

@@ -15,7 +15,7 @@ logo: /images/organizations/logos/cad.webp
 summary: A customer-visible commerce entorno shaped by traffic spikes, fast campaigns, external APIs, payment providers, y tightly coupled inventory flows.
 businessDescription: CAD operates physical stores, digital commerce, loyalty services, warehousing, y national distribution para Dominican consumers.
 technologySupports: [Online storefront y mobile commerce, Checkout y payments, Store operations, Loyalty services, Inventory synchronization, Warehousing y distribution]
-failureConsequences: [Customers abyon carts., Revenue stops while pages permanecen online., Inventory becomes inconsistent., Complaints arrive before internal alerts.]
+failureConsequences: [Los clientes abandonan sus carritos., Los ingresos se detienen aunque las páginas sigan en línea., El inventario se vuelve inconsistente., Las quejas llegan antes que las alertas internas.]
 infrastructureDomains:
   - { id: commerce, label: Digital Commerce, systems: [E-Commerce Platform, Mobile App, Loyalty Platform] }
   - { id: transaction, label: Transaction Path, systems: [Checkout API, Payment Gateway, External APIs] }
@@ -23,16 +23,16 @@ infrastructureDomains:
   - { id: fulfillment, label: Fulfillment, systems: [Warehouse Management, Inventory Sync, Distribution] }
   - { id: edge, label: Edge & Visibilidad, systems: [CDN, Monitoreo, Customer Feedback] }
 weakPoints:
-  - { label: VENDOR RISK, detail: Payment authorization y other critical servicios sit outside direct operativo control. }
-  - { label: API RISK, detail: El purchase flow crosses several internal y external interfaces. }
-  - { label: CAPACITY RISK, detail: Campaigns create rapid traffic changes y compressed delivery timelines. }
-  - { label: BRECHA DE VISIBILIDAD, detail: Internal health checks can permanecen green while clientes cannot complete purchases. }
-  - { label: DATA RISK, detail: Inventory synchronization spans digital, store, y warehouse systems. }
-  - { label: REPUTATION RISK, detail: Customers publicly surface failures faster than formal escalation paths. }
+  - { label: RIESGO DE PROVEEDOR, detail: La autorización de pagos y otros servicios críticos están fuera del control operativo directo. }
+  - { label: RIESGO DE API, detail: El flujo de compra atraviesa varias interfaces internas y externas. }
+  - { label: RIESGO DE CAPACIDAD, detail: Las campañas generan cambios rápidos de tráfico y plazos de entrega comprimidos. }
+  - { label: BRECHA DE VISIBILIDAD, detail: Los chequeos internos pueden seguir en verde mientras los clientes no completan compras. }
+  - { label: RIESGO DE DATOS, detail: La sincronización del inventario abarca sistemas digitales, de tiendas y de almacén. }
+  - { label: RIESGO DE REPUTACIÓN, detail: Los clientes hacen visibles las fallas públicamente más rápido que las rutas formales de escalamiento. }
 people:
-  - { id: melissa-pena, name: Melissa Peña, role: E-Commerce Manager, operationalImportance: Measures incidentes through lost orders, conversion, y customer experience., characteristic: Revenue-focused decision maker operating under campaign pressure., question: How many orders are we losing? }
-  - { id: hector-diaz, name: Héctor Díaz, role: Infraestructura Engineer, operationalImportance: Investigates customer-facing failures even when internal sistemas appear healthy., characteristic: Strong API investigator y vendor coordinator con limited control over third parties., question: Which part de el purchase flow is failing? }
-  - { id: sofia-reyes, name: Sofía Reyes, role: Customer Experience Supervisor, operationalImportance: Detects incidente patterns across calls, reviews, y social media., characteristic: Highly sensitive a customer symptoms without direct acceso a technical causes., question: Customers are complaining. }
+  - { id: melissa-pena, name: Melissa Peña, role: Gerente de comercio electrónico, operationalImportance: Mide los incidentes mediante pedidos perdidos, conversión y experiencia del cliente., characteristic: Responsable de decisiones enfocada en ingresos y sometida a la presión de las campañas., question: ¿Cuántos pedidos estamos perdiendo? }
+  - { id: hector-diaz, name: Héctor Díaz, role: Ingeniero de infraestructura, operationalImportance: Investiga fallas de cara al cliente aunque los sistemas internos parezcan saludables., characteristic: Investigador sólido de APIs y coordinador de proveedores, con control limitado sobre terceros., question: ¿Qué parte del flujo de compra está fallando? }
+  - { id: sofia-reyes, name: Sofía Reyes, role: Supervisora de experiencia del cliente, operationalImportance: Detecta patrones de incidentes en llamadas, reseñas y redes sociales., characteristic: Muy sensible a los síntomas del cliente, sin acceso directo a las causas técnicas., question: Los clientes se están quejando. }
 incidentIds: []
 tags: [Comercio, E-commerce, Payments, External dependency]
 topology:

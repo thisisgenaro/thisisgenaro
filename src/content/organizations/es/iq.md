@@ -15,7 +15,7 @@ logo: /images/organizations/logos/iq.webp
 summary: A production-first entorno where corporate IT, industrial systems, warehouse operations, y experienced operators share a narrow operativo boundary.
 businessDescription: IQ manufactures, packages, warehouses, y distributes food products para domestic y export markets.
 technologySupports: [Production lines, Industrial control, Materials y inventory, Operaciones de almacén, Quality reporting, Distribution planning]
-failureConsequences: [Production lines may stop., Inventory y process data become unreliable., Materials can be wasted., Distribution commitments fall behind.]
+failureConsequences: [Las líneas de producción pueden detenerse., Los datos de inventario y procesos dejan de ser confiables., Se pueden desperdiciar materiales., Los compromisos de distribución quedan rezagados.]
 infrastructureDomains:
   - { id: corporate, label: Corporate IT, systems: [Active Directory, Microsoft 365, VMware] }
   - { id: business, label: Business Systems, systems: [ERP, Warehouse Management, SQL Server] }
@@ -23,16 +23,16 @@ infrastructureDomains:
   - { id: telemetry, label: Industrial Datos, systems: [Historian, Plant Reporting, NTP Services] }
   - { id: resilience, label: Plant Resilience, systems: [Industrial Red, Backup Platform, Remote Support] }
 weakPoints:
-  - { label: BOUNDARY RISK, detail: Corporate IT y plant operations share dependencias that are not always governed together. }
-  - { label: LEGACY CONSTRAINT, detail: Aging PLCs y industrial equipment limit supported changes y security controls. }
-  - { label: TIME RISK, detail: Inconsistent time sources can distort industrial events y production records. }
-  - { label: CHANGE CONSTRAINT, detail: Maintenance windows are limited by production schedules. }
-  - { label: RESILIENCE RISK, detail: El industrial historian permanece a concentrated operativo dependency. }
-  - { label: KNOWLEDGE RISK, detail: Experienced operators hold process knowledge that is only partially documented. }
+  - { label: RIESGO DE FRONTERA, detail: TI corporativa y operaciones de planta comparten dependencias que no siempre se gobiernan juntas. }
+  - { label: RESTRICCIÓN HEREDADA, detail: Los PLC y equipos industriales antiguos limitan los cambios admitidos y los controles de seguridad. }
+  - { label: RIESGO DE TIEMPO, detail: Las fuentes de tiempo inconsistentes pueden distorsionar eventos industriales y registros de producción. }
+  - { label: RESTRICCIÓN DE CAMBIO, detail: Las ventanas de mantenimiento están limitadas por los calendarios de producción. }
+  - { label: RIESGO DE RESILIENCIA, detail: El historiador industrial sigue siendo una dependencia operativa concentrada. }
+  - { label: RIESGO DE CONOCIMIENTO, detail: Los operadores experimentados poseen conocimiento del proceso que solo está parcialmente documentado. }
 people:
-  - { id: felix-rosario, name: Ing. Félix Rosario, role: Plant Manager, operationalImportance: Measures every incidente by stopped production y recovery time., characteristic: Disciplined production leader con a strongly operations-first perspective., question: How long will we be stopped? }
-  - { id: ramon-castillo, name: Ramón Castillo, role: Infraestructura Administrator, operationalImportance: Understys how corporate technology changes can cross into plant operations., characteristic: Careful investigator working within narrow maintenance windows., question: Can this affect production? }
-  - { id: dona-carmen, name: Doña Carmen, role: Production Supervisor, operationalImportance: Detects changes en line behavior before infrastructure dashboards show an obvious fault., characteristic: Carries deep historical process knowledge that permanece mostly undocumented., question: El line feels strange. }
+  - { id: felix-rosario, name: Ing. Félix Rosario, role: Gerente de planta, operationalImportance: Mide cada incidente por la producción detenida y el tiempo de recuperación., characteristic: Líder disciplinado de producción, con una perspectiva firmemente orientada a las operaciones., question: ¿Cuánto tiempo estaremos detenidos? }
+  - { id: ramon-castillo, name: Ramón Castillo, role: Administrador de infraestructura, operationalImportance: Entiende cómo los cambios en la tecnología corporativa pueden cruzarse con las operaciones de planta., characteristic: Investigador cuidadoso que trabaja dentro de ventanas de mantenimiento estrechas., question: ¿Esto puede afectar la producción? }
+  - { id: dona-carmen, name: Doña Carmen, role: Supervisora de producción, operationalImportance: Detecta cambios en el comportamiento de la línea antes de que los paneles de infraestructura muestren una falla evidente., characteristic: Conserva un profundo conocimiento histórico del proceso, mayormente no documentado., question: La línea se siente extraña. }
 incidentIds: []
 tags: [Manufactura, Operational technology, Production, IT OT]
 topology:

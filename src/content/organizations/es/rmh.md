@@ -15,7 +15,7 @@ logo: /images/organizations/logos/rmh.webp
 summary: A clinically integrated entorno where individually saludable sistemas can still fail el workflows connecting patients, clinicians, laboratories, y imaging.
 businessDescription: RMH coordinates hospital care, outpatient clinics, diagnostics, radiology, laboratories, y que soporta clinical administration.
 technologySupports: [Electronic medical records, Diagnostic imaging, Laboratory workflows, Clinical communications, Patient access, Remote clinical connectivity]
-failureConsequences: [Patient care may be delayed., Clinicians lose acceso a records or images., Diagnostic workflows become manual., Technical symptoms become clinical risks.]
+failureConsequences: [La atención a pacientes puede retrasarse., Los profesionales pierden acceso a historiales o imágenes., Los flujos diagnósticos se vuelven manuales., Los síntomas técnicos se convierten en riesgos clínicos.]
 infrastructureDomains:
   - { id: identity, label: Identidad & Collaboration, systems: [Active Directory, Entra ID, Microsoft 365] }
   - { id: clinical, label: Clinical Systems, systems: [Electronic Medical Record, PACS, Laboratory Information System] }
@@ -23,17 +23,17 @@ infrastructureDomains:
   - { id: infrastructure, label: Infraestructura, systems: [VMware, Clinical VPN, Backup Platform] }
   - { id: sites, label: Care Locations, systems: [Hospital, Clinics, Diagnostic Centers] }
 weakPoints:
-  - { label: VENDOR RISK, detail: Clinical platforms depend on specialized vendors y tightly controlled support paths. }
-  - { label: LEGACY CONSTRAINT, detail: Older medical devices require security y compatibility exceptions. }
-  - { label: RESILIENCE RISK, detail: PACS storage y el primary EMR database have concentrated fallo domains. }
-  - { label: KNOWLEDGE RISK, detail: Clinical integration knowledge is concentrated within a small technology team. }
-  - { label: DOCUMENTATION GAP, detail: Interfaces between clinical sistemas are not consistently documented end a end. }
-  - { label: WORKFLOW VISIBILITY, detail: Monitoreo does not always represent el complete patient-care workflow. }
+  - { label: RIESGO DE PROVEEDOR, detail: Las plataformas clínicas dependen de proveedores especializados y rutas de soporte estrictamente controladas. }
+  - { label: RESTRICCIÓN HEREDADA, detail: Los dispositivos médicos antiguos requieren excepciones de seguridad y compatibilidad. }
+  - { label: RIESGO DE RESILIENCIA, detail: El almacenamiento PACS y la base de datos principal del EMR concentran dominios de falla. }
+  - { label: RIESGO DE CONOCIMIENTO, detail: El conocimiento de integración clínica está concentrado en un equipo tecnológico pequeño. }
+  - { label: BRECHA DE DOCUMENTACIÓN, detail: Las interfaces entre sistemas clínicos no se documentan de forma consistente de extremo a extremo. }
+  - { label: VISIBILIDAD DEL FLUJO, detail: El monitoreo no siempre representa el flujo completo de atención al paciente. }
 people:
-  - { id: isabel-marte, name: Dra. Isabel Marte, role: Hospital Director, operationalImportance: Frames technology incidentes en terms de patient safety y continuity de care., characteristic: Clinical leader con strong crisis instincts y limited infrastructure visibility., question: Is this affecting patients? }
-  - { id: carlos-tejada, name: Carlos Tejada, role: Systems Coordinator, operationalImportance: Connects technical conditions a clinical integrations that are rarely fully documented., characteristic: Skilled vendor coordinator whose entorno knowledge is heavily concentrated., question: Which clinical workflow is affected? }
-  - { id: julio, name: Julio, role: Radiology Technician, operationalImportance: Detects PACS y imaging degradation before formal infrastructure alerts., characteristic: Deep radiology workflow awareness expressed through practical symptoms., question: Why are images taking longer? }
-  - { id: ana-maria-soto, name: Ana María Soto, role: Nurse Supervisor, operationalImportance: Escalates technology issues when they begin a disrupt patient care., characteristic: Strong patient-workflow awareness outside formal technical planning., question: Is this affecting care? }
+  - { id: isabel-marte, name: Dra. Isabel Marte, role: Directora del hospital, operationalImportance: Enmarca los incidentes tecnológicos en términos de seguridad del paciente y continuidad de la atención., characteristic: Líder clínica con fuerte instinto de crisis y visibilidad limitada de la infraestructura., question: ¿Esto está afectando a los pacientes? }
+  - { id: carlos-tejada, name: Carlos Tejada, role: Coordinador de sistemas, operationalImportance: Conecta las condiciones técnicas con integraciones clínicas que rara vez están completamente documentadas., characteristic: Coordinador de proveedores competente, con conocimiento del entorno muy concentrado., question: ¿Qué flujo clínico está afectado? }
+  - { id: julio, name: Julio, role: Técnico de radiología, operationalImportance: Detecta la degradación de PACS e imágenes antes de las alertas formales de infraestructura., characteristic: Amplio conocimiento del flujo radiológico, expresado mediante síntomas prácticos., question: ¿Por qué las imágenes tardan más? }
+  - { id: ana-maria-soto, name: Ana María Soto, role: Supervisora de enfermería, operationalImportance: Escala los problemas tecnológicos cuando empiezan a interrumpir la atención al paciente., characteristic: Gran conciencia del flujo de pacientes fuera de la planificación técnica formal., question: ¿Esto está afectando la atención? }
 incidentIds: []
 tags: [Salud, Clinical systems, Integration, Patient care]
 topology:

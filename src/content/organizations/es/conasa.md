@@ -15,7 +15,7 @@ logo: /images/organizations/logos/conasa.webp
 summary: A stability-first financial entorno where heredado platforms y concentrated institutional knowledge support daily member services.
 businessDescription: CONASA provides savings, loans, transfers, digital banking, y branch servicios a members across el Dominican Republic.
 technologySupports: [Member accounts y transactions, Branch operations, Digital banking, Credit y loan processing, Regulatory reporting, Workforce communication]
-failureConsequences: [Members lose acceso a financial services., Branch processing slows or stops., Trust y compliance obligations come under pressure., Staff fall back a manual coordination.]
+failureConsequences: [Los miembros pierden acceso a los servicios financieros., El procesamiento en sucursales se ralentiza o se detiene., La confianza y las obligaciones de cumplimiento quedan bajo presión., El personal recurre a la coordinación manual.]
 infrastructureDomains:
   - { id: identity, label: Identidad & Access, systems: [Active Directory, Group Policy, LDAP services] }
   - { id: financial, label: Financial Systems, systems: [Core Banking, SQL Clusters, Regulatory Reporting] }
@@ -23,17 +23,17 @@ infrastructureDomains:
   - { id: network, label: Red & Access, systems: [Citrix NetScaler, FortiGate, Branch WAN] }
   - { id: infrastructure, label: Core Infraestructura, systems: [VMware, File Services, Backup Platform] }
 weakPoints:
-  - { label: DEUDA TÉCNICA, detail: Legacy core banking servicios permanecen deeply embedded en member operations. }
-  - { label: IDENTITY RISK, detail: Service accounts have accumulated across long-lived systems. }
-  - { label: KNOWLEDGE RISK, detail: Critical configuration history is concentrated en a small number de people. }
-  - { label: CHANGE CONSTRAINT, detail: Compliance y continuity concerns make change deliberately slow. }
-  - { label: BRECHA DE VISIBILIDAD, detail: Infraestructura health is clearer than end-to-end member servicio health. }
-  - { label: RIESGO DE PROPIEDAD, detail: Certificate y dependencia ownership is not consistently documented. }
+  - { label: DEUDA TÉCNICA, detail: Los servicios bancarios centrales heredados siguen profundamente integrados en las operaciones de los miembros. }
+  - { label: RIESGO DE IDENTIDAD, detail: Las cuentas de servicio se han acumulado en sistemas de larga vida. }
+  - { label: RIESGO DE CONOCIMIENTO, detail: El historial de configuración crítica está concentrado en pocas personas. }
+  - { label: RESTRICCIÓN DE CAMBIO, detail: Las preocupaciones de cumplimiento y continuidad hacen que el cambio sea deliberadamente lento. }
+  - { label: BRECHA DE VISIBILIDAD, detail: La salud de la infraestructura es más clara que la salud integral del servicio a los miembros. }
+  - { label: RIESGO DE PROPIEDAD, detail: La propiedad de certificados y dependencias no está documentada de forma consistente. }
 people:
-  - { id: bienvenido-cruz, name: Lic. Bienvenido Cruz, role: General Manager, operationalImportance: Evaluates incidentes by their effect on member trust y servicio continuity., characteristic: Institutional leader con a business-continuity focus y limited infrastructure visibility., question: Is this affecting members? }
-  - { id: patricia-gomez, name: Patricia Gómez, role: IT Director, operationalImportance: Balances technology decisions against stability, compliance, y auditability., characteristic: Strong governance instincts con a deliberately conservative change posture., question: How will we explain this a el auditor? }
-  - { id: ernesto-lora, name: Ernesto Lora, role: Senior Systems Administrator, operationalImportance: Carries el migration history y operativo memory de CONASA's oldest systems., characteristic: Deep heredado knowledge that also represents a single point de knowledge risk., question: Who configured this originally? }
-  - { id: rosa-martinez, name: Rosa Martínez, role: Branch Operations Supervisor, operationalImportance: Notices branch-level servicio degradation before central teams see a decisive signal., characteristic: Customer-facing operativo sensor guided by experience y intuition., question: Something feels slower than normal. }
+  - { id: bienvenido-cruz, name: Lic. Bienvenido Cruz, role: Gerente general, operationalImportance: Evalúa los incidentes por su efecto en la confianza de los miembros y la continuidad del servicio., characteristic: Líder institucional enfocado en la continuidad del negocio, con visibilidad limitada de la infraestructura., question: ¿Esto está afectando a los miembros? }
+  - { id: patricia-gomez, name: Patricia Gómez, role: Directora de TI, operationalImportance: Equilibra las decisiones tecnológicas con la estabilidad, el cumplimiento y la auditabilidad., characteristic: Fuerte instinto de gobierno y una postura de cambio deliberadamente conservadora., question: ¿Cómo se lo explicaremos al auditor? }
+  - { id: ernesto-lora, name: Ernesto Lora, role: Administrador sénior de sistemas, operationalImportance: Conserva el historial de migraciones y la memoria operativa de los sistemas más antiguos de CONASA., characteristic: Conocimiento profundo de sistemas heredados que también representa un riesgo de concentración., question: ¿Quién configuró esto originalmente? }
+  - { id: rosa-martinez, name: Rosa Martínez, role: Supervisora de operaciones de sucursal, operationalImportance: Nota la degradación del servicio en sucursales antes de que los equipos centrales vean una señal decisiva., characteristic: Sensor operativo de cara al cliente, guiado por la experiencia y la intuición., question: Algo se siente más lento de lo normal. }
 incidentIds: []
 tags: [Servicios financieros, Legacy systems, Compliance, Institutional knowledge]
 topology:

@@ -22,10 +22,10 @@ technologySupports:
   - Logística coordination
   - Operaciones de conductores y rutas
 failureConsequences:
-  - Deliveries slow down.
-  - Warehouses wait para instructions.
-  - Drivers lose acceso a operativo tools.
-  - Customers start calling.
+  - Los envíos se ralentizan.
+  - Los almacenes esperan instrucciones.
+  - Los conductores pierden acceso a las herramientas operativas.
+  - Los clientes empiezan a llamar.
 infrastructureDomains:
   - id: identity
     label: Identidad
@@ -58,41 +58,41 @@ infrastructureDomains:
       - Sucursales regionales
 weakPoints:
   - label: RIESGO DE CAMBIO
-    detail: SSO was implemented recently y permanece lightly documented.
+    detail: El SSO se implementó recientemente y sigue teniendo poca documentación.
   - label: RIESGO DE PROPIEDAD
-    detail: Certificate ownership y renewal tracking are incomplete.
+    detail: La propiedad y renovación de certificados no se controlan de forma completa.
   - label: DEUDA TÉCNICA
-    detail: Legacy warehouse y customs applications permanecen operationally important.
+    detail: Las aplicaciones heredadas de almacén y aduanas siguen siendo operativamente importantes.
   - label: RESTRICCIÓN DE PERSONAL
-    detail: A small infrastructure team soporta a broad híbrido environment.
+    detail: Un equipo pequeño de infraestructura sostiene un entorno híbrido amplio.
   - label: BRECHA DE VISIBILIDAD
-    detail: Monitoreo emphasizes server health more than business-service behavior.
+    detail: El monitoreo enfatiza la salud de los servidores más que el comportamiento de los servicios.
   - label: RIESGO DE DEPENDENCIAS
-    detail: Service dependencia maps are not formally maintained.
+    detail: Los mapas de dependencias de los servicios no se mantienen formalmente.
 people:
   - id: miguel-pena
     name: Miguel Peña
-    role: Infraestructura Engineer
-    operationalImportance: Primary technical contact who connects negocio symptoms a hidden infrastructure dependencies.
-    characteristic: Deep entorno knowledge, broad ownership, y a persistent documentation backlog.
+    role: Ingeniero de infraestructura
+    operationalImportance: Contacto técnico principal; conecta los síntomas del negocio con dependencias ocultas de infraestructura.
+    characteristic: Conocimiento profundo del entorno, responsabilidad amplia y una cola persistente de documentación.
     question: ¿Qué cambió?
   - id: laura-santana
     name: Laura Santana
     role: Gerente de operaciones
-    operationalImportance: Translates incidentes into affected processes, customers, warehouses, y delivery priorities.
-    characteristic: Direct, practical, y focused on measurable negocio impact.
+    operationalImportance: Traduce los incidentes en procesos, clientes, almacenes y prioridades de entrega afectados.
+    characteristic: Directa, práctica y enfocada en el impacto empresarial medible.
     question: ¿Cuántos clientes están afectados?
   - id: yessenia
     name: Yessenia
-    role: Supervisor de almacén
-    operationalImportance: Detects abnormal warehouse behavior before technical monitoring produces a clear servicio signal.
-    characteristic: An observant operativo sensor con strong process awareness.
+    role: Supervisora de almacén
+    operationalImportance: Detecta comportamientos anómalos del almacén antes de que el monitoreo produzca una señal clara del servicio.
+    characteristic: Sensor operativo observador, con gran conciencia de los procesos.
     question: ¿Por qué los despachos avanzan más lento?
   - id: rafael-cabrera
     name: Don Rafael Cabrera
     role: Fundador
-    operationalImportance: Evaluates technology through operativo control, continuity, y its direct effect on el business.
-    characteristic: Traditional, protective, pragmatic, y cautious about nube dependency.
+    operationalImportance: Evalúa la tecnología por el control operativo, la continuidad y su efecto directo en el negocio.
+    characteristic: Tradicional, protector, pragmático y prudente ante la dependencia de la nube.
     question: ¿Por qué esto no ocurrió antes?
 incidentIds:
   - inc-2026-0001
