@@ -1,0 +1,584 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import JournalTopology from "./journal/JournalTopology.astro";
+import { localePath, ui, type Locale } from "../lib/i18n";
+import {
+  createJournalEntryRecords,
+  getJournalArchiveSummary,
+  getJournalTopicSummaries,
+} from "../lib/journal";
+
+interface Props { locale: "en" | "es"; entries: any[]; }
+const { locale, entries } = Astro.props as Props;
+const strings = ui[locale];
+const t = (en: string, es: string) => locale === "es" ? es : en;
+const entryPath = (href: string) => localePath(locale, href.replace(/^\/journal\/(?:en|es)\//, "/journal/"));
+const records = createJournalEntryRecords(entries);
+const latestEntry = records[0] ?? null;
+const recentNotes = records.slice(1, 6);
+const topicSummaries = getJournalTopicSummaries(entries).slice(0, 6);
+const archiveSummary = getJournalArchiveSummary(entries);
+---
+<BaseLayout locale={locale}
+  title={`${strings.nav.journal} | thisisgenaro.com`}
+  description={strings.pages.journalDescription}
+>
+  <JournalTopology class="journal-topology--landing" />
+  <main class="journal journal--landing">
+    <header class="journal__header">
+      <p class="journal__eyebrow">{strings.nav.journal.toUpperCase()}</p>
+      <h1 class="journal__title">{strings.nav.journal}</h1>
+      <p class="journal__description">{strings.pages.journalDescription}</p>
+    </header>
+
+    <div class="journal__layout">
+      <section class="journal__primary" aria-label="Latest entry and recent notes">
+        {latestEntry ? (
+          <article class="journal-feature">
+            <p class="journal-section-label">{t("LATEST ENTRY", "ÚLTIMA ENTRADA")}</p>
+            <div class="journal-feature__meta mono">
+              <span>{latestEntry.publishedLabel.toUpperCase()}</span>
+              {latestEntry.readTime ? <span>{latestEntry.readTime} {t("MIN READ", "MIN DE LECTURA")}</span> : null}
+            </div>
+            <h2 class="journal-feature__title">
+              <a href={entryPath(latestEntry.href)}>{latestEntry.title}</a>
+            </h2>
+            <p class="journal-feature__excerpt">{latestEntry.excerpt}</p>
+            {latestEntry.topicDefinitions.length ? (
+              <ul class="journal-chip-list" aria-label="Topics">
+                {latestEntry.topicDefinitions.map((topic) => (
+                  <li>
+                    <a href={localePath(locale, `/journal/topics/${topic.slug}`)}>{topic.name}</a>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            <a class="journal-feature__action" href={localePath(locale, latestEntry.href)}>{t("READ ENTRY →", "LEER ENTRADA →")}</a>
+          </article>
+        ) : (
+          <article class="journal-empty surface surface-pad">
+            <p class="journal-empty__label">{t("LATEST ENTRY", "ÚLTIMA ENTRADA")}</p>
+            <p class="journal-empty__body">{strings.labels.noEntries}</p>
+          </article>
+        )}
+
+        {recentNotes.length ? (
+          <section class="journal-notes" aria-label="Recent notes">
+            <div class="journal-notes__head">
+              <p class="journal-section-label">{t("RECENT NOTES", "NOTAS RECIENTES")}</p>
+              <a class="journal-notes__all mono" href={localePath(locale, "/journal/entries")}>{t("VIEW ALL ENTRIES →", "VER TODAS LAS ENTRADAS →")}</a>
+            </div>
+            <div class="journal-notes__list">
+              {recentNotes.map((note) => (
+                <article class="journal-note">
+                  <p class="journal-note__date mono">{note.publishedLabel.toUpperCase()}</p>
+                  <div class="journal-note__body">
+                    <h3 class="journal-note__title">
+                      <a href={entryPath(note.href)}>{note.title}</a>
+                    </h3>
+                    <p class="journal-note__excerpt">{note.excerpt}</p>
+                  </div>
+                  <div class="journal-note__meta mono">
+                    {note.readTime ? <span>{note.readTime} {t("MIN READ", "MIN DE LECTURA")}</span> : <span></span>}
+                    <span aria-hidden="true">→</span>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        <section class="journal-bridge surface surface-pad" aria-labelledby="journal-bridge-title">
+          <div class="journal-bridge__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7">
+              <path d="M9 3.5h6l4.5 4.5v8l-4.5 4.5H9L4.5 16v-8z" />
+              <path d="M8 8h8M8 12h8M8 16h5" />
+            </svg>
+          </div>
+          <div class="journal-bridge__content">
+            <p class="journal-section-label">{t("LOOKING FOR THE OPERATIONAL RECORD?", "¿BUSCAS EL REGISTRO OPERATIVO?")}</p>
+            <h2 id="journal-bridge-title">{t("The Incident Library documents failures differently: timelines, evidence, dependencies, causes, and lessons.", "El Registro de Incidentes documenta los fallos de otra manera: líneas de tiempo, evidencia, dependencias, causas y aprendizajes.")}</h2>
+            <a class="journal-bridge__action" href={localePath(locale, "/incident-library")}>{t("EXPLORE THE INCIDENT LIBRARY →", "EXPLORAR EL REGISTRO DE INCIDENTES →")}</a>
+          </div>
+        </section>
+      </section>
+
+      <aside class="journal__rail" aria-label="Journal sidebar">
+        <section class="journal-rail-card surface surface-pad">
+          <p class="journal-rail-card__label">{t("ABOUT THE JOURNAL", "SOBRE LA BITÁCORA")}</p>
+          <p class="journal-rail-card__body">
+            {t("Observations from infrastructure work—what failed, what held, and what the systems taught us.", "Observaciones del trabajo de infraestructura: qué falló, qué resistió y qué nos enseñaron los sistemas.")}
+          </p>
+          <p class="journal-rail-card__body journal-rail-card__body--secondary">
+            {t("Thoughts come first. Context lives inside each entry.", "Las ideas van primero. El contexto vive dentro de cada entrada.")}
+          </p>
+        </section>
+
+        <section class="journal-rail-card surface surface-pad">
+          <div class="journal-rail-card__head">
+            <p class="journal-rail-card__label">{t("EXPLORE TOPICS", "EXPLORAR TEMAS")}</p>
+            <a class="journal-rail-card__link mono" href={localePath(locale, "/journal/topics")}>{t("VIEW ALL TOPICS →", "VER TODOS LOS TEMAS →")}</a>
+          </div>
+          <div class="journal-topics">
+            {topicSummaries.map((topic) => (
+              <a class:list={[
+                "journal-topic-row",
+                topic.count === 0 && "is-muted",
+              ]} href={localePath(locale, `/journal/topics/${topic.slug}`)} aria-label={`${topic.name} topic, ${topic.count} entries`}>
+                <span class="journal-topic-row__name">{topic.name}</span>
+                <span class="journal-topic-row__count mono">{topic.count}</span>
+              </a>
+            ))}
+          </div>
+        </section>
+
+        <section class="journal-rail-card journal-rail-card--summary surface surface-pad">
+          <p class="journal-rail-card__label">{t("ARCHIVE SUMMARY", "RESUMEN DEL ARCHIVO")}</p>
+          <p class="journal-rail-card__total mono">{archiveSummary.totalLabel}</p>
+          <p class="journal-rail-card__body">
+            {archiveSummary.fromLabel} {archiveSummary.toLabel}
+          </p>
+          <a class="journal-rail-card__link mono" href={localePath(locale, "/journal/entries")}>{t("VIEW ALL ENTRIES →", "VER TODAS LAS ENTRADAS →")}</a>
+        </section>
+      </aside>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .journal {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 84rem);
+    margin: 0 auto;
+    padding: clamp(1rem, 3.5vw, 2.5rem);
+  }
+
+  .journal__header {
+    display: grid;
+    gap: 0.55rem;
+    max-width: 42rem;
+    margin-bottom: clamp(1.6rem, 4vw, 2.8rem);
+    padding-bottom: clamp(0.5rem, 1vw, 1rem);
+  }
+
+  .journal__eyebrow,
+  .journal-section-label,
+  .journal-rail-card__label,
+  .journal-topic-row__count,
+  .journal-feature__meta,
+  .journal-note__date,
+  .journal-note__meta,
+  .journal-rail-card__total,
+  .journal-notes__all,
+  .journal-rail-card__link,
+  .journal-feature__action,
+  .journal-bridge__action {
+    font-family: var(--font-mono);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .journal__eyebrow {
+    margin: 0;
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .journal__title {
+    margin: 0;
+    font-size: clamp(3rem, 7vw, 5.8rem);
+    line-height: 0.92;
+    letter-spacing: -0.07em;
+  }
+
+  .journal__description {
+    max-width: 34rem;
+    margin: 0;
+    color: var(--muted);
+    font-size: clamp(1rem, 1.4vw, 1.15rem);
+    line-height: 1.72;
+  }
+
+  .journal__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 22rem);
+    gap: clamp(1.2rem, 2.8vw, 2rem);
+    align-items: start;
+  }
+
+  .journal__primary {
+    min-width: 0;
+    display: grid;
+    gap: clamp(1.1rem, 2.5vw, 1.8rem);
+  }
+
+  .journal-feature {
+    position: relative;
+    display: grid;
+    gap: 0.85rem;
+    padding-left: clamp(1rem, 2vw, 1.4rem);
+    border-left: 1px solid color-mix(in srgb, var(--accent) 42%, transparent);
+  }
+
+  .journal-section-label {
+    margin: 0;
+    color: var(--accent);
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+
+  .journal-feature__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem 1rem;
+    color: var(--accent);
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+
+  .journal-feature__title {
+    max-width: 38rem;
+    margin: 0;
+    font-size: clamp(2.35rem, 4.8vw, 4.5rem);
+    line-height: 0.96;
+    letter-spacing: -0.07em;
+  }
+
+  .journal-feature__title a {
+    color: var(--text);
+    text-decoration: none;
+    transition: color 180ms ease, opacity 180ms ease;
+  }
+
+  .journal-feature__excerpt {
+    max-width: 44rem;
+    margin: 0;
+    color: var(--muted);
+    font-size: 1.06rem;
+    line-height: 1.72;
+  }
+
+  .journal-chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .journal-chip-list a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.85rem;
+    padding: 0.2rem 0.62rem;
+    border: 1px solid color-mix(in srgb, var(--line-strong) 72%, transparent);
+    border-radius: 999px;
+    color: var(--muted);
+    font-size: 0.66rem;
+    text-decoration: none;
+    transition: border-color 180ms ease, color 180ms ease, background 180ms ease;
+  }
+
+  .journal-feature__action {
+    width: fit-content;
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-decoration: none;
+    padding-bottom: 0.15rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  }
+
+  .journal-feature__title a:hover,
+  .journal-feature__title a:focus-visible,
+  .journal-feature__action:hover,
+  .journal-feature__action:focus-visible,
+  .journal-bridge__action:hover,
+  .journal-bridge__action:focus-visible,
+  .journal-notes__all:hover,
+  .journal-notes__all:focus-visible,
+  .journal-rail-card__link:hover,
+  .journal-rail-card__link:focus-visible,
+  .journal-topic-row:hover,
+  .journal-topic-row:focus-visible,
+  .journal-note__title a:hover,
+  .journal-note__title a:focus-visible {
+    color: var(--text);
+    outline: none;
+  }
+
+  .journal-feature__title a:hover,
+  .journal-feature__title a:focus-visible,
+  .journal-note__title a:hover,
+  .journal-note__title a:focus-visible {
+    opacity: 0.82;
+  }
+
+  .journal-note__title a,
+  .journal-topic-row,
+  .journal-notes__all,
+  .journal-rail-card__link,
+  .journal-feature__action,
+  .journal-bridge__action {
+    text-decoration: none;
+  }
+
+  .journal-notes {
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .journal-notes__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: 0.35rem;
+    border-top: 1px solid color-mix(in srgb, var(--line-strong) 56%, transparent);
+  }
+
+  .journal-notes__all {
+    color: var(--accent);
+    font-size: 0.68rem;
+    font-weight: 700;
+  }
+
+  .journal-notes__list {
+    display: grid;
+    gap: 0;
+    border-top: 1px solid color-mix(in srgb, var(--line-strong) 52%, transparent);
+  }
+
+  .journal-note {
+    display: grid;
+    grid-template-columns: 9rem minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: start;
+    padding: 1rem 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--line-strong) 52%, transparent);
+  }
+
+  .journal-note__date,
+  .journal-note__meta {
+    margin: 0;
+    color: var(--accent);
+    font-size: 0.68rem;
+    font-weight: 700;
+  }
+
+  .journal-note__body {
+    min-width: 0;
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .journal-note__title {
+    margin: 0;
+    font-size: 1.08rem;
+    line-height: 1.3;
+    letter-spacing: -0.03em;
+  }
+
+  .journal-note__title a {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .journal-note__excerpt {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .journal-note__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    white-space: nowrap;
+  }
+
+  .journal-chip-list a:hover,
+  .journal-chip-list a:focus-visible {
+    color: var(--text);
+    border-color: color-mix(in srgb, var(--accent) 36%, transparent);
+    background: color-mix(in srgb, var(--accent-soft) 46%, transparent);
+  }
+
+  .journal-bridge {
+    display: grid;
+    grid-template-columns: 2.4rem minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+    border: 1px solid color-mix(in srgb, var(--line-strong) 72%, transparent);
+    background: color-mix(in srgb, var(--surface) 80%, transparent);
+  }
+
+  .journal-bridge__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    color: var(--accent);
+  }
+
+  .journal-bridge__icon svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .journal-bridge__content {
+    display: grid;
+    gap: 0.65rem;
+  }
+
+  .journal-bridge h2 {
+    margin: 0;
+    max-width: 42rem;
+    font-size: clamp(1.3rem, 2.1vw, 1.7rem);
+    line-height: 1.28;
+  }
+
+  .journal-bridge__action {
+    color: var(--accent);
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .journal__rail {
+    display: grid;
+    gap: 1rem;
+    align-content: start;
+  }
+
+  .journal-rail-card {
+    display: grid;
+    gap: 0.8rem;
+    border: 1px solid color-mix(in srgb, var(--line-strong) 72%, transparent);
+    background: color-mix(in srgb, var(--surface) 84%, transparent);
+  }
+
+  .journal-rail-card__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .journal-rail-card__label {
+    margin: 0;
+    color: var(--accent);
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+
+  .journal-rail-card__body {
+    margin: 0;
+    color: var(--text);
+    line-height: 1.65;
+  }
+
+  .journal-rail-card__body--secondary {
+    color: var(--muted);
+  }
+
+  .journal-rail-card__link {
+    width: fit-content;
+    color: var(--accent);
+    font-size: 0.68rem;
+    font-weight: 700;
+  }
+
+  .journal-topic-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1rem;
+    align-items: center;
+    padding: 0.55rem 0;
+    border-top: 1px solid color-mix(in srgb, var(--line-strong) 46%, transparent);
+    color: var(--text);
+    text-decoration: none;
+    transition: color 180ms ease, opacity 180ms ease;
+  }
+
+  .journal-topic-row:last-child {
+    border-bottom: 1px solid color-mix(in srgb, var(--line-strong) 46%, transparent);
+  }
+
+  .journal-topic-row.is-muted {
+    opacity: 0.48;
+  }
+
+  .journal-topic-row__name {
+    min-width: 0;
+    font-size: 0.96rem;
+  }
+
+  .journal-topic-row__count {
+    color: var(--accent);
+    font-size: 0.68rem;
+    font-weight: 700;
+  }
+
+  .journal-rail-card__total {
+    margin: 0;
+    color: var(--accent);
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+
+  @media (max-width: 1024px) {
+    .journal__layout {
+      grid-template-columns: 1fr;
+    }
+
+    .journal__rail {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .journal-rail-card--summary {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .journal {
+      width: 100%;
+      padding: 0.95rem;
+    }
+
+    .journal__header {
+      margin-bottom: 1.2rem;
+    }
+
+    .journal__title {
+      font-size: clamp(2.5rem, 12vw, 4rem);
+    }
+
+    .journal__layout,
+    .journal__rail {
+      grid-template-columns: 1fr;
+    }
+
+    .journal-feature {
+      padding-left: 0.9rem;
+    }
+
+    .journal-feature__title {
+      font-size: clamp(2rem, 10vw, 3rem);
+    }
+
+    .journal-note {
+      grid-template-columns: 1fr;
+      gap: 0.45rem;
+    }
+
+    .journal-note__meta {
+      justify-content: flex-start;
+    }
+  }
+</style>
