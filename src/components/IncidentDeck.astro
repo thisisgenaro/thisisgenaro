@@ -20,7 +20,15 @@ interface Props { incident: any; locale: Locale; }
 const { incident, locale } = Astro.props as Props;
 const slides = createIncidentPresentationSlides(incident).map((slide, index) => {
   const sourceScene = incident.scenes[index];
-  const inspector = sourceScene.inspector;
+  const inspector = sourceScene.inspector as typeof sourceScene.inspector & { nodeDetails?: Record<string, any>; timeline?: Array<{ time: string; event: string }> };
+  const rootNodeId = (sourceScene as typeof sourceScene & { rootNodeId?: string }).rootNodeId ?? slide.topology.nodes.find((node) => node.selected)?.id ?? slide.topology.nodes[0]?.id ?? "";
+  const rootDetail = inspector.nodeDetails?.root ?? {
+    title: inspector.title,
+    body: inspector.body,
+    facts: inspector.facts,
+    highlights: sourceScene.highlights,
+    actions: sourceScene.actions,
+  };
 
   return {
     id: slide.id,
@@ -33,11 +41,11 @@ const slides = createIncidentPresentationSlides(incident).map((slide, index) => 
     topology: slide.topology,
     route: slide.route,
     transition: slide.transition,
-    inspectorTitle: inspector.title,
-    inspectorBody: inspector.body,
-    inspectorFacts: inspector.facts,
+    rootNodeId,
+    nodeDetails: { root: rootDetail, ...(inspector.nodeDetails ?? {}) },
     actions: sourceScene.actions,
     highlights: sourceScene.highlights,
+    timeline: inspector.timeline ?? [],
   };
 });
 
@@ -172,28 +180,36 @@ const serializedSlides = JSON.stringify(slides);
           <p class="incident-deck__identity-title">{incident.title}</p>
           <div class="incident-deck__identity-meta">
             <div>
-              <span>Status</span>
+              <span>{locale === "es" ? "Estado" : "Status"}</span>
               <strong class:list={["incident-status-pill", `is-${getIncidentStatusTone(incident.status)}`]}>{incident.status}</strong>
             </div>
             <div>
-              <span>Created</span>
-              <strong>{formatIncidentDateTime(incident.created)}</strong>
+              <span>{locale === "es" ? "Severidad" : "Severity"}</span>
+              <strong>{incident.severity}</strong>
             </div>
             <div>
-              <span>Closed</span>
-              <strong>{incident.closed ? formatIncidentDateTime(incident.closed) : "Open"}</strong>
+              <span>{locale === "es" ? "Inicio" : "Started"}</span>
+              <strong>{formatIncidentDateTime(incident.opened ?? incident.created)}</strong>
             </div>
             <div>
-              <span>Organization</span>
+              <span>{locale === "es" ? "Restaurado" : "Restored"}</span>
+              <strong>{incident.restored ? formatIncidentDateTime(incident.restored) : (incident.closed ? formatIncidentDateTime(incident.closed) : (locale === "es" ? "Abierto" : "Open"))}</strong>
+            </div>
+            <div>
+              <span>{locale === "es" ? "Organización" : "Organization"}</span>
               <strong>{incident.organization}</strong>
             </div>
             <div>
-              <span>Requester</span>
+              <span>{locale === "es" ? "Solicitante" : "Requester"}</span>
               <strong>{incident.requester}</strong>
             </div>
             <div>
-              <span>Service</span>
+              <span>{locale === "es" ? "Servicio afectado" : "Affected service"}</span>
               <strong>{incident.service}</strong>
+            </div>
+            <div>
+              <span>{locale === "es" ? "Categoría" : "Category"}</span>
+              <strong>{incident.category}</strong>
             </div>
           </div>
         </section>
@@ -202,18 +218,20 @@ const serializedSlides = JSON.stringify(slides);
           <div class="incident-deck__inspector-head">
             <div>
               <p class="incident-deck__inspector-label mono" data-incident-deck-current-label>{activeSlide.label}</p>
-              <h2 data-incident-inspector-title>{activeSlide.inspectorTitle}</h2>
+              <h2 data-incident-inspector-title>{activeSlide.nodeDetails.root.title}</h2>
             </div>
-            <div class="incident-deck__inspector-layout mono" data-incident-inspector-layout>
-              {activeSlide.sceneLayout} · {activeSlide.topologyLayout}
-            </div>
+
           </div>
 
-          <p class="incident-deck__inspector-body" data-incident-inspector-body>{activeSlide.inspectorBody}</p>
+          <p class="incident-deck__inspector-body" data-incident-inspector-body>{activeSlide.nodeDetails.root.body}</p>
 
           <div class="incident-deck__facts" data-incident-inspector-facts>
-            {activeSlide.inspectorFacts.map((fact) => <p>{fact}</p>)}
+            {activeSlide.nodeDetails.root.facts.map((fact) => <p>{fact}</p>)}
           </div>
+
+          <ol class="incident-deck__timeline" data-incident-inspector-timeline hidden>
+            {activeSlide.timeline.map((entry) => <li><time>{entry.time}</time><span>{entry.event}</span></li>)}
+          </ol>
 
           <ul class="incident-deck__highlights" data-incident-inspector-highlights hidden={!activeSlide.highlights.length}>
             {activeSlide.highlights.map((highlight) => <li>{highlight}</li>)}
@@ -245,9 +263,9 @@ const serializedSlides = JSON.stringify(slides);
       const currentLabel = document.querySelector("[data-incident-deck-current-label]");
       const inspectorTitle = document.querySelector("[data-incident-inspector-title]");
       const inspectorBody = document.querySelector("[data-incident-inspector-body]");
-      const inspectorLayout = document.querySelector("[data-incident-inspector-layout]");
       const inspectorFacts = document.querySelector("[data-incident-inspector-facts]");
       const inspectorHighlights = document.querySelector("[data-incident-inspector-highlights]");
+      const inspectorTimeline = document.querySelector("[data-incident-inspector-timeline]");
       const inspectorActions = document.querySelector("[data-incident-inspector-actions]");
       const miniCaption = document.querySelector("[data-incident-deck-mini-caption]");
       const select = document.querySelector("[data-incident-deck-select]");
@@ -278,7 +296,7 @@ const serializedSlides = JSON.stringify(slides);
       if (shell && sceneHost && sceneSvg && slides.length) {
         let activeSlide = slides[0];
         let transition = null;
-        const activeNodeId = activeSlide.topology.nodes.find((node) => node.selected || node.active)?.id ?? activeSlide.topology.nodes[0]?.id ?? "";
+        const activeNodeId = activeSlide.rootNodeId ?? activeSlide.topology.nodes[0]?.id ?? "";
         const navigation = createSceneNavigationController({
           shell,
           scene: sceneHost,
@@ -295,15 +313,17 @@ const serializedSlides = JSON.stringify(slides);
           resizeTargets: [shell, sceneHost],
         });
 
-        const updateInspector = (slide) => {
-          if (currentLabel) currentLabel.textContent = slide.label;
-          if (inspectorTitle) inspectorTitle.textContent = slide.inspectorTitle;
-          if (inspectorBody) inspectorBody.textContent = slide.inspectorBody;
-          if (inspectorLayout) inspectorLayout.textContent = `${slide.sceneLayout} · ${slide.topologyLayout}`;
+        const updateInspector = (slide, selectedNodeId = slide.rootNodeId) => {
+          const detail = slide.nodeDetails?.[selectedNodeId] ?? slide.nodeDetails?.root;
+          if (!detail) return;
+          const isRoot = selectedNodeId === slide.rootNodeId || !slide.nodeDetails?.[selectedNodeId];
+          if (currentLabel) currentLabel.textContent = isRoot ? slide.label : (slide.topology.nodes.find((node) => node.id === selectedNodeId)?.label ?? slide.label);
+          if (inspectorTitle) inspectorTitle.textContent = detail.title;
+          if (inspectorBody) inspectorBody.textContent = detail.body;
 
           if (inspectorFacts) {
             inspectorFacts.replaceChildren(
-              ...slide.inspectorFacts.map((fact) => {
+              ...(detail.facts ?? []).map((fact) => {
                 const p = document.createElement("p");
                 p.textContent = fact;
                 return p;
@@ -311,10 +331,27 @@ const serializedSlides = JSON.stringify(slides);
             );
           }
 
+          if (inspectorTimeline) {
+            const timeline = isRoot ? (slide.timeline ?? []) : (detail.timeline ?? []);
+            inspectorTimeline.hidden = !timeline.length;
+            inspectorTimeline.replaceChildren(
+              ...timeline.map((entry) => {
+                const li = document.createElement("li");
+                const time = document.createElement("time");
+                const event = document.createElement("span");
+                time.textContent = entry.time;
+                event.textContent = entry.event;
+                li.append(time, event);
+                return li;
+              }),
+            );
+          }
+
           if (inspectorHighlights) {
-            inspectorHighlights.hidden = !(slide.highlights && slide.highlights.length);
+            const highlights = detail.highlights ?? [];
+            inspectorHighlights.hidden = !highlights.length;
             inspectorHighlights.replaceChildren(
-              ...(slide.highlights ?? []).map((highlight) => {
+              ...highlights.map((highlight) => {
                 const li = document.createElement("li");
                 li.textContent = highlight;
                 return li;
@@ -323,8 +360,9 @@ const serializedSlides = JSON.stringify(slides);
           }
 
           if (inspectorActions) {
+            const actions = detail.actions ?? slide.actions;
             inspectorActions.replaceChildren(
-              ...slide.actions.map((action) => {
+              ...actions.map((action) => {
                 const link = document.createElement("a");
                 link.href = `#${action.target}`;
                 link.textContent = `${action.label} →`;
@@ -333,17 +371,10 @@ const serializedSlides = JSON.stringify(slides);
             );
           }
 
-          if (miniCaption) {
-            miniCaption.textContent = slide.label;
-          }
-
+          if (miniCaption) miniCaption.textContent = slide.label;
           updateMiniMap(slide);
-
-          if (select) {
-            select.value = slide.id;
-          }
+          if (select) select.value = slide.id;
         };
-
         const updateMiniMap = (slide) => {
           if (!miniMapConnectors) return;
 
@@ -422,7 +453,7 @@ const serializedSlides = JSON.stringify(slides);
           if (!nextSlide || nextSlide.id === activeSlide.id) return;
 
           activeSlide = nextSlide;
-          const nextFocusId = nextSlide.topology.nodes.find((node) => node.selected || node.active)?.id ?? nextSlide.topology.nodes[0]?.id ?? "";
+          const nextFocusId = nextSlide.rootNodeId ?? nextSlide.topology.nodes[0]?.id ?? "";
           navigation.setTopology(nextSlide.topology.nodes, liveSceneBounds);
           if (nextFocusId) {
             navigation.select(nextFocusId);
@@ -433,7 +464,7 @@ const serializedSlides = JSON.stringify(slides);
             miniCaption.textContent = nextSlide.label;
           }
           rebuildTransition();
-          updateInspector(nextSlide);
+          updateInspector(nextSlide, nextSlide.rootNodeId);
           updateButtons();
           await Promise.resolve(transition.transition(nextSlide.topology));
         };
@@ -462,6 +493,7 @@ const serializedSlides = JSON.stringify(slides);
           if (!nodeId) return;
           navigation.select(nodeId);
           navigation.ensureVisible(nodeId, true);
+          updateInspector(activeSlide, nodeId);
         });
 
         navigation.setTopology(activeSlide.topology.nodes, liveSceneBounds);
@@ -470,7 +502,7 @@ const serializedSlides = JSON.stringify(slides);
         }
 
         rebuildTransition();
-        updateInspector(activeSlide);
+        updateInspector(activeSlide, activeSlide.rootNodeId);
         updateMiniMap(activeSlide);
         updateButtons();
         setInspectorCollapsed(false);
@@ -812,7 +844,11 @@ const serializedSlides = JSON.stringify(slides);
     gap: 0.8rem 1rem;
   }
 
-  .incident-deck__identity-meta > div,
+  .incident-deck__identity-meta > div { display: grid; gap: .45rem; }
+  .incident-deck__timeline { display: grid; gap: .45rem; margin: 1rem 0 0; padding: .8rem 0 0 1.2rem; border-top: 1px solid var(--line); }
+  .incident-deck__timeline li { display: grid; grid-template-columns: 3.3rem 1fr; gap: .65rem; color: var(--muted); font-size: .75rem; line-height: 1.45; }
+  .incident-deck__timeline time { color: var(--accent); font-family: var(--font-mono); font-size: .63rem; }
+
   .incident-deck__facts,
   .incident-deck__actions {
     display: grid;
