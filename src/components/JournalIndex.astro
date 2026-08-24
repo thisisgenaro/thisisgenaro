@@ -53,7 +53,7 @@ const archiveSummary = getJournalArchiveSummary(entries);
                 ))}
               </ul>
             ) : null}
-            <a class="journal-feature__action" href={localePath(locale, latestEntry.href)}>{t("READ ENTRY →", "LEER ENTRADA →")}</a>
+            <a class="journal-feature__action" href={entryPath(latestEntry.href)}>{t("READ ENTRY →", "LEER ENTRADA →")}</a>
           </article>
         ) : (
           <article class="journal-empty surface surface-pad">
