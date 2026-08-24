@@ -1,0 +1,15 @@
+---
+import IncidentDeck from "../../../components/IncidentDeck.astro";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getLocaleFromPath, type Locale, ui } from "../../../lib/i18n";
+import { getLocalizedIncidentById } from "../../../lib/incidents";
+
+export function getStaticPaths() {
+  return ["en", "es"].flatMap((locale) => [{ params: { locale, id: "inc-2026-0001" } }]);
+}
+
+const locale = getLocaleFromPath(`/${Astro.params.locale}`) as Locale;
+const strings = ui[locale];
+const incident = getLocalizedIncidentById(Astro.params.id ?? "", locale);
+---
+{incident ? <IncidentDeck locale={locale} incident={incident} /> : <BaseLayout locale={locale} title={strings.nav.incidents} description={strings.labels.unavailable}><p>{strings.labels.unavailable}</p></BaseLayout>}

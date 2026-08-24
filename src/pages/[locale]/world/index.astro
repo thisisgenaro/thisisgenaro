@@ -1,0 +1,14 @@
+---
+import { getCollection } from "astro:content";
+import WorldExplorer from "../../../components/WorldExplorer.astro";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getLocaleFromPath, type Locale, ui } from "../../../lib/i18n";
+import { getPublishedIncidents } from "../../../lib/incidents";
+
+export function getStaticPaths() { return ["en", "es"].map((locale) => ({ params: { locale } })); }
+const locale = getLocaleFromPath(`/${Astro.params.locale}`) as Locale;
+const strings = ui[locale];
+const organizationEntries = await getCollection("organizations", ({ data }) => data.language === locale);
+const organizations = organizationEntries.map(({ data }) => data);
+---
+<WorldExplorer locale={locale} organizations={organizations} incidents={getPublishedIncidents()} />

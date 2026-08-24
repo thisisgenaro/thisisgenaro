@@ -1,0 +1,16 @@
+---
+import { getCollection } from "astro:content";
+import LocalizedPage from "../../../components/LocalizedPage.astro";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getLocaleFromPath, type Locale, ui } from "../../../lib/i18n";
+import { createJournalEntryRecords } from "../../../lib/journal";
+
+export function getStaticPaths() { return ["en", "es"].map((locale) => ({ params: { locale } })); }
+const locale = getLocaleFromPath(`/${Astro.params.locale}`) as Locale;
+const strings = ui[locale];
+const entries = await getCollection("entries", ({ data }) => data.language === locale);
+const records = createJournalEntryRecords(entries);
+---
+<BaseLayout locale={locale} title={`${strings.nav.journal} | thisisgenaro.com`} description={strings.pages.journalDescription}>
+  <LocalizedPage locale={locale} kind="journal" entries={records.map((record) => ({ title: record.title, excerpt: record.excerpt, slug: record.entry.id.split("/").slice(1).join("/").replace(/\.mdx?$/, "") }))} />
+</BaseLayout>

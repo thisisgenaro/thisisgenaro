@@ -1,0 +1,11 @@
+---
+import HomepageV2 from "../../components/HomepageV2.astro";
+import { getLocaleFromPath, type Locale } from "../../lib/i18n";
+
+export function getStaticPaths() {
+  return ["en", "es"].map((locale) => ({ params: { locale } }));
+}
+
+const locale = getLocaleFromPath("/" + Astro.params.locale) as Locale;
+---
+<HomepageV2 locale={locale} />

@@ -1,5 +1,7 @@
 ---
 id: keeping-the-operating-model-readable
+translationKey: keeping-the-operating-model-readable
+translationStatus: complete
 language: en
 title: Keeping the operating model readable
 date: 2026-08-13

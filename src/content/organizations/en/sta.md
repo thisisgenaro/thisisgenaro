@@ -1,5 +1,7 @@
 ---
 id: sta
+translationKey: sta
+translationStatus: complete
 language: en
 acronym: STA
 name: Servicios Tecnológicos Atlas

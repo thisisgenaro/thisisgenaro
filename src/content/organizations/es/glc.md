@@ -2,102 +2,102 @@
 id: glc
 translationKey: glc
 translationStatus: complete
-language: en
+language: es
 acronym: GLC
 name: Grupo Logístico del Caribe
-industry: Logistics
-type: Fictional case-study environment
-descriptor: Regional logistics operator supporting warehousing, transportation, customs coordination, and last-mile delivery.
+industry: Logística
+type: Entorno ficticio de estudio de casos
+descriptor: Operador logístico regional que gestiona almacenes, transporte, coordinación aduanera y entregas de última milla.
 headquarters: Santo Domingo
 branches: 4
 employees: 1200
 logo: /images/organizations/logos/glc.webp
-summary: A fast-growing hybrid environment where authentication, warehouse systems, mobile operations, and legacy dependencies have immediate operational consequences.
-businessDescription: GLC coordinates national freight, warehouses, dispatches, customs processes, and last-mile delivery for enterprise customers across the Dominican Republic.
+summary: A fast-growing híbrido entorno where authentication, warehouse systems, mobile operations, y heredado dependencias have immediate operativo consequences.
+businessDescription: GLC coordina el transporte nacional de carga, los almacenes, los despachos, los procesos aduaneros y la entrega de última milla para clientes empresariales en toda la República Dominicana.
 technologySupports:
-  - Warehouse operations
-  - Customer access and shipment visibility
-  - Dispatch and distribution
-  - Workforce authentication
-  - Logistics coordination
-  - Driver and route operations
+  - Operaciones de almacén
+  - Acceso de clientes y visibilidad de envíos
+  - Despacho y distribución
+  - Autenticación del personal
+  - Logística coordination
+  - Operaciones de conductores y rutas
 failureConsequences:
-  - Deliveries slow down.
-  - Warehouses wait for instructions.
-  - Drivers lose access to operational tools.
-  - Customers start calling.
+  - Los envíos se ralentizan.
+  - Los almacenes esperan instrucciones.
+  - Los conductores pierden acceso a las herramientas operativas.
+  - Los clientes empiezan a llamar.
 infrastructureDomains:
   - id: identity
-    label: Identity
+    label: Identidad
     systems:
       - Active Directory
       - Azure AD Connect
       - Microsoft 365
   - id: applications
-    label: Business Applications
+    label: Aplicaciones de negocio
     systems:
-      - Customer Portal
-      - Mobile Delivery App
-      - Warehouse Management System
-      - Legacy Customs Application
+      - Portal de clientes
+      - Aplicación móvil de entregas
+      - Sistema de gestión de almacén
+      - Aplicación aduanera heredada
   - id: data
-    label: Data & Virtualization
+    label: Datos y virtualización
     systems:
       - SQL Server
       - VMware Cluster
   - id: network
-    label: Network & Perimeter
+    label: Red y perímetro
     systems:
       - FortiGate Firewall
-      - Branch VPN connectivity
+      - Conectividad VPN entre sucursales
   - id: visibility
-    label: Operations & Visibility
+    label: Operaciones y visibilidad
     systems:
-      - Monitoring Platform
-      - Santo Domingo Datacenter
-      - Regional Branches
+      - Monitoreo Platform
+      - Santo Domingo Datoscenter
+      - Sucursales regionales
 weakPoints:
-  - label: CHANGE RISK
-    detail: SSO was implemented recently and remains lightly documented.
-  - label: OWNERSHIP RISK
-    detail: Certificate ownership and renewal tracking are incomplete.
-  - label: TECHNICAL DEBT
-    detail: Legacy warehouse and customs applications remain operationally important.
-  - label: STAFFING CONSTRAINT
-    detail: A small infrastructure team supports a broad hybrid environment.
-  - label: VISIBILITY GAP
-    detail: Monitoring emphasizes server health more than business-service behavior.
-  - label: DEPENDENCY RISK
-    detail: Service dependency maps are not formally maintained.
+  - label: RIESGO DE CAMBIO
+    detail: El SSO se implementó recientemente y sigue teniendo poca documentación.
+  - label: RIESGO DE PROPIEDAD
+    detail: La propiedad y renovación de certificados no se controlan de forma completa.
+  - label: DEUDA TÉCNICA
+    detail: Las aplicaciones heredadas de almacén y aduanas siguen siendo operativamente importantes.
+  - label: RESTRICCIÓN DE PERSONAL
+    detail: Un equipo pequeño de infraestructura sostiene un entorno híbrido amplio.
+  - label: BRECHA DE VISIBILIDAD
+    detail: El monitoreo enfatiza la salud de los servidores más que el comportamiento de los servicios.
+  - label: RIESGO DE DEPENDENCIAS
+    detail: Los mapas de dependencias de los servicios no se mantienen formalmente.
 people:
   - id: miguel-pena
     name: Miguel Peña
-    role: Infrastructure Engineer
-    operationalImportance: Primary technical contact who connects business symptoms to hidden infrastructure dependencies.
-    characteristic: Deep environment knowledge, broad ownership, and a persistent documentation backlog.
-    question: What changed?
+    role: Ingeniero de infraestructura
+    operationalImportance: Contacto técnico principal; conecta los síntomas del negocio con dependencias ocultas de infraestructura.
+    characteristic: Conocimiento profundo del entorno, responsabilidad amplia y una cola persistente de documentación.
+    question: ¿Qué cambió?
   - id: laura-santana
     name: Laura Santana
-    role: Operations Manager
-    operationalImportance: Translates incidents into affected processes, customers, warehouses, and delivery priorities.
-    characteristic: Direct, practical, and focused on measurable business impact.
-    question: How many customers are affected?
+    role: Gerente de operaciones
+    operationalImportance: Traduce los incidentes en procesos, clientes, almacenes y prioridades de entrega afectados.
+    characteristic: Directa, práctica y enfocada en el impacto empresarial medible.
+    question: ¿Cuántos clientes están afectados?
   - id: yessenia
     name: Yessenia
-    role: Warehouse Supervisor
-    operationalImportance: Detects abnormal warehouse behavior before technical monitoring produces a clear service signal.
-    characteristic: An observant operational sensor with strong process awareness.
-    question: Why are dispatches moving more slowly?
+    role: Supervisora de almacén
+    operationalImportance: Detecta comportamientos anómalos del almacén antes de que el monitoreo produzca una señal clara del servicio.
+    characteristic: Sensor operativo observador, con gran conciencia de los procesos.
+    question: ¿Por qué los despachos avanzan más lento?
   - id: rafael-cabrera
     name: Don Rafael Cabrera
-    role: Founder
-    operationalImportance: Evaluates technology through operational control, continuity, and its direct effect on the business.
-    characteristic: Traditional, protective, pragmatic, and cautious about cloud dependency.
-    question: Why did this not happen before?
+    role: Fundador
+    operationalImportance: Evalúa la tecnología por el control operativo, la continuidad y su efecto directo en el negocio.
+    characteristic: Tradicional, protector, pragmático y prudente ante la dependencia de la nube.
+    question: ¿Por qué esto no ocurrió antes?
 incidentIds:
   - inc-2026-0001
 tags:
-  - Logistics
+  - Logística
   - Hybrid identity
   - Warehousing
   - Legacy systems
@@ -124,13 +124,13 @@ topology:
       status: healthy
     - id: customer-portal
       domainId: applications
-      label: Customer Portal
+      label: Portal de clientes
       subtitle: CUSTOMER
       status: healthy
       variant: anchor
     - id: mobile-delivery
       domainId: applications
-      label: Mobile Delivery
+      label: Entrega móvil
       subtitle: DRIVERS
       status: healthy
     - id: warehouse-management
@@ -141,7 +141,7 @@ topology:
       variant: anchor
     - id: legacy-customs
       domainId: applications
-      label: Legacy Customs
+      label: Aduanas heredadas
       subtitle: LEGACY
       status: degraded
     - id: sql-server
@@ -162,7 +162,7 @@ topology:
       status: healthy
     - id: monitoring
       domainId: visibility
-      label: Monitoring
+      label: Monitoreo
       subtitle: SERVER-CENTRIC
       status: degraded
     - id: santo-domingo
@@ -172,7 +172,7 @@ topology:
       status: healthy
     - id: regional-branches
       domainId: visibility
-      label: Regional Branches
+      label: Sucursales regionales
       subtitle: 4 SITES
       status: healthy
   relationships:
@@ -198,7 +198,7 @@ topology:
       active: false
     - from: customer-portal
       to: sql-server
-      label: reads and writes
+      label: reads y writes
       active: false
     - from: warehouse-management
       to: sql-server
@@ -242,4 +242,4 @@ topology:
       active: false
 ---
 
-GLC represents a recurring operational environment whose growth outpaced its documentation, service visibility, and dependency management.
+GLC represents a recurring operativo entorno whose growth outpaced its documentation, servicio visibility, y dependencia management.

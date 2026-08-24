@@ -1,0 +1,85 @@
+---
+import type { Locale } from "../lib/i18n";
+import { localePath, ui, formatLocalizedDate } from "../lib/i18n";
+
+interface Props {
+  locale: Locale;
+  kind: "home" | "journal" | "incidents" | "world" | "about" | "contact" | "unavailable";
+  entries?: Array<{ title: string; summary?: string; excerpt?: string; slug?: string; date?: Date | string }>;
+  incidents?: Array<{ id: string; incidentId: string; title: string; status: string; duration: string; organization: string; summary: string }>;
+  organizations?: Array<{ id: string; acronym: string; name: string; industry: string; summary: string; logo?: string }>;
+  title?: string;
+}
+
+const { locale, kind, entries = [], incidents = [], organizations = [], title } = Astro.props as Props;
+const strings = ui[locale];
+const latestEntry = entries[0];
+const latestIncident = incidents[0];
+const sectionTitle = title ?? (kind === "journal" ? strings.nav.journal : kind === "incidents" ? strings.nav.incidents : kind === "world" ? strings.nav.world : "");
+---
+
+<main class:list={["localized-page", `localized-page--${kind}`]}>
+  {kind === "home" ? (
+    <>
+      <header class="localized-hero">
+        <p class="localized-eyebrow">{strings.pages.homeEyebrow}</p>
+        <h1>Genaro Hernández</h1>
+        <p class="localized-hero__statement">{strings.pages.homeStatement}</p>
+        <div class="localized-actions">
+          <a class="localized-action localized-action--primary" href={localePath(locale, "/journal")}>{strings.actions.exploreJournal} →</a>
+          <a class="localized-action" href={localePath(locale, "/incident-library")}>{strings.actions.exploreIncidents} →</a>
+          <a class="localized-action" href={localePath(locale, "/world")}>{strings.actions.exploreWorld} →</a>
+        </div>
+      </header>
+      <section class="localized-destinations" aria-label={locale === "es" ? "Destinos principales" : "Primary destinations"}>
+        <article><p class="localized-eyebrow">01</p><h2>{strings.nav.journal}</h2><p>{strings.pages.journalDescription}</p><a href={localePath(locale, "/journal")}>{strings.actions.exploreJournal} →</a></article>
+        <article><p class="localized-eyebrow">02</p><h2>{strings.nav.incidents}</h2><p>{strings.pages.incidentsDescription}</p><a href={localePath(locale, "/incident-library")}>{strings.actions.exploreIncidents} →</a></article>
+        <article><p class="localized-eyebrow">03</p><h2>{strings.nav.world}</h2><p>{strings.pages.worldDescription}</p><a href={localePath(locale, "/world")}>{strings.actions.exploreWorld} →</a></article>
+      </section>
+    </>
+  ) : kind === "journal" ? (
+    <>
+      <header class="localized-hero localized-hero--compact"><p class="localized-eyebrow">{strings.nav.journal.toUpperCase()}</p><h1>{sectionTitle}</h1><p>{strings.pages.journalDescription}</p></header>
+      <section class="localized-list"><p class="localized-eyebrow">{strings.labels.latestJournal.toUpperCase()}</p>{latestEntry ? <article><h2>{latestEntry.title}</h2><p>{latestEntry.excerpt ?? latestEntry.summary}</p>{latestEntry.slug ? <a href={localePath(locale, `/journal/${latestEntry.slug}`)}>{strings.actions.readEntry} →</a> : null}</article> : <p>{strings.labels.noEntries}</p>}</section>
+    </>
+  ) : kind === "incidents" ? (
+    <>
+      <header class="localized-hero localized-hero--compact"><p class="localized-eyebrow">{strings.labels.browseIncidents.toUpperCase()}</p><h1>{sectionTitle}</h1><p>{strings.pages.incidentsDescription}</p></header>
+      <section class="localized-list"><p class="localized-eyebrow">{strings.labels.latestIncident.toUpperCase()}</p>{latestIncident ? <article><p class="localized-meta">{latestIncident.incidentId} · {latestIncident.organization}</p><h2>{latestIncident.title}</h2><p>{latestIncident.summary}</p><a href={localePath(locale, `/incident-library/${latestIncident.id}`)}>{strings.actions.viewIncident} →</a></article> : <p>{strings.labels.unavailable}</p>}</section>
+      <section class="localized-grid">{incidents.map((incident) => <article><p class="localized-meta">{incident.status} · {incident.duration}</p><h3>{incident.title}</h3><p>{incident.organization}</p><a href={localePath(locale, `/incident-library/${incident.id}`)}>{strings.actions.viewIncident} →</a></article>)}</section>
+    </>
+  ) : kind === "world" ? (
+    <>
+      <header class="localized-hero localized-hero--compact"><p class="localized-eyebrow">{strings.labels.exploreWorld.toUpperCase()}</p><h1>{sectionTitle}</h1><p>{strings.pages.worldDescription}</p></header>
+      <section class="localized-grid">{organizations.length ? organizations.map((organization) => <article>{organization.logo ? <img class="localized-logo" src={organization.logo} alt="" /> : null}<p class="localized-meta">{organization.acronym} · {organization.industry}</p><h2>{organization.name}</h2><p>{organization.summary}</p><a href={localePath(locale, `/world/`)}>{strings.actions.viewDossier} →</a></article>) : <p>{strings.labels.unavailable}</p>}</section>
+    </>
+  ) : kind === "about" ? (
+    <><header class="localized-hero localized-hero--compact"><p class="localized-eyebrow">{strings.nav.about.toUpperCase()}</p><h1>Genaro Hernández</h1><p>{strings.pages.aboutDescription}</p></header><section class="localized-list"><article><h2>{locale === "es" ? "Un ingeniero, compartido con claridad" : "One engineer, shared clearly"}</h2><p>{locale === "es" ? "Comparto notas útiles, lecciones operativas y modelos de trabajo para entender sistemas complejos bajo presión." : "I share useful notes, operational lessons, and working models for understanding complex systems under pressure."}</p></article></section></>
+  ) : kind === "contact" ? (
+    <><header class="localized-hero localized-hero--compact"><p class="localized-eyebrow">{strings.nav.contact.toUpperCase()}</p><h1>{locale === "es" ? "Empecemos por el trabajo." : "Start with the work."}</h1><p>{strings.pages.contactDescription}</p></header><section class="localized-list"><article><p class="localized-eyebrow">EMAIL</p><a href="mailto:genaro.hernandez@outlook.com">genaro.hernandez@outlook.com</a></article><article><p class="localized-eyebrow">LINKEDIN</p><a href="https://linkedin.com/in/thisisgenaro">linkedin.com/in/thisisgenaro</a></article></section></>
+  ) : (
+    <header class="localized-hero localized-hero--compact"><p class="localized-eyebrow">{strings.language.label}</p><h1>{locale === "es" ? "Contenido no disponible" : "Content unavailable"}</h1><p>{strings.labels.unavailable}</p></header>
+  )}
+</main>
+
+<style>
+  .localized-page { width:min(100%,84rem); margin:0 auto; padding:clamp(1.25rem,4vw,3.5rem); display:grid; gap:clamp(1.5rem,4vw,3rem); }
+  .localized-hero { display:grid; gap:1rem; min-height:56vh; align-content:center; border-bottom:1px solid var(--line); }
+  .localized-hero--compact { min-height:0; padding-block:clamp(3rem,8vw,7rem); }
+  .localized-hero h1 { margin:0; max-width:12ch; font-size:clamp(3.6rem,9vw,8rem); line-height:.88; letter-spacing:-.075em; }
+  .localized-hero__statement { max-width:48rem; color:var(--muted); font-size:clamp(1.1rem,2vw,1.5rem); line-height:1.65; }
+  .localized-eyebrow,.localized-meta { margin:0; color:var(--accent); font:700 .68rem/1.3 var(--font-mono); letter-spacing:.14em; text-transform:uppercase; }
+  .localized-meta { color:var(--muted); letter-spacing:.08em; }
+  .localized-actions,.localized-grid,.localized-destinations { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:1px; border:1px solid var(--line); background:var(--line); }
+  .localized-action,.localized-destinations article,.localized-grid article,.localized-list article { padding:1.25rem; border:1px solid var(--line); color:var(--text); text-decoration:none; background:var(--surface); }
+  .localized-action:hover,.localized-destinations article:hover,.localized-grid article:hover { background:var(--surface-raised); }
+  .localized-action--primary { color:var(--accent); }
+  .localized-destinations article,.localized-grid article,.localized-list article { display:grid; gap:.8rem; }
+  .localized-destinations h2,.localized-grid h2,.localized-list h2,.localized-grid h3 { margin:0; }
+  .localized-destinations p:not(.localized-eyebrow),.localized-grid p:not(.localized-meta),.localized-list article p { margin:0; color:var(--muted); line-height:1.65; }
+  .localized-destinations a,.localized-grid a,.localized-list a { color:var(--accent); text-decoration:none; }
+  .localized-list { display:grid; gap:1rem; }
+  .localized-list article { max-width:52rem; }
+  .localized-logo { width:4rem; height:4rem; object-fit:contain; padding:.35rem; border:1px solid var(--line); background:#d6d8dc; }
+  @media (max-width:760px) { .localized-actions,.localized-grid,.localized-destinations { grid-template-columns:1fr; } .localized-hero { min-height:0; padding-block:4rem; } }
+</style>

@@ -1,5 +1,7 @@
 ---
 id: rmh
+translationKey: rmh
+translationStatus: complete
 language: en
 acronym: RMH
 name: Red Médica Horizonte

@@ -1,0 +1,23 @@
+---
+import { getCollection } from "astro:content";
+import OrganizationDossier from "../../../components/organizations/OrganizationDossier.astro";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getLocaleFromPath, type Locale, ui } from "../../../lib/i18n";
+import { getLocalizedIncidentById } from "../../../lib/incidents";
+
+export async function getStaticPaths() {
+  const organizations = await getCollection("organizations", ({ data }) => data.language === "en");
+  return organizations.flatMap(({ data }) => ["en", "es"].map((locale) => ({ params: { locale, id: data.id } })));
+}
+
+const locale = getLocaleFromPath(`/${Astro.params.locale}`) as Locale;
+const strings = ui[locale];
+const organizations = await getCollection("organizations", ({ data }) => data.language === locale);
+const organization = organizations.find(({ data }) => data.id === Astro.params.id);
+---
+{organization ? (() => {
+  const dossierIncidents = organization.data.incidentIds.map((incidentId) => getLocalizedIncidentById(incidentId, locale)).filter(Boolean);
+  return <BaseLayout locale={locale} title={organization.data.name + " | " + strings.nav.world} description={organization.data.summary}>
+    <OrganizationDossier locale={locale} organization={organization.data} incidents={dossierIncidents} />
+  </BaseLayout>;
+})() : <BaseLayout locale={locale} title={strings.nav.world} description={strings.labels.unavailable}><p>{strings.labels.unavailable}</p></BaseLayout>}

@@ -3,6 +3,7 @@ import type { CollectionEntry } from "astro:content";
 import TopologyScene from "operational-topology/astro/TopologyScene";
 import type { IncidentRecord } from "../../lib/incidents";
 import { createOrganizationDossierTopology } from "../../lib/organizations";
+import { localePath, ui, type Locale } from "../../lib/i18n";
 import {
   formatIncidentDate,
   getIncidentStatusTone,
@@ -11,26 +12,29 @@ import {
 interface Props {
   organization: CollectionEntry<"organizations">["data"];
   incidents: IncidentRecord[];
+  locale?: Locale;
 }
 
-const { organization, incidents } = Astro.props as Props;
-const formatNumber = (value: number) => new Intl.NumberFormat("en").format(value);
+const { organization, incidents, locale = "en" } = Astro.props as Props;
+const strings = ui[locale];
+const t = (en: string, es: string) => locale === "es" ? es : en;
+const formatNumber = (value: number) => new Intl.NumberFormat(locale === "es" ? "es-ES" : "en").format(value);
 const initials = (name: string) => name.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase();
 const hasRecurringPatterns = incidents.length >= 3;
 const dossierTopology = createOrganizationDossierTopology(organization);
 ---
 <article class="organization-dossier">
-  <a class="organization-dossier__back" href="/world">← THE WORLD</a>
+  <a class="organization-dossier__back" href={localePath(locale, "/world")}>← {strings.nav.world.toUpperCase()}</a>
 
-  <nav class="organization-dossier__nav" aria-label="Dossier sections">
-    <span>{organization.acronym} DOSSIER</span>
+  <nav class="organization-dossier__nav" aria-label={t("Dossier sections", "Secciones del dossier")}>
+    <span>{organization.acronym} {t("DOSSIER", "DOSSIER")}</span>
     <div>
-      <a href="#overview">Overview</a>
-      <a href="#topology">Topology</a>
-      <a href="#systems">Systems</a>
-      <a href="#people">People</a>
-      <a href="#incidents">Incidents</a>
-      <a href="#patterns">Patterns</a>
+      <a href="#overview">{t("Overview", "Resumen")}</a>
+      <a href="#topology">{t("Topology", "Topología")}</a>
+      <a href="#systems">{t("Systems", "Sistemas")}</a>
+      <a href="#people">{t("People", "Personas")}</a>
+      <a href="#incidents">{t("Incidents", "Incidentes")}</a>
+      <a href="#patterns">{t("Patterns", "Patrones")}</a>
     </div>
   </nav>
 
@@ -40,7 +44,7 @@ const dossierTopology = createOrganizationDossierTopology(organization);
         <img src={organization.logo} alt={`${organization.name} logo`} />
       </div>
       <div>
-        <p class="organization-dossier__eyebrow">ORGANIZATION DOSSIER · FICTIONAL CASE-STUDY ENVIRONMENT</p>
+        <p class="organization-dossier__eyebrow">{t("ORGANIZATION DOSSIER · FICTIONAL CASE-STUDY ENVIRONMENT", "DOSSIER DE ORGANIZACIÓN · ENTORNO FICTICIO DE ESTUDIO DE CASOS")}</p>
         <p class="organization-dossier__classification">{organization.acronym} · {organization.industry}</p>
         <h1>{organization.name}</h1>
         <p class="organization-dossier__descriptor">{organization.descriptor}</p>
@@ -49,19 +53,19 @@ const dossierTopology = createOrganizationDossierTopology(organization);
 
     <dl class="organization-dossier__stats" aria-label="Organization summary">
       <div>
-        <dt>Headquarters</dt>
+        <dt>{t("Headquarters", "Sede")}</dt>
         <dd>{organization.headquarters}</dd>
       </div>
       <div>
-        <dt>Locations</dt>
-        <dd>{organization.branches} branches</dd>
+        <dt>{t("Locations", "Ubicaciones")}</dt>
+        <dd>{organization.branches} {t("branches", "sucursales")}</dd>
       </div>
       <div>
-        <dt>Employees</dt>
+        <dt>{t("Employees", "Empleados")}</dt>
         <dd>{formatNumber(organization.employees)}</dd>
       </div>
       <div>
-        <dt>Published cases</dt>
+        <dt>{t("Published cases", "Casos publicados")}</dt>
         <dd>{incidents.length}</dd>
       </div>
     </dl>
@@ -69,18 +73,18 @@ const dossierTopology = createOrganizationDossierTopology(organization);
 
   <section class="dossier-section dossier-section--profile" aria-labelledby="profile-title">
     <div class="dossier-section__heading">
-      <p>OPERATIONAL PROFILE</p>
-      <h2 id="profile-title">What technology keeps running</h2>
+      <p>{t("OPERATIONAL PROFILE", "PERFIL OPERATIVO")}</p>
+      <h2 id="profile-title">{t("What technology keeps running", "Qué mantiene en marcha la tecnología")}</h2>
     </div>
 
     <div class="operational-profile">
       <div class="operational-profile__context">
         <article>
-          <h3>What the business does</h3>
+          <h3>{t("What the business does", "Qué hace el negocio")}</h3>
           <p>{organization.businessDescription}</p>
         </article>
         <article>
-          <h3>What technology supports</h3>
+          <h3>{t("What technology supports", "Qué sostiene la tecnología")}</h3>
           <ul>
             {organization.technologySupports.map((service) => <li>{service}</li>)}
           </ul>
@@ -88,11 +92,11 @@ const dossierTopology = createOrganizationDossierTopology(organization);
       </div>
 
       <aside class="failure-consequences">
-        <p>WHEN TECHNOLOGY FAILS</p>
+        <p>{t("WHEN TECHNOLOGY FAILS", "CUANDO FALLA LA TECNOLOGÍA")}</p>
         <div>
           {organization.failureConsequences.map((consequence) => <strong>{consequence}</strong>)}
         </div>
-        <span>Technical failure becomes operational delay.</span>
+        <span>{t("Technical failure becomes operational delay.", "El fallo técnico se convierte en demora operativa.")}</span>
       </aside>
     </div>
   </section>
@@ -100,11 +104,11 @@ const dossierTopology = createOrganizationDossierTopology(organization);
   <section class="dossier-section dossier-section--topology" id="topology" aria-labelledby="topology-title">
     <div class="dossier-section__heading dossier-section__heading--split">
       <div>
-        <p>PERSISTENT ENVIRONMENT</p>
-        <h2 id="topology-title">Infrastructure topology</h2>
+        <p>{t("PERSISTENT ENVIRONMENT", "CONTEXTO PERSISTENTE")}</p>
+        <h2 id="topology-title">{t("Infrastructure topology", "Topología de infraestructura")}</h2>
       </div>
       <p class="dossier-section__note">
-        The normal operating model behind {organization.acronym} incidents. Select a node to trace how identity, applications, data, sites, and visibility relate.
+        {locale === "es" ? `El modelo operativo normal detrás de los incidentes de ${organization.acronym}. Selecciona un nodo para seguir cómo se relacionan la identidad, las aplicaciones, los datos, los sitios y la visibilidad.` : `The normal operating model behind ${organization.acronym} incidents. Select a node to trace how identity, applications, data, sites, and visibility relate.`}
       </p>
     </div>
 
@@ -125,8 +129,8 @@ const dossierTopology = createOrganizationDossierTopology(organization);
         signalTransitionSpeed={0.9}
       />
       <figcaption>
-        <span><i class="is-healthy"></i> Normal operating context</span>
-        <span><i class="is-watch"></i> Known operational constraint</span>
+        <span><i class="is-healthy"></i> {t("Normal operating context", "Contexto operativo normal")}</span>
+        <span><i class="is-watch"></i> {t("Known operational constraint", "Restricción operativa conocida")}</span>
         <span>TERRITORIES</span>
       </figcaption>
     </figure>
@@ -134,8 +138,8 @@ const dossierTopology = createOrganizationDossierTopology(organization);
 
   <section class="dossier-section" id="systems" aria-labelledby="systems-title">
     <div class="dossier-section__heading">
-      <p>TECHNOLOGY & OPERATIONAL RISK</p>
-      <h2 id="systems-title">Landscape and known weak points</h2>
+      <p>{t("TECHNOLOGY & OPERATIONAL RISK", "TECNOLOGÍA Y RIESGO OPERATIVO")}</p>
+      <h2 id="systems-title">{t("Landscape and known weak points", "Panorama y puntos débiles conocidos")}</h2>
     </div>
 
     <div class="technology-risk">
@@ -151,7 +155,7 @@ const dossierTopology = createOrganizationDossierTopology(organization);
 
       <aside class="known-risks">
         <header>
-          <span>KNOWN CHARACTERISTICS</span>
+          <span>{t("KNOWN CHARACTERISTICS", "CARACTERÍSTICAS CONOCIDAS")}</span>
           <strong>{organization.weakPoints.length}</strong>
         </header>
         <div>
@@ -169,10 +173,10 @@ const dossierTopology = createOrganizationDossierTopology(organization);
   <section class="dossier-section" id="people" aria-labelledby="people-title">
     <div class="dossier-section__heading dossier-section__heading--split">
       <div>
-        <p>OPERATIONAL ROLES</p>
-        <h2 id="people-title">People who shape the environment</h2>
+        <p>{t("OPERATIONAL ROLES", "ROLES OPERATIVOS")}</p>
+        <h2 id="people-title">{t("People who shape the environment", "Personas que dan forma al entorno")}</h2>
       </div>
-      <p class="dossier-section__note">Roles explain how signals, decisions, knowledge, and business impact move during an incident.</p>
+      <p class="dossier-section__note">{t("Roles explain how signals, decisions, knowledge, and business impact move during an incident.", "Los roles explican cómo circulan las señales, las decisiones, el conocimiento y el impacto empresarial durante un incidente.")}</p>
     </div>
 
     <div class="operational-roles">
@@ -187,7 +191,7 @@ const dossierTopology = createOrganizationDossierTopology(organization);
           <span>{person.characteristic}</span>
           {person.question && (
             <blockquote>
-              <small>TYPICAL QUESTION</small>
+              <small>{t("TYPICAL QUESTION", "PREGUNTA HABITUAL")}</small>
               “{person.question}”
             </blockquote>
           )}
@@ -199,10 +203,10 @@ const dossierTopology = createOrganizationDossierTopology(organization);
   <section class="dossier-section" id="incidents" aria-labelledby="incidents-title">
     <div class="dossier-section__heading dossier-section__heading--split">
       <div>
-        <p>OPERATIONAL HISTORY</p>
-        <h2 id="incidents-title">Incident history</h2>
+        <p>{t("OPERATIONAL HISTORY", "HISTORIAL OPERATIVO")}</p>
+        <h2 id="incidents-title">{t("Incident history", "Historial de incidentes")}</h2>
       </div>
-      <p class="dossier-section__note">Cases associated with this environment, ordered from the latest published record.</p>
+      <p class="dossier-section__note">{t("Cases associated with this environment, ordered from the latest published record.", "Casos asociados con esta organización, ordenados desde el registro publicado más reciente.")}</p>
     </div>
 
     {incidents.length ? (
@@ -217,29 +221,29 @@ const dossierTopology = createOrganizationDossierTopology(organization);
               <span class:list={["dossier-status", `is-${getIncidentStatusTone(incident.status)}`]}>{incident.status}</span>
             </header>
             <dl>
-              <div><dt>Date</dt><dd>{formatIncidentDate(incident.created)}</dd></div>
-              <div><dt>Service</dt><dd>{incident.service}</dd></div>
-              <div><dt>Duration</dt><dd>{incident.duration}</dd></div>
-              <div><dt>Severity</dt><dd>{incident.severity}</dd></div>
+              <div><dt>{t("Date", "Fecha")}</dt><dd>{formatIncidentDate(incident.created)}</dd></div>
+              <div><dt>{t("Service", "Servicio")}</dt><dd>{incident.service}</dd></div>
+              <div><dt>{t("Duration", "Duración")}</dt><dd>{incident.duration}</dd></div>
+              <div><dt>{t("Severity", "Severidad")}</dt><dd>{incident.severity}</dd></div>
             </dl>
             <div class="organization-incidents__tags">
               {incident.technicalDomains.map((domain) => <span>{domain}</span>)}
               {incident.operationalThemes.map((theme) => <span>{theme}</span>)}
             </div>
             <p>{incident.learning}</p>
-            <a href={`/incidents/${incident.id}`}>VIEW INCIDENT →</a>
+            <a href={localePath(locale, `/incident-library/${incident.id}`)}>{t("VIEW INCIDENT →", "VER INCIDENTE →")}</a>
           </article>
         ))}
       </div>
     ) : (
-      <p class="dossier-empty">No published incidents are associated with this organization yet.</p>
+      <p class="dossier-empty">{t("No published incidents are associated with this organization yet.", "Todavía no hay incidentes publicados asociados con esta organización.")}</p>
     )}
   </section>
 
   <section class="dossier-section" id="patterns" aria-labelledby="patterns-title">
     <div class="dossier-section__heading">
-      <p>LONGITUDINAL CONTEXT</p>
-      <h2 id="patterns-title">Recurring patterns</h2>
+      <p>{t("LONGITUDINAL CONTEXT", "CONTEXTO LONGITUDINAL")}</p>
+      <h2 id="patterns-title">{t("Recurring patterns", "Patrones recurrentes")}</h2>
     </div>
 
     {hasRecurringPatterns ? (
@@ -249,11 +253,11 @@ const dossierTopology = createOrganizationDossierTopology(organization);
       </div>
     ) : (
       <div class="patterns-pending">
-        <strong>Not enough incident history to establish recurring patterns.</strong>
+        <strong>{t("Not enough incident history to establish recurring patterns.", "No hay suficiente historial de incidentes para establecer patrones recurrentes.")}</strong>
         <p>
-          The dossier will synthesize dependency, identity, detection, ownership, and recovery patterns after enough published cases provide evidence.
+          {t("The dossier will synthesize dependency, identity, detection, ownership, and recovery patterns after enough published cases provide evidence.", "El dossier sintetizará patrones de dependencias, identidad, detección, propiedad y recuperación cuando haya suficientes casos publicados como evidencia.")}
         </p>
-        <span>{incidents.length} of 3 cases available for initial pattern synthesis</span>
+        <span>{incidents.length} {t("of 3 cases available for initial pattern synthesis", "de 3 casos disponibles para la síntesis inicial de patrones")}</span>
       </div>
     )}
   </section>

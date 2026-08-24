@@ -1,0 +1,12 @@
+---
+import LocalizedPage from "../../../components/LocalizedPage.astro";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getLocaleFromPath, type Locale, ui } from "../../../lib/i18n";
+
+export function getStaticPaths() { return ["en", "es"].map((locale) => ({ params: { locale } })); }
+const locale = getLocaleFromPath(`/${Astro.params.locale}`) as Locale;
+const strings = ui[locale];
+---
+<BaseLayout locale={locale} title={`${strings.nav.about} | Genaro Hernández`} description={strings.pages.aboutDescription}>
+  <LocalizedPage locale={locale} kind="about" />
+</BaseLayout>

@@ -10,6 +10,8 @@ const entries = defineCollection({
   schema: z.object({
     id: z.string(),
     language: z.string(),
+    translationKey: z.string().optional(),
+    translationStatus: z.enum(["draft", "review", "complete"]).optional(),
     title: z.string(),
     date: z.date(),
     publishedDate: z.date().optional(),
@@ -38,6 +40,8 @@ const organizations = defineCollection({
   schema: z.object({
     id: z.string(),
     language: z.string(),
+    translationKey: z.string().optional(),
+    translationStatus: z.enum(["draft", "review", "complete"]).optional(),
     acronym: z.string(),
     name: z.string(),
     industry: z.string(),

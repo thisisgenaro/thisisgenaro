@@ -8,60 +8,71 @@ import {
   themeNames,
   themeStorageKey,
 } from "operational-topology";
+import { getLocaleFromPath, localePath, stripLocale, ui, type Locale } from "../lib/i18n";
 
 import "../styles/global.css";
 
 interface Props {
   title?: string;
   description?: string;
+  locale?: Locale;
+  canonicalPath?: string;
 }
 
 const {
   title = "thisisgenaro.com",
   description = "Design, automate, and keep things running.",
+  locale: requestedLocale,
+  canonicalPath,
 } = Astro.props;
 
 const pathname = Astro.url.pathname;
+const locale = requestedLocale ?? getLocaleFromPath(pathname) ?? "en";
+const strings = ui[locale];
+const localeAwarePath = canonicalPath ?? stripLocale(pathname);
+const canonicalUrl = "https://thisisgenaro.com" + localePath(locale, localeAwarePath);
 const railStateStorageKey = "thisisgenaro:shell-rail-collapsed";
-const homeHref = "/";
+const homeHref = localePath(locale, "/");
 
 const navItems = [
   {
     href: homeHref,
-    label: "Home",
+    label: strings.nav.home,
     iconPath: "M4.5 11.5 12 5l7.5 6.5M7 10.5V19h10v-8.5",
   },
   {
-    href: "/journal",
-    label: "Journal",
+    href: localePath(locale, "/journal"),
+    label: strings.nav.journal,
     iconPath: "M7 4h8l2.5 2.5V20H7a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3zm8 0v3h3M8 10h8M8 14h6M8 18h4",
   },
   {
-    href: "/incidents",
-    label: "Incident Library",
+    href: localePath(locale, "/incident-library"),
+    label: strings.nav.incidents,
     iconPath: "M12 4l7.5 13H4.5L12 4zm0 5.5v4m0 3h.01",
   },
   {
-    href: "/world",
-    label: "The World",
+    href: localePath(locale, "/world"),
+    label: strings.nav.world,
     iconPath: "M12 3.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17zm0 0c2.1 2.3 3.2 5.1 3.2 8.5S14.1 18.2 12 20.5m0-17C9.9 5.8 8.8 8.6 8.8 12s1.1 6.2 3.2 8.5M4 12h16",
   },
   {
-    href: "/about",
-    label: "About",
+    href: localePath(locale, "/about"),
+    label: strings.nav.about,
     iconPath: "M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM5.5 20c1.8-3 4.3-4.5 6.5-4.5s4.7 1.5 6.5 4.5",
   },
   {
-    href: "/contact",
-    label: "Contact",
+    href: localePath(locale, "/contact"),
+    label: strings.nav.contact,
     iconPath: "M4 6.5h16v11H4zM4.5 7l7.5 6 7.5-6",
   },
 ];
 
 const isActive = (href: string) => {
-  if (href === "/") return pathname === "/";
-  if (href === "/about") return pathname === "/about";
-  return pathname === href || pathname.startsWith(`${href}/`);
+  const current = stripLocale(pathname);
+  const target = stripLocale(href);
+  if (target === "/") return current === "/";
+  if (target === "/about") return current === "/about";
+  return current === target || current.startsWith(target + "/");
 };
 
 const themeBootstrap =
@@ -86,7 +97,7 @@ const railBootstrap =
 
 ---
 <!doctype html>
-<html lang="en">
+<html lang={locale} data-locale={locale}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -95,6 +106,10 @@ const railBootstrap =
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="alternate" hreflang="en" href={"https://thisisgenaro.com" + localePath("en", localeAwarePath)} />
+    <link rel="alternate" hreflang="es" href={"https://thisisgenaro.com" + localePath("es", localeAwarePath)} />
+    <link rel="alternate" hreflang="x-default" href={"https://thisisgenaro.com" + localePath("en", localeAwarePath)} />
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <script is:inline set:html={themeBootstrap}></script>
@@ -122,7 +137,7 @@ const railBootstrap =
         </div>
 
         <section class="shell__rail-group shell__rail-group--nav" aria-label="Primary navigation">
-          <p class="shell__section-label">Navigation</p>
+          <p class="shell__section-label">{locale === "es" ? "Navegación" : "Navigation"}</p>
           <nav class="shell__links" id="site-primary-nav" aria-label="Primary navigation">
             {navItems.map((item) => (
               <a href={item.href} aria-label={item.label} aria-current={isActive(item.href) ? "page" : undefined} class:list={{ "is-active": isActive(item.href) }} title={item.label}>
@@ -140,11 +155,17 @@ const railBootstrap =
         <div class="shell__rail-slot">
           <slot name="rail" />
           <section class="shell__rail-group shell__rail-group--utilities" aria-label="Utilities">
-            <p class="shell__section-label">Utilities</p>
-            <a class="shell__utility-search" href="/journal/entries" aria-label="Search the knowledge system">
+            <p class="shell__section-label">{locale === "es" ? "Utilidades" : "Utilities"}</p>
+            <a class="shell__utility-search" href={localePath(locale, "/journal/entries")} aria-label={locale === "es" ? "Buscar en el sistema de conocimiento" : "Search the knowledge system"}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="5.5" /><path d="m15 15 4.5 4.5" /></svg>
-              <span>Search</span>
+              <span>{locale === "es" ? "Buscar" : "Search"}</span>
             </a>
+            <nav class="shell__language" aria-label={strings.language.label}>
+              <span>{strings.language.label}</span>
+              <a href={localePath("en", localeAwarePath)} data-locale-choice="en" aria-current={locale === "en" ? "true" : undefined}>EN</a>
+              <span aria-hidden="true">|</span>
+              <a href={localePath("es", localeAwarePath)} data-locale-choice="es" aria-current={locale === "es" ? "true" : undefined}>ES</a>
+            </nav>
             <div class="shell__utility-mount" data-theme-switcher-mount></div>
           </section>
         </div>
@@ -155,6 +176,13 @@ const railBootstrap =
       </div>
     </div>
     <ThemeSwitcher />
+    <script>
+      document.querySelectorAll("[data-locale-choice]").forEach((link) => {
+        link.addEventListener("click", () => {
+          try { localStorage.setItem("siteLocale", link.getAttribute("data-locale-choice") || "en"); } catch {}
+        });
+      });
+    </script>
     <script>
       if (import.meta.env.DEV) {
         import("operational-topology/browser").then(({ installDeveloperAPI }) => {
@@ -1376,4 +1404,8 @@ const railBootstrap =
     }
   }
 
+
+  .shell__language { display:flex; align-items:center; gap:.45rem; margin-top:.75rem; color:var(--theme-text-muted); font:700 .62rem/1.2 var(--font-mono); letter-spacing:.08em; text-transform:uppercase; }
+  .shell__language a { color:var(--theme-text-muted); text-decoration:none; }
+  .shell__language a:hover, .shell__language a[aria-current="true"] { color:var(--theme-selection); }
 </style>

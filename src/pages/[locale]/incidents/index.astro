@@ -1,0 +1,13 @@
+---
+import IncidentLibraryIndex from "../../../components/IncidentLibraryIndex.astro";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import { getLocaleFromPath, type Locale, ui } from "../../../lib/i18n";
+import { getPublishedIncidents, getLocalizedIncidentById } from "../../../lib/incidents";
+import { organizations } from "../../../data/organizations";
+
+export function getStaticPaths() { return ["en", "es"].map((locale) => ({ params: { locale } })); }
+const locale = getLocaleFromPath(`/${Astro.params.locale}`) as Locale;
+const strings = ui[locale];
+const incidents = getPublishedIncidents().map((incident) => locale === "en" ? incident : getLocalizedIncidentById(incident.id, locale)).filter(Boolean);
+---
+<IncidentLibraryIndex locale={locale} incidents={incidents} organizations={organizations} />
