@@ -88,6 +88,10 @@ const serializedSlides = JSON.stringify(slides);
   description={incident.summary}
 >
   <main class="incident-deck">
+    <div class="incident-deck__mobile-tabs" data-incident-deck-mobile-tabs role="tablist" aria-label="Incident workspace">
+      <button type="button" class="incident-deck__mobile-tab is-active" data-incident-deck-mobile-tab="visual" role="tab" aria-selected="true">Visual</button>
+      <button type="button" class="incident-deck__mobile-tab" data-incident-deck-mobile-tab="inspector" role="tab" aria-selected="false">Inspector</button>
+    </div>
     <section class="incident-deck__scene-shell" data-incident-deck-shell>
       <div
         class="incident-deck__scene-frame"
@@ -258,6 +262,8 @@ const serializedSlides = JSON.stringify(slides);
       import { createSceneNavigationController } from "../../node_modules/operational-topology/src/topology/sceneNavigationController.ts";
 
       const deck = document.querySelector(".incident-deck");
+      const mobileTabs = document.querySelector("[data-incident-deck-mobile-tabs]");
+      const mobileTabButtons = [...document.querySelectorAll("[data-incident-deck-mobile-tab]")];
       const shell = document.querySelector("[data-incident-deck-shell]");
       const sceneHost = document.querySelector("[data-incident-deck-scene]");
       const slidesPayload = document.querySelector("[data-incident-deck-slides]");
@@ -293,6 +299,18 @@ const serializedSlides = JSON.stringify(slides);
       let liveSceneBounds = initialSceneBounds;
       let initialFitScheduled = false;
       let inspectorCollapsed = false;
+
+      const setMobileMode = (mode) => {
+        if (!deck || !mobileTabs) return;
+        deck.dataset.mobileMode = mode;
+        mobileTabButtons.forEach((button) => {
+          const active = button.dataset.incidentDeckMobileTab === mode;
+          button.classList.toggle("is-active", active);
+          button.setAttribute("aria-selected", String(active));
+        });
+      };
+
+      setMobileMode("visual");
 
       if (shell && sceneHost && sceneSvg && slides.length) {
         let activeSlide = slides[0];
@@ -409,6 +427,10 @@ const serializedSlides = JSON.stringify(slides);
           }
           requestAnimationFrame(() => navigation.viewport.updateViewport());
         };
+
+        mobileTabButtons.forEach((button) => {
+          button.addEventListener("click", () => setMobileMode(button.dataset.incidentDeckMobileTab ?? "visual"));
+        });
 
         const fitDeckCamera = (nodes) => {
           const camera = navigation.viewport.getCamera();
@@ -564,6 +586,10 @@ const serializedSlides = JSON.stringify(slides);
 </BaseLayout>
 
 <style>
+  .incident-deck__mobile-tabs {
+    display: none;
+  }
+
   .incident-deck {
     position: relative;
     width: 100%;
@@ -1004,6 +1030,42 @@ const serializedSlides = JSON.stringify(slides);
       grid-template-rows: auto auto;
       grid-template-areas: "workspace" "inspector";
       overflow: visible;
+    }
+
+    .incident-deck__mobile-tabs {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-column: 1;
+      gap: 0.35rem;
+      padding: 0.3rem;
+      border: 1px solid var(--line);
+      background: var(--surface);
+    }
+
+    .incident-deck[data-mobile-mode="inspector"] .incident-deck__scene-shell {
+      display: none;
+    }
+
+    .incident-deck[data-mobile-mode="visual"] .incident-deck__inspector {
+      display: none;
+    }
+
+    .incident-deck__mobile-tab {
+      min-height: 2.5rem;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .incident-deck__mobile-tab.is-active {
+      border-color: var(--line-accent);
+      color: var(--accent);
+      background: var(--accent-soft);
     }
 
     .incident-deck__scene-shell {
