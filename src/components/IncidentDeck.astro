@@ -134,38 +134,6 @@ const serializedSlides = JSON.stringify(slides);
         </div>
       </div>
 
-      <div class="incident-deck__scene-controls" aria-label="Incident scene navigation">
-        <button
-          type="button"
-          class="incident-deck__scene-step"
-          data-incident-deck-step="previous"
-          aria-label="Previous scene"
-        >
-          <span aria-hidden="true">←</span>
-          <span>Previous</span>
-        </button>
-
-        <label class="incident-deck__scene-select-wrap">
-          <span class="mono">Scene</span>
-          <select class="incident-deck__scene-select" data-incident-deck-select aria-label="Select incident scene">
-            {slides.map((slide) => (
-              <option value={slide.id} selected={slide.id === activeSlide.id}>
-                {slide.label}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <button
-          type="button"
-          class="incident-deck__scene-step"
-          data-incident-deck-step="next"
-          aria-label="Next scene"
-        >
-          <span>Next</span>
-          <span aria-hidden="true">→</span>
-        </button>
-      </div>
     </section>
 
     <aside class="incident-deck__inspector surface surface-pad" data-incident-deck-inspector data-inspector-collapsed="false">
@@ -251,6 +219,38 @@ const serializedSlides = JSON.stringify(slides);
       </div>
     </aside>
 
+      <div class="incident-deck__scene-controls" aria-label="Incident scene navigation">
+        <button
+          type="button"
+          class="incident-deck__scene-step"
+          data-incident-deck-step="previous"
+          aria-label="Previous scene"
+        >
+          <span aria-hidden="true">←</span>
+          <span>Previous</span>
+        </button>
+
+        <label class="incident-deck__scene-select-wrap">
+          <span class="mono">Scene</span>
+          <select class="incident-deck__scene-select" data-incident-deck-select aria-label="Select incident scene">
+            {slides.map((slide) => (
+              <option value={slide.id} selected={slide.id === activeSlide.id}>
+                {slide.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <button
+          type="button"
+          class="incident-deck__scene-step"
+          data-incident-deck-step="next"
+          aria-label="Next scene"
+        >
+          <span>Next</span>
+          <span aria-hidden="true">→</span>
+        </button>
+      </div>
     <script type="application/json" data-incident-deck-slides set:html={serializedSlides}></script>
     <script>
       import { createHexGrid } from "operational-topology";
@@ -600,8 +600,8 @@ const serializedSlides = JSON.stringify(slides);
     padding: 1rem clamp(1rem, 1.6vw, 1.5rem);
     display: grid;
     grid-template-columns: minmax(0, 380px) minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr);
-    grid-template-areas: "inspector workspace";
+    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-areas: "inspector workspace" "inspector controls";
     gap: 1rem;
     overflow: hidden;
     transition: grid-template-columns 220ms ease;
@@ -749,7 +749,8 @@ const serializedSlides = JSON.stringify(slides);
   }
 
   .incident-deck__scene-controls {
-    position: absolute;
+    grid-area: controls;
+    position: relative;
     left: 0;
     bottom: 0;
     z-index: 2;
@@ -916,6 +917,9 @@ const serializedSlides = JSON.stringify(slides);
   }
 
   .incident-status-pill {
+    justify-self: start;
+    width: fit-content;
+    max-width: min(100%, 12rem);
     display: inline-flex;
     align-items: center;
     min-height: 2rem;
@@ -1027,15 +1031,15 @@ const serializedSlides = JSON.stringify(slides);
       height: auto;
       min-height: 0;
       grid-template-columns: 1fr;
-      grid-template-rows: auto auto;
-      grid-template-areas: "workspace" "inspector";
+      grid-template-rows: auto minmax(0, auto) auto auto;
+      grid-template-areas: "tabs" "workspace" "controls" "inspector";
       overflow: visible;
     }
 
     .incident-deck__mobile-tabs {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      grid-column: 1;
+      grid-area: tabs;
       gap: 0.35rem;
       padding: 0.3rem;
       border: 1px solid var(--line);
@@ -1112,6 +1116,7 @@ const serializedSlides = JSON.stringify(slides);
     }
 
     .incident-deck__scene-controls {
+      grid-area: controls;
       position: static;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       grid-template-areas:
@@ -1146,7 +1151,7 @@ const serializedSlides = JSON.stringify(slides);
       min-height: 0;
       margin: 0;
       padding: 1rem;
-      grid-template-rows: auto auto;
+      grid-template-rows: auto auto auto auto;
     }
 
     .incident-deck__identity-meta {
