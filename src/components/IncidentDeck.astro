@@ -266,6 +266,7 @@ const serializedSlides = JSON.stringify(slides);
       const mobileTabButtons = [...document.querySelectorAll("[data-incident-deck-mobile-tab]")];
       const shell = document.querySelector("[data-incident-deck-shell]");
       const sceneHost = document.querySelector("[data-incident-deck-scene]");
+      const topologyScene = sceneHost?.querySelector(".topology-scene");
       const slidesPayload = document.querySelector("[data-incident-deck-slides]");
       const currentLabel = document.querySelector("[data-incident-deck-current-label]");
       const inspectorTitle = document.querySelector("[data-incident-inspector-title]");
@@ -313,12 +314,12 @@ const serializedSlides = JSON.stringify(slides);
 
       setMobileMode("visual");
 
-      if (shell && sceneHost && sceneSvg && slides.length) {
+      if (shell && sceneHost && topologyScene && sceneSvg && slides.length) {
         let activeSlide = slides[0];
         let transition = null;
         const activeNodeId = activeSlide.rootNodeId ?? activeSlide.topology.nodes[0]?.id ?? "";
         const contentController = createTopologyContentPageController({
-          scene: sceneHost,
+          scene: topologyScene,
           initialId: activeNodeId,
           relationships: activeSlide.topology.relationships ?? [],
           navigation: {
@@ -493,6 +494,13 @@ const serializedSlides = JSON.stringify(slides);
           rebuildTransition();
           updateButtons();
           await Promise.resolve(transition.transition(nextSlide.topology));
+          topologyScene.dispatchEvent(new CustomEvent("topology-dataset-updated", {
+            detail: {
+              nodes: nextSlide.topology.nodes,
+              relationships: nextSlide.topology.relationships ?? [],
+              selectedId: nextFocusId,
+            },
+          }));
           contentController.syncTopology(nextSlide.topology.nodes, nextSlide.topology.relationships ?? [], liveSceneBounds, nextFocusId);
           updateInspector(nextSlide, nextFocusId);
         };
