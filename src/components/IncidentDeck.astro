@@ -140,7 +140,6 @@ const serializedSlides = JSON.stringify(slides);
       <div class="incident-deck__inspector-toolbar">
         <div>
           <p class="incident-deck__inspector-label mono">Incident inspector</p>
-          <span class="incident-deck__scene-map-caption">Selected scene and node context</span>
         </div>
         <button type="button" class="incident-deck__inspector-toggle" data-incident-deck-inspector-toggle aria-expanded="true">Collapse</button>
       </div>
@@ -943,7 +942,7 @@ const serializedSlides = JSON.stringify(slides);
 
   .incident-deck__identity-meta {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(8rem, 1fr));
     gap: 0.8rem 1rem;
   }
 
@@ -1145,6 +1144,12 @@ const serializedSlides = JSON.stringify(slides);
     }
   }
 
+  @media (max-width: 22rem) {
+    .incident-deck__identity-meta {
+      grid-template-columns: 1fr;
+    }
+  }
+
   @media (max-width: 720px) {
     .incident-deck {
       width: 100%;
@@ -1155,7 +1160,8 @@ const serializedSlides = JSON.stringify(slides);
     }
 
     .incident-deck__identity-meta {
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.65rem 0.75rem;
     }
 
     .incident-deck__scene-map {
