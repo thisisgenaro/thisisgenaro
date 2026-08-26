@@ -468,7 +468,6 @@ const serializedSlides = JSON.stringify(slides);
         };
 
         const syncSceneGeometry = () => {
-          contentController.syncTopology(activeSlide.topology.nodes, activeSlide.topology.relationships ?? [], liveSceneBounds, activeSlide.rootNodeId ?? activeSlide.topology.nodes[0]?.id ?? "");
           updateMiniMap(activeSlide);
           navigation.viewport.updateViewport();
           rebuildTransition();
@@ -487,15 +486,15 @@ const serializedSlides = JSON.stringify(slides);
 
           activeSlide = nextSlide;
           const nextFocusId = nextSlide.rootNodeId ?? nextSlide.topology.nodes[0]?.id ?? "";
-          contentController.syncTopology(nextSlide.topology.nodes, nextSlide.topology.relationships ?? [], liveSceneBounds, nextFocusId);
           updateMiniMap(nextSlide);
           if (miniCaption) {
             miniCaption.textContent = nextSlide.label;
           }
           rebuildTransition();
-          updateInspector(nextSlide, nextSlide.rootNodeId);
           updateButtons();
           await Promise.resolve(transition.transition(nextSlide.topology));
+          contentController.syncTopology(nextSlide.topology.nodes, nextSlide.topology.relationships ?? [], liveSceneBounds, nextFocusId);
+          updateInspector(nextSlide, nextFocusId);
         };
 
         prevButton?.addEventListener("click", () => {
@@ -568,8 +567,6 @@ const serializedSlides = JSON.stringify(slides);
         const transitionNodeObserver = new MutationObserver(bindTransitionNodes);
         transitionNodeObserver.observe(sceneHost, { childList: true, subtree: true });
         bindTransitionNodes();
-
-        contentController.syncTopology(activeSlide.topology.nodes, activeSlide.topology.relationships ?? [], liveSceneBounds, activeNodeId);
 
         rebuildTransition();
         updateInspector(activeSlide, activeSlide.rootNodeId);
