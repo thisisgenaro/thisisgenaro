@@ -31,6 +31,7 @@ const spanishSceneText: Record<string, string> = {
 };
 
 Object.assign(spanishSceneText, {
+  "Operational dashboard": "Panel operativo",
   "The failed authentication service fans out into the operational state, impact, and incident metadata needed to understand the disruption at a glance.": "El servicio de autenticación fallido se despliega hacia el estado operativo, el impacto y los metadatos necesarios para entender la interrupción de un vistazo.",
   "The authentication service is the failed operational origin.": "El servicio de autenticación es el origen operativo fallido.",
   "Warehouse users were blocked from key logistics applications.": "Los usuarios del almacén quedaron bloqueados de las aplicaciones logísticas clave.",
@@ -51,6 +52,43 @@ function translateIncidentStrings<T>(value: T): T {
   if (value && typeof value === "object") return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, translateIncidentStrings(item)])) as T;
   return value;
 }
+
+Object.assign(spanishSceneText, {
+  "Authentication failed for warehouse users even though the primary service appeared healthy. The incident closed after the legacy route was corrected and restoration was validated.": "La autenticación falló para los usuarios del almacén aunque el servicio principal parecía saludable. El incidente se cerró después de corregir la ruta heredada y validar la restauración.",
+  "The disruption delayed warehouse work, dispatch processing, and customer-service visibility. Email, internet, file services, and communications remained stable, so the outage was partial rather than total.": "La interrupción retrasó el trabajo del almacén, el procesamiento de despachos y la visibilidad de atención al cliente. El correo, internet, los servicios de archivos y las comunicaciones permanecieron estables, por lo que la caída fue parcial y no total.",
+  "Two clients requested the same identity name but reached different destinations. The comparison shows the DNS resolution divergence while the current authentication service remained healthy.": "Dos clientes solicitaron el mismo nombre de identidad, pero llegaron a destinos diferentes. La comparación muestra la divergencia de resolución DNS mientras el servicio de autenticación actual permanecía saludable.",
+  "The failure chain began with an incomplete migration, left a legacy DNS record in place, and routed clients to an obsolete identity endpoint. The systemic condition was an incomplete dependency inventory.": "La cadena de falla comenzó con una migración incompleta, dejó un registro DNS heredado y dirigió clientes a un endpoint de identidad obsoleto. La condición sistémica fue un inventario incompleto de dependencias.",
+  "The authentication service sat on the path to warehouse operations, customer-service visibility, and dispatch processing. One undocumented dependency therefore propagated into three business flows.": "El servicio de autenticación estaba en la ruta de las operaciones de almacén, la visibilidad de atención al cliente y el procesamiento de despachos. Por eso, una dependencia no documentada se propagó a tres flujos de negocio.",
+  "The incident moved from the first operations signal through formal response, DNS diagnosis, correction, and restoration. Diagnosis took longer than the correction.": "El incidente avanzó desde la primera señal de operaciones hasta la respuesta formal, el diagnóstico DNS, la corrección y la restauración. El diagnóstico tomó más tiempo que la corrección.",
+  "The response points toward stronger dependency validation, service-oriented observability, controlled change, and shared operational knowledge. The corrective work should improve both detection and recovery.": "La respuesta apunta a una validación más sólida de dependencias, observabilidad orientada a servicios, cambios controlados y conocimiento operativo compartido. Las acciones correctivas deben mejorar tanto la detección como la recuperación.",
+  "Warehouse Operations reports authentication failures": "Operaciones de almacén reporta fallos de autenticación",
+  "Incident response begins": "Comienza la respuesta al incidente",
+  "DNS resolution divergence identified": "Se identifica la divergencia de resolución DNS",
+  "Legacy DNS path corrected": "Se corrige la ruta DNS heredada",
+  "Service restoration validated": "Se valida la restauración del servicio",
+  "First report": "Primer reporte",
+  "Warehouse Operations reported authentication failures before service-oriented monitoring identified a decisive fault.": "Operaciones de almacén reportó fallos de autenticación antes de que el monitoreo orientado a servicios identificara una falla decisiva.",
+  "Time: 07:05": "Hora: 07:05",
+  "Source: Warehouse Operations": "Origen: Operaciones de almacén",
+  "Decision: begin incident triage": "Decisión: iniciar el triaje del incidente",
+  "The first reliable signal came from an operational user.": "La primera señal confiable provino de un usuario operativo.",
+  "Incident activated": "Incidente activado",
+  "The response moved from an operational symptom into formal incident coordination and evidence collection.": "La respuesta pasó de un síntoma operativo a la coordinación formal del incidente y la recopilación de evidencia.",
+  "Time: 07:18": "Hora: 07:18",
+  "Actor: Incident response": "Actor: respuesta al incidente",
+  "Decision: coordinate investigation": "Decisión: coordinar la investigación",
+  "The incident remained partial, not total.": "El incidente fue parcial, no total.",
+  "Legacy route found": "Ruta heredada encontrada",
+  "The investigation identified different DNS destinations for the same identity name, exposing the hidden dependency.": "La investigación identificó destinos DNS diferentes para el mismo nombre de identidad y expuso la dependencia oculta.",
+  "Evidence: divergent DNS resolution": "Evidencia: resolución DNS divergente",
+  "Decision: validate the legacy path": "Decisión: validar la ruta heredada",
+  "Diagnosis took longer than the correction.": "El diagnóstico tomó más tiempo que la corrección.",
+  "Restoration validated": "Restauración validada",
+  "The legacy DNS path was corrected and warehouse authentication was tested through the affected user path.": "Se corrigió la ruta DNS heredada y se probó la autenticación del almacén mediante la ruta del usuario afectado.",
+  "Actor: Infrastructure": "Actor: Infraestructura",
+  "Decision: close after validation": "Decisión: cerrar después de validar",
+  "Restoration included user-path validation.": "La restauración incluyó la validación de la ruta del usuario.",
+});
 
 const spanishIncidentCopy: Record<string, Partial<IncidentRecord>> = {
   "inc-2026-0001": {
@@ -131,7 +169,10 @@ function getIncidentLayoutRoot(scene: IncidentScene) {
   const nodes = getSceneNodes(scene);
   if (scene.topologyLayout === "linear") return nodes[0];
 
-  const selected = nodes.find((node) => node.selected);
+  const declaredRoot = (scene as IncidentScene & { rootNodeId?: string }).rootNodeId;
+  const selected = declaredRoot
+    ? nodes.find((node) => node.id === declaredRoot)
+    : nodes.find((node) => node.selected);
   if (selected) return selected;
 
   const connectors = getSceneConnectors(scene);
@@ -216,7 +257,8 @@ function createMatrixIncidentTopology(scene: IncidentScene) {
     nodes: nodes.map((node) => {
       const generatedNode = generatedBySourceId.get(node.id);
       if (!generatedNode) throw new Error(`OTF matrix did not position incident node ${node.id}`);
-      return mergeGeneratedNode(node, generatedNode);
+      const rootNodeId = (scene as IncidentScene & { rootNodeId?: string }).rootNodeId;
+      return mergeGeneratedNode({ ...node, selected: rootNodeId ? node.id === rootNodeId : node.selected }, generatedNode);
     }),
     relationships: getIncidentSceneEdges(scene),
     connectorRouting: generated.connectorRouting,
@@ -247,7 +289,8 @@ function createTerritoriesIncidentTopology(scene: IncidentScene) {
         (candidate) => candidate.id === `presentation-${layoutId}-${node.id}-root`,
       );
       if (!generatedNode) throw new Error(`OTF territories did not position incident node ${node.id}`);
-      return mergeGeneratedNode(node, generatedNode);
+      const rootNodeId = (scene as IncidentScene & { rootNodeId?: string }).rootNodeId;
+      return mergeGeneratedNode({ ...node, selected: rootNodeId ? node.id === rootNodeId : node.selected }, generatedNode);
     }),
     relationships: getIncidentSceneEdges(scene),
     connectorRouting: generated.connectorRouting,
@@ -385,7 +428,8 @@ export function createIncidentSceneTopology(scene: IncidentScene, incidentId = s
         : `presentation-${layoutId}-anchor-${node.id}`;
       const generatedNode = generated.nodes.find((candidate) => candidate.id === generatedId);
       if (!generatedNode) throw new Error(`OTF ${scene.topologyLayout} did not position incident node ${node.id}`);
-      return mergeGeneratedNode(node, generatedNode);
+      const rootNodeId = (scene as IncidentScene & { rootNodeId?: string }).rootNodeId ?? root.id;
+      return mergeGeneratedNode({ ...node, selected: node.id === rootNodeId }, generatedNode);
     }),
     relationships: getIncidentSceneEdges(scene),
     connectorRouting: generated.connectorRouting,

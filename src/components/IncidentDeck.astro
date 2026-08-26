@@ -20,7 +20,15 @@ interface Props { incident: any; locale: Locale; }
 const { incident, locale } = Astro.props as Props;
 const slides = createIncidentPresentationSlides(incident).map((slide, index) => {
   const sourceScene = incident.scenes[index];
-  const inspector = sourceScene.inspector;
+  const inspector = sourceScene.inspector as typeof sourceScene.inspector & { nodeDetails?: Record<string, any>; timeline?: Array<{ time: string; event: string }> };
+  const rootNodeId = (sourceScene as typeof sourceScene & { rootNodeId?: string }).rootNodeId ?? slide.topology.nodes.find((node) => node.selected)?.id ?? slide.topology.nodes[0]?.id ?? "";
+  const rootDetail = inspector.nodeDetails?.root ?? {
+    title: inspector.title,
+    body: inspector.body,
+    facts: inspector.facts,
+    highlights: sourceScene.highlights,
+    actions: sourceScene.actions,
+  };
 
   return {
     id: slide.id,
@@ -33,11 +41,11 @@ const slides = createIncidentPresentationSlides(incident).map((slide, index) => 
     topology: slide.topology,
     route: slide.route,
     transition: slide.transition,
-    inspectorTitle: inspector.title,
-    inspectorBody: inspector.body,
-    inspectorFacts: inspector.facts,
+    rootNodeId,
+    nodeDetails: { root: rootDetail, ...(inspector.nodeDetails ?? {}) },
     actions: sourceScene.actions,
     highlights: sourceScene.highlights,
+    timeline: inspector.timeline ?? [],
   };
 });
 
@@ -80,6 +88,10 @@ const serializedSlides = JSON.stringify(slides);
   description={incident.summary}
 >
   <main class="incident-deck">
+    <div class="incident-deck__mobile-tabs" data-incident-deck-mobile-tabs role="tablist" aria-label="Incident workspace">
+      <button type="button" class="incident-deck__mobile-tab is-active" data-incident-deck-mobile-tab="visual" role="tab" aria-selected="true">Visual</button>
+      <button type="button" class="incident-deck__mobile-tab" data-incident-deck-mobile-tab="inspector" role="tab" aria-selected="false">Inspector</button>
+    </div>
     <section class="incident-deck__scene-shell" data-incident-deck-shell>
       <div
         class="incident-deck__scene-frame"
@@ -122,6 +134,91 @@ const serializedSlides = JSON.stringify(slides);
         </div>
       </div>
 
+    </section>
+
+    <aside class="incident-deck__inspector surface surface-pad" data-incident-deck-inspector data-inspector-collapsed="false">
+      <div class="incident-deck__inspector-toolbar">
+        <div>
+          <p class="incident-deck__inspector-label mono">Incident inspector</p>
+        </div>
+        <button type="button" class="incident-deck__inspector-toggle" data-incident-deck-inspector-toggle aria-expanded="true">Collapse</button>
+      </div>
+      <div class="incident-deck__inspector-collapsed-mark" aria-hidden="true"><span>◇</span><small>Inspector</small></div>
+      <div class="incident-deck__inspector-panel" data-incident-deck-inspector-panel>
+        <div class="incident-deck__inspector-grid">
+        <section class="incident-deck__identity">
+          <p class="incident-deck__inspector-label mono">Incident identity</p>
+          <h1>{incident.incidentId}</h1>
+          <p class="incident-deck__identity-title">{incident.title}</p>
+          <div class="incident-deck__identity-meta">
+            <div>
+              <span>{locale === "es" ? "Estado" : "Status"}</span>
+              <strong class:list={["incident-status-pill", `is-${getIncidentStatusTone(incident.status)}`]}>{incident.status}</strong>
+            </div>
+            <div>
+              <span>{locale === "es" ? "Severidad" : "Severity"}</span>
+              <strong>{incident.severity}</strong>
+            </div>
+            <div>
+              <span>{locale === "es" ? "Inicio" : "Started"}</span>
+              <strong>{formatIncidentDateTime(incident.opened ?? incident.created)}</strong>
+            </div>
+            <div>
+              <span>{locale === "es" ? "Restaurado" : "Restored"}</span>
+              <strong>{incident.restored ? formatIncidentDateTime(incident.restored) : (incident.closed ? formatIncidentDateTime(incident.closed) : (locale === "es" ? "Abierto" : "Open"))}</strong>
+            </div>
+            <div>
+              <span>{locale === "es" ? "Organización" : "Organization"}</span>
+              <strong>{incident.organization}</strong>
+            </div>
+            <div>
+              <span>{locale === "es" ? "Solicitante" : "Requester"}</span>
+              <strong>{incident.requester}</strong>
+            </div>
+            <div>
+              <span>{locale === "es" ? "Servicio afectado" : "Affected service"}</span>
+              <strong>{incident.service}</strong>
+            </div>
+            <div>
+              <span>{locale === "es" ? "Categoría" : "Category"}</span>
+              <strong>{incident.category}</strong>
+            </div>
+          </div>
+        </section>
+
+        <section class="incident-deck__scene-note">
+          <div class="incident-deck__inspector-head">
+            <div>
+              <p class="incident-deck__inspector-label mono" data-incident-deck-current-label>{activeSlide.label}</p>
+              <h2 data-incident-inspector-title>{activeSlide.nodeDetails.root.title}</h2>
+            </div>
+
+          </div>
+
+          <p class="incident-deck__inspector-body" data-incident-inspector-body>{activeSlide.nodeDetails.root.body}</p>
+
+          <div class="incident-deck__facts" data-incident-inspector-facts>
+            {activeSlide.nodeDetails.root.facts.map((fact) => <p>{fact}</p>)}
+          </div>
+
+          <ol class="incident-deck__timeline" data-incident-inspector-timeline hidden>
+            {activeSlide.timeline.map((entry) => <li><time>{entry.time}</time><span>{entry.event}</span></li>)}
+          </ol>
+
+          <ul class="incident-deck__highlights" data-incident-inspector-highlights hidden={!activeSlide.highlights.length}>
+            {activeSlide.highlights.map((highlight) => <li>{highlight}</li>)}
+          </ul>
+
+          <div class="incident-deck__actions" data-incident-inspector-actions>
+            {activeSlide.actions.map((action) => (
+              <a href={`#${action.target}`}>{action.label} →</a>
+            ))}
+          </div>
+        </section>
+      </div>
+      </div>
+    </aside>
+
       <div class="incident-deck__scene-controls" aria-label="Incident scene navigation">
         <button
           type="button"
@@ -154,81 +251,6 @@ const serializedSlides = JSON.stringify(slides);
           <span aria-hidden="true">→</span>
         </button>
       </div>
-    </section>
-
-    <aside class="incident-deck__inspector surface surface-pad" data-incident-deck-inspector data-inspector-collapsed="false">
-      <div class="incident-deck__inspector-toolbar">
-        <div>
-          <p class="incident-deck__inspector-label mono">Incident inspector</p>
-          <span class="incident-deck__scene-map-caption">Slide details and metadata</span>
-        </div>
-        <button type="button" class="incident-deck__inspector-toggle" data-incident-deck-inspector-toggle aria-expanded="true">Collapse</button>
-      </div>
-      <div class="incident-deck__inspector-panel" data-incident-deck-inspector-panel>
-        <div class="incident-deck__inspector-grid">
-        <section class="incident-deck__identity">
-          <p class="incident-deck__inspector-label mono">Incident identity</p>
-          <h1>{incident.incidentId}</h1>
-          <p class="incident-deck__identity-title">{incident.title}</p>
-          <div class="incident-deck__identity-meta">
-            <div>
-              <span>Status</span>
-              <strong class:list={["incident-status-pill", `is-${getIncidentStatusTone(incident.status)}`]}>{incident.status}</strong>
-            </div>
-            <div>
-              <span>Created</span>
-              <strong>{formatIncidentDateTime(incident.created)}</strong>
-            </div>
-            <div>
-              <span>Closed</span>
-              <strong>{incident.closed ? formatIncidentDateTime(incident.closed) : "Open"}</strong>
-            </div>
-            <div>
-              <span>Organization</span>
-              <strong>{incident.organization}</strong>
-            </div>
-            <div>
-              <span>Requester</span>
-              <strong>{incident.requester}</strong>
-            </div>
-            <div>
-              <span>Service</span>
-              <strong>{incident.service}</strong>
-            </div>
-          </div>
-        </section>
-
-        <section class="incident-deck__scene-note">
-          <div class="incident-deck__inspector-head">
-            <div>
-              <p class="incident-deck__inspector-label mono" data-incident-deck-current-label>{activeSlide.label}</p>
-              <h2 data-incident-inspector-title>{activeSlide.inspectorTitle}</h2>
-            </div>
-            <div class="incident-deck__inspector-layout mono" data-incident-inspector-layout>
-              {activeSlide.sceneLayout} · {activeSlide.topologyLayout}
-            </div>
-          </div>
-
-          <p class="incident-deck__inspector-body" data-incident-inspector-body>{activeSlide.inspectorBody}</p>
-
-          <div class="incident-deck__facts" data-incident-inspector-facts>
-            {activeSlide.inspectorFacts.map((fact) => <p>{fact}</p>)}
-          </div>
-
-          <ul class="incident-deck__highlights" data-incident-inspector-highlights hidden={!activeSlide.highlights.length}>
-            {activeSlide.highlights.map((highlight) => <li>{highlight}</li>)}
-          </ul>
-
-          <div class="incident-deck__actions" data-incident-inspector-actions>
-            {activeSlide.actions.map((action) => (
-              <a href={`#${action.target}`}>{action.label} →</a>
-            ))}
-          </div>
-        </section>
-      </div>
-      </div>
-    </aside>
-
     <script type="application/json" data-incident-deck-slides set:html={serializedSlides}></script>
     <script>
       import { createHexGrid } from "operational-topology";
@@ -239,15 +261,18 @@ const serializedSlides = JSON.stringify(slides);
       import { renderTopologyGridMarkup } from "../../node_modules/operational-topology/src/topology/TopologyGridRenderer.ts";
       import { createSceneNavigationController } from "../../node_modules/operational-topology/src/topology/sceneNavigationController.ts";
 
+      const deck = document.querySelector(".incident-deck");
+      const mobileTabs = document.querySelector("[data-incident-deck-mobile-tabs]");
+      const mobileTabButtons = [...document.querySelectorAll("[data-incident-deck-mobile-tab]")];
       const shell = document.querySelector("[data-incident-deck-shell]");
       const sceneHost = document.querySelector("[data-incident-deck-scene]");
       const slidesPayload = document.querySelector("[data-incident-deck-slides]");
       const currentLabel = document.querySelector("[data-incident-deck-current-label]");
       const inspectorTitle = document.querySelector("[data-incident-inspector-title]");
       const inspectorBody = document.querySelector("[data-incident-inspector-body]");
-      const inspectorLayout = document.querySelector("[data-incident-inspector-layout]");
       const inspectorFacts = document.querySelector("[data-incident-inspector-facts]");
       const inspectorHighlights = document.querySelector("[data-incident-inspector-highlights]");
+      const inspectorTimeline = document.querySelector("[data-incident-inspector-timeline]");
       const inspectorActions = document.querySelector("[data-incident-inspector-actions]");
       const miniCaption = document.querySelector("[data-incident-deck-mini-caption]");
       const select = document.querySelector("[data-incident-deck-select]");
@@ -275,10 +300,22 @@ const serializedSlides = JSON.stringify(slides);
       let initialFitScheduled = false;
       let inspectorCollapsed = false;
 
+      const setMobileMode = (mode) => {
+        if (!deck || !mobileTabs) return;
+        deck.dataset.mobileMode = mode;
+        mobileTabButtons.forEach((button) => {
+          const active = button.dataset.incidentDeckMobileTab === mode;
+          button.classList.toggle("is-active", active);
+          button.setAttribute("aria-selected", String(active));
+        });
+      };
+
+      setMobileMode("visual");
+
       if (shell && sceneHost && sceneSvg && slides.length) {
         let activeSlide = slides[0];
         let transition = null;
-        const activeNodeId = activeSlide.topology.nodes.find((node) => node.selected || node.active)?.id ?? activeSlide.topology.nodes[0]?.id ?? "";
+        const activeNodeId = activeSlide.rootNodeId ?? activeSlide.topology.nodes[0]?.id ?? "";
         const navigation = createSceneNavigationController({
           shell,
           scene: sceneHost,
@@ -295,15 +332,17 @@ const serializedSlides = JSON.stringify(slides);
           resizeTargets: [shell, sceneHost],
         });
 
-        const updateInspector = (slide) => {
-          if (currentLabel) currentLabel.textContent = slide.label;
-          if (inspectorTitle) inspectorTitle.textContent = slide.inspectorTitle;
-          if (inspectorBody) inspectorBody.textContent = slide.inspectorBody;
-          if (inspectorLayout) inspectorLayout.textContent = `${slide.sceneLayout} · ${slide.topologyLayout}`;
+        const updateInspector = (slide, selectedNodeId = slide.rootNodeId) => {
+          const detail = slide.nodeDetails?.[selectedNodeId] ?? slide.nodeDetails?.root;
+          if (!detail) return;
+          const isRoot = selectedNodeId === slide.rootNodeId || !slide.nodeDetails?.[selectedNodeId];
+          if (currentLabel) currentLabel.textContent = isRoot ? slide.label : (slide.topology.nodes.find((node) => node.id === selectedNodeId)?.label ?? slide.label);
+          if (inspectorTitle) inspectorTitle.textContent = detail.title;
+          if (inspectorBody) inspectorBody.textContent = detail.body;
 
           if (inspectorFacts) {
             inspectorFacts.replaceChildren(
-              ...slide.inspectorFacts.map((fact) => {
+              ...(detail.facts ?? []).map((fact) => {
                 const p = document.createElement("p");
                 p.textContent = fact;
                 return p;
@@ -311,10 +350,27 @@ const serializedSlides = JSON.stringify(slides);
             );
           }
 
+          if (inspectorTimeline) {
+            const timeline = isRoot ? (slide.timeline ?? []) : (detail.timeline ?? []);
+            inspectorTimeline.hidden = !timeline.length;
+            inspectorTimeline.replaceChildren(
+              ...timeline.map((entry) => {
+                const li = document.createElement("li");
+                const time = document.createElement("time");
+                const event = document.createElement("span");
+                time.textContent = entry.time;
+                event.textContent = entry.event;
+                li.append(time, event);
+                return li;
+              }),
+            );
+          }
+
           if (inspectorHighlights) {
-            inspectorHighlights.hidden = !(slide.highlights && slide.highlights.length);
+            const highlights = detail.highlights ?? [];
+            inspectorHighlights.hidden = !highlights.length;
             inspectorHighlights.replaceChildren(
-              ...(slide.highlights ?? []).map((highlight) => {
+              ...highlights.map((highlight) => {
                 const li = document.createElement("li");
                 li.textContent = highlight;
                 return li;
@@ -323,8 +379,9 @@ const serializedSlides = JSON.stringify(slides);
           }
 
           if (inspectorActions) {
+            const actions = detail.actions ?? slide.actions;
             inspectorActions.replaceChildren(
-              ...slide.actions.map((action) => {
+              ...actions.map((action) => {
                 const link = document.createElement("a");
                 link.href = `#${action.target}`;
                 link.textContent = `${action.label} →`;
@@ -333,17 +390,10 @@ const serializedSlides = JSON.stringify(slides);
             );
           }
 
-          if (miniCaption) {
-            miniCaption.textContent = slide.label;
-          }
-
+          if (miniCaption) miniCaption.textContent = slide.label;
           updateMiniMap(slide);
-
-          if (select) {
-            select.value = slide.id;
-          }
+          if (select) select.value = slide.id;
         };
-
         const updateMiniMap = (slide) => {
           if (!miniMapConnectors) return;
 
@@ -368,13 +418,19 @@ const serializedSlides = JSON.stringify(slides);
 
         const setInspectorCollapsed = (nextCollapsed) => {
           inspectorCollapsed = nextCollapsed;
+          deck?.classList.toggle("is-inspector-collapsed", inspectorCollapsed);
           inspector?.classList.toggle("is-collapsed", inspectorCollapsed);
           inspector?.setAttribute("data-inspector-collapsed", String(inspectorCollapsed));
           if (inspectorToggle) {
             inspectorToggle.setAttribute("aria-expanded", String(!inspectorCollapsed));
-            inspectorToggle.textContent = inspectorCollapsed ? "Expand" : "Collapse";
+            inspectorToggle.textContent = inspectorCollapsed ? "›" : "Collapse";
           }
+          requestAnimationFrame(() => navigation.viewport.updateViewport());
         };
+
+        mobileTabButtons.forEach((button) => {
+          button.addEventListener("click", () => setMobileMode(button.dataset.incidentDeckMobileTab ?? "visual"));
+        });
 
         const fitDeckCamera = (nodes) => {
           const camera = navigation.viewport.getCamera();
@@ -422,7 +478,7 @@ const serializedSlides = JSON.stringify(slides);
           if (!nextSlide || nextSlide.id === activeSlide.id) return;
 
           activeSlide = nextSlide;
-          const nextFocusId = nextSlide.topology.nodes.find((node) => node.selected || node.active)?.id ?? nextSlide.topology.nodes[0]?.id ?? "";
+          const nextFocusId = nextSlide.rootNodeId ?? nextSlide.topology.nodes[0]?.id ?? "";
           navigation.setTopology(nextSlide.topology.nodes, liveSceneBounds);
           if (nextFocusId) {
             navigation.select(nextFocusId);
@@ -433,7 +489,7 @@ const serializedSlides = JSON.stringify(slides);
             miniCaption.textContent = nextSlide.label;
           }
           rebuildTransition();
-          updateInspector(nextSlide);
+          updateInspector(nextSlide, nextSlide.rootNodeId);
           updateButtons();
           await Promise.resolve(transition.transition(nextSlide.topology));
         };
@@ -456,17 +512,75 @@ const serializedSlides = JSON.stringify(slides);
         select?.addEventListener("input", handleSelect);
         select?.addEventListener("change", handleSelect);
 
-        const resizeObserver = new ResizeObserver(() => {
-          syncSceneGeometry();
-        });
-
         sceneHost.addEventListener("topology-node-selected", (event) => {
           const detail = event.detail;
           const nodeId = detail?.nodeId;
           if (!nodeId) return;
           navigation.select(nodeId);
           navigation.ensureVisible(nodeId, true);
+          updateInspector(activeSlide, nodeId);
         });
+
+        // Dataset transitions replace the occupant nodes, so delegate selection
+        // from the stable SVG root for every incoming slide node. Initial OTF-bound
+        // nodes are skipped to avoid duplicate selection events.
+        const handleDelegatedNodeClick = (event) => {
+          const target = event.target instanceof Element
+            ? event.target.closest(".grid-occupant[data-node-id]")
+            : null;
+          if (!target || target.getAttribute("data-bound") === "true" || target.getAttribute("data-incident-deck-bound") === "true") return;
+          const nodeId = target.getAttribute("data-node-id");
+          if (!nodeId) return;
+          navigation.select(nodeId);
+          navigation.ensureVisible(nodeId, true);
+          updateInspector(activeSlide, nodeId);
+        };
+        const handleDelegatedNodeKeydown = (event) => {
+          if (!(event instanceof KeyboardEvent) || (event.key !== "Enter" && event.key !== " ")) return;
+          const target = event.target instanceof Element
+            ? event.target.closest(".grid-occupant[data-node-id]")
+            : null;
+          if (!target || target.getAttribute("data-bound") === "true") return;
+          event.preventDefault();
+          const nodeId = target.getAttribute("data-node-id");
+          if (!nodeId) return;
+          navigation.select(nodeId);
+          navigation.ensureVisible(nodeId, true);
+          updateInspector(activeSlide, nodeId);
+        };
+        sceneHost.addEventListener("pointerup", handleDelegatedNodeClick);
+        sceneHost.addEventListener("click", handleDelegatedNodeClick);
+        sceneHost.addEventListener("keydown", handleDelegatedNodeKeydown);
+
+        // Dataset transitions inject new occupant groups after TopologyScene
+        // performs its initial interaction binding. Bind those incoming nodes
+        // directly so they remain selectable throughout the scene handoff.
+        const bindTransitionNodes = () => {
+          sceneHost.querySelectorAll(".grid-occupant[data-node-id]").forEach((node) => {
+            if (node.getAttribute("data-bound") === "true" || node.getAttribute("data-incident-deck-bound") === "true") return;
+            if (node.getAttribute("aria-disabled") === "true") return;
+            node.setAttribute("data-incident-deck-bound", "true");
+            node.addEventListener("click", () => {
+              const nodeId = node.getAttribute("data-node-id");
+              if (!nodeId) return;
+              navigation.select(nodeId);
+              navigation.ensureVisible(nodeId, true);
+              updateInspector(activeSlide, nodeId);
+            });
+            node.addEventListener("keydown", (event) => {
+              if (!(event instanceof KeyboardEvent) || (event.key !== "Enter" && event.key !== " ")) return;
+              event.preventDefault();
+              const nodeId = node.getAttribute("data-node-id");
+              if (!nodeId) return;
+              navigation.select(nodeId);
+              navigation.ensureVisible(nodeId, true);
+              updateInspector(activeSlide, nodeId);
+            });
+          });
+        };
+        const transitionNodeObserver = new MutationObserver(bindTransitionNodes);
+        transitionNodeObserver.observe(sceneHost, { childList: true, subtree: true });
+        bindTransitionNodes();
 
         navigation.setTopology(activeSlide.topology.nodes, liveSceneBounds);
         if (activeNodeId) {
@@ -474,12 +588,13 @@ const serializedSlides = JSON.stringify(slides);
         }
 
         rebuildTransition();
-        updateInspector(activeSlide);
+        updateInspector(activeSlide, activeSlide.rootNodeId);
         updateMiniMap(activeSlide);
         updateButtons();
         setInspectorCollapsed(false);
         Promise.resolve(transition.transition(activeSlide.topology));
-        resizeObserver.observe(sceneHost);
+        // The OTF navigation controller owns responsive viewport updates.
+        // Avoid rebuilding the dataset transition during mobile pinch/resize gestures.
         syncSceneGeometry();
 
         inspectorToggle?.addEventListener("click", () => setInspectorCollapsed(!inspectorCollapsed));
@@ -487,7 +602,10 @@ const serializedSlides = JSON.stringify(slides);
         window.addEventListener(
           "pagehide",
           () => {
-            resizeObserver.disconnect();
+            sceneHost.removeEventListener("pointerup", handleDelegatedNodeClick);
+            sceneHost.removeEventListener("click", handleDelegatedNodeClick);
+            sceneHost.removeEventListener("keydown", handleDelegatedNodeKeydown);
+            transitionNodeObserver.disconnect();
             transition?.destroy?.();
             navigation.destroy();
           },
@@ -499,19 +617,33 @@ const serializedSlides = JSON.stringify(slides);
 </BaseLayout>
 
 <style>
+  .incident-deck__mobile-tabs {
+    display: none;
+  }
+
   .incident-deck {
     position: relative;
     width: 100%;
     max-width: none;
+    height: calc(100dvh - 1rem);
     min-height: calc(100dvh - 1rem);
     margin: 0;
     padding: 1rem clamp(1rem, 1.6vw, 1.5rem);
     display: grid;
+    grid-template-columns: minmax(0, 380px) minmax(0, 1fr);
     grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-areas: "inspector workspace" "inspector controls";
     gap: 1rem;
+    overflow: hidden;
+    transition: grid-template-columns 220ms ease;
+  }
+
+  .incident-deck.is-inspector-collapsed {
+    grid-template-columns: 46px minmax(0, 1fr);
   }
 
   .incident-deck__scene-shell {
+    grid-area: workspace;
     position: relative;
     min-height: 0;
     height: 100%;
@@ -648,7 +780,8 @@ const serializedSlides = JSON.stringify(slides);
   }
 
   .incident-deck__scene-controls {
-    position: absolute;
+    grid-area: controls;
+    position: relative;
     left: 0;
     bottom: 0;
     z-index: 2;
@@ -706,10 +839,13 @@ const serializedSlides = JSON.stringify(slides);
   }
 
   .incident-deck__inspector {
+    grid-area: inspector;
     position: relative;
     width: 100%;
     max-width: none;
-    overflow: clip;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
     z-index: 1;
     display: grid;
     gap: 0.95rem;
@@ -736,11 +872,62 @@ const serializedSlides = JSON.stringify(slides);
     cursor: pointer;
   }
 
+  .incident-deck.is-inspector-collapsed .incident-deck__inspector {
+    width: 46px;
+    padding-inline: .45rem;
+  }
+
+  .incident-deck.is-inspector-collapsed .incident-deck__inspector-collapsed-mark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    min-height: 0;
+    color: var(--accent);
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+  }
+
+  .incident-deck.is-inspector-collapsed .incident-deck__inspector-collapsed-mark span {
+    font-size: 1.15rem;
+    line-height: 1;
+  }
+
+  .incident-deck.is-inspector-collapsed .incident-deck__inspector-collapsed-mark small {
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .incident-deck.is-inspector-collapsed .incident-deck__inspector-toolbar {
+    align-items: center;
+    justify-content: center;
+  }
+
+  .incident-deck.is-inspector-collapsed .incident-deck__inspector-toolbar > div {
+    display: none;
+  }
+
+  .incident-deck.is-inspector-collapsed .incident-deck__inspector-toggle {
+    width: 2rem;
+    min-height: 2.2rem;
+    padding: 0;
+    font-size: 1.2rem;
+    letter-spacing: 0;
+  }
+
+  .incident-deck__inspector-collapsed-mark {
+    display: none;
+  }
+
   .incident-deck__inspector-panel {
     display: grid;
     gap: 0.95rem;
-    max-height: 100rem;
-    overflow: hidden;
+    min-height: 0;
+    max-height: none;
+    overflow: hidden auto;
     opacity: 1;
     transform: translateY(0);
     transition: max-height 240ms ease, opacity 200ms ease, transform 240ms ease;
@@ -748,7 +935,7 @@ const serializedSlides = JSON.stringify(slides);
 
   .incident-deck__inspector-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    grid-template-columns: 1fr;
     gap: 1rem;
     align-items: start;
   }
@@ -789,6 +976,9 @@ const serializedSlides = JSON.stringify(slides);
   }
 
   .incident-status-pill {
+    justify-self: start;
+    width: fit-content;
+    max-width: min(100%, 12rem);
     display: inline-flex;
     align-items: center;
     min-height: 2rem;
@@ -812,11 +1002,15 @@ const serializedSlides = JSON.stringify(slides);
 
   .incident-deck__identity-meta {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(8rem, 1fr));
     gap: 0.8rem 1rem;
   }
 
-  .incident-deck__identity-meta > div,
+  .incident-deck__identity-meta > div { display: grid; gap: .45rem; }
+  .incident-deck__timeline { display: grid; gap: .45rem; margin: 1rem 0 0; padding: .8rem 0 0 1.2rem; border-top: 1px solid var(--line); }
+  .incident-deck__timeline li { display: grid; grid-template-columns: 3.3rem 1fr; gap: .65rem; color: var(--muted); font-size: .75rem; line-height: 1.45; }
+  .incident-deck__timeline time { color: var(--accent); font-family: var(--font-mono); font-size: .63rem; }
+
   .incident-deck__facts,
   .incident-deck__actions {
     display: grid;
@@ -892,6 +1086,51 @@ const serializedSlides = JSON.stringify(slides);
   }
 
   @media (max-width: 980px) {
+    .incident-deck {
+      height: auto;
+      min-height: 0;
+      grid-template-columns: 1fr;
+      grid-template-rows: auto minmax(0, auto) auto auto;
+      grid-template-areas: "tabs" "workspace" "controls" "inspector";
+      overflow: visible;
+    }
+
+    .incident-deck__mobile-tabs {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-area: tabs;
+      gap: 0.35rem;
+      padding: 0.3rem;
+      border: 1px solid var(--line);
+      background: var(--surface);
+    }
+
+    .incident-deck[data-mobile-mode="inspector"] .incident-deck__scene-shell {
+      display: none;
+    }
+
+    .incident-deck[data-mobile-mode="visual"] .incident-deck__inspector {
+      display: none;
+    }
+
+    .incident-deck__mobile-tab {
+      min-height: 2.5rem;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .incident-deck__mobile-tab.is-active {
+      border-color: var(--line-accent);
+      color: var(--accent);
+      background: var(--accent-soft);
+    }
+
     .incident-deck__scene-shell {
       min-height: auto;
       height: auto;
@@ -910,9 +1149,11 @@ const serializedSlides = JSON.stringify(slides);
     }
 
     .incident-deck__inspector {
+      grid-area: inspector;
       position: static;
       width: 100%;
       max-width: none;
+      height: auto;
       overflow: visible;
       margin-top: 0;
     }
@@ -926,6 +1167,7 @@ const serializedSlides = JSON.stringify(slides);
     }
 
     .incident-deck__inspector-panel {
+      min-height: 0;
       max-height: none !important;
       opacity: 1 !important;
       transform: none !important;
@@ -933,6 +1175,7 @@ const serializedSlides = JSON.stringify(slides);
     }
 
     .incident-deck__scene-controls {
+      grid-area: controls;
       position: static;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       grid-template-areas:
@@ -961,17 +1204,24 @@ const serializedSlides = JSON.stringify(slides);
     }
   }
 
+  @media (max-width: 22rem) {
+    .incident-deck__identity-meta {
+      grid-template-columns: 1fr;
+    }
+  }
+
   @media (max-width: 720px) {
     .incident-deck {
       width: 100%;
       min-height: 0;
       margin: 0;
       padding: 1rem;
-      grid-template-rows: auto auto;
+      grid-template-rows: auto auto auto auto;
     }
 
     .incident-deck__identity-meta {
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.65rem 0.75rem;
     }
 
     .incident-deck__scene-map {

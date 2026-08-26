@@ -39,6 +39,7 @@ export const incidents = [
     scenes: [
       {
         sceneId: "overview",
+        rootNodeId: "affected-service",
         label: "Overview",
         title: "Operational Dashboard",
         topologyLayout: "fan",
@@ -77,7 +78,7 @@ export const incidents = [
         inspector: {
           title: "Operational dashboard",
           body:
-            "The fan layout starts with the affected authentication service in a failed state, then expands into the incident status, severity, duration, ownership, and operational impact.",
+            "Authentication failed for warehouse users even though the primary service appeared healthy. The incident closed after the legacy route was corrected and restoration was validated.",
           facts: [
             "Affected service: Authentication — Failed",
             "Duration: 92 minutes",
@@ -89,6 +90,7 @@ export const incidents = [
       },
       {
         sceneId: "executive-report",
+        rootNodeId: "incident-status",
         label: "Executive Report",
         title: "Business Impact",
         topologyLayout: "orbital-clusters",
@@ -117,7 +119,7 @@ export const incidents = [
         inspector: {
           title: "Executive summary",
           body:
-            "This view separates the business effect from the operational record so the viewer can read impact without losing the underlying technical state.",
+            "The disruption delayed warehouse work, dispatch processing, and customer-service visibility. Email, internet, file services, and communications remained stable, so the outage was partial rather than total.",
           facts: [
             "Impacted: warehouse, customer service, dispatch",
             "Stable: email, internet, file services, communications",
@@ -129,6 +131,7 @@ export const incidents = [
       },
       {
         sceneId: "technical-analysis",
+        rootNodeId: "client-a",
         label: "Technical Analysis",
         title: "Comparing the Evidence",
         topologyLayout: "matrix",
@@ -156,7 +159,7 @@ export const incidents = [
         inspector: {
           title: "Technical comparison",
           body:
-            "Matrix layout works here because the investigation depends on comparing equivalent paths and identifying the divergence point.",
+            "Two clients requested the same identity name but reached different destinations. The comparison shows the DNS resolution divergence while the current authentication service remained healthy.",
           facts: [
             "Client A: legacy endpoint",
             "Client B: current production service",
@@ -168,6 +171,7 @@ export const incidents = [
       },
       {
         sceneId: "root-cause",
+        rootNodeId: "legacy-dns",
         label: "Root Cause",
         title: "Root Cause Analysis",
         topologyLayout: "basin",
@@ -194,7 +198,7 @@ export const incidents = [
         inspector: {
           title: "Root cause",
           body:
-            "The basin layout makes the flow of evidence feel like a funnel, which matches how the investigation narrows from many hypotheses to one cause.",
+            "The failure chain began with an incomplete migration, left a legacy DNS record in place, and routed clients to an obsolete identity endpoint. The systemic condition was an incomplete dependency inventory.",
           facts: [
             "Immediate cause: incorrect service destination",
             "Technical cause: legacy DNS path",
@@ -206,6 +210,7 @@ export const incidents = [
       },
       {
         sceneId: "dependency-map",
+        rootNodeId: "identity-service",
         label: "Dependency Map",
         title: "Dependency Landscape",
         topologyLayout: "fan",
@@ -234,7 +239,7 @@ export const incidents = [
         inspector: {
           title: "Dependency view",
           body:
-            "Fan layout makes the downstream effect visible at a glance while keeping the central dependency anchored in the middle.",
+            "The authentication service sat on the path to warehouse operations, customer-service visibility, and dispatch processing. One undocumented dependency therefore propagated into three business flows.",
           facts: [
             "Center: authentication service",
             "Downstream: warehouse, customer visibility, dispatch",
@@ -246,6 +251,7 @@ export const incidents = [
       },
       {
         sceneId: "timeline",
+        rootNodeId: "INC-2026-0001",
         label: "Timeline",
         title: "Operational Timeline",
         topologyLayout: "linear",
@@ -274,18 +280,52 @@ export const incidents = [
         inspector: {
           title: "Operational timeline",
           body:
-            "Linear layout keeps the response sequence explicit so the viewer can follow the incident without losing the order of events.",
+            "The incident moved from the first operations signal through formal response, DNS diagnosis, correction, and restoration. Diagnosis took longer than the correction.",
           facts: [
+            "Total duration: 92 minutes",
+            "First reliable signal: warehouse operations",
             "Longest phase: identifying the hidden dependency",
-            "Correction was faster than diagnosis",
-            "Source of signal: warehouse operations",
           ],
+          timeline: [
+            { time: "07:05", event: "Warehouse Operations reports authentication failures" },
+            { time: "07:18", event: "Incident response begins" },
+            { time: "07:55", event: "DNS resolution divergence identified" },
+            { time: "08:12", event: "Legacy DNS path corrected" },
+            { time: "08:37", event: "Service restoration validated" },
+          ],
+          nodeDetails: {
+            "first-report": {
+              title: "First report",
+              body: "Warehouse Operations reported authentication failures before service-oriented monitoring identified a decisive fault.",
+              facts: ["Time: 07:05", "Source: Warehouse Operations", "Decision: begin incident triage"],
+              highlights: ["The first reliable signal came from an operational user."],
+            },
+            "formal-activation": {
+              title: "Incident activated",
+              body: "The response moved from an operational symptom into formal incident coordination and evidence collection.",
+              facts: ["Time: 07:18", "Actor: Incident response", "Decision: coordinate investigation"],
+              highlights: ["The incident remained partial, not total."],
+            },
+            "legacy-found": {
+              title: "Legacy route found",
+              body: "The investigation identified different DNS destinations for the same identity name, exposing the hidden dependency.",
+              facts: ["Time: 07:55", "Evidence: divergent DNS resolution", "Decision: validate the legacy path"],
+              highlights: ["Diagnosis took longer than the correction."],
+            },
+            "restored": {
+              title: "Restoration validated",
+              body: "The legacy DNS path was corrected and warehouse authentication was tested through the affected user path.",
+              facts: ["Time: 08:37", "Actor: Infrastructure", "Decision: close after validation"],
+              highlights: ["Restoration included user-path validation."],
+            },
+          },
         },
         actions: [{ label: "Review lessons", target: "lessons" }],
         nextScene: "lessons",
       },
       {
         sceneId: "lessons",
+        rootNodeId: "validation",
         label: "Lessons",
         title: "Lessons Learned",
         topologyLayout: "territories",
@@ -314,7 +354,7 @@ export const incidents = [
         inspector: {
           title: "Lessons learned",
           body:
-            "Territories give the final scene room to separate lessons into practical domains instead of collapsing them into a single generic takeaway.",
+            "The response points toward stronger dependency validation, service-oriented observability, controlled change, and shared operational knowledge. The corrective work should improve both detection and recovery.",
           facts: [
             "Short term: remove legacy routes",
             "Medium term: distributed functional validation",

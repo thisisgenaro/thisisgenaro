@@ -5,9 +5,9 @@ translationStatus: complete
 language: es
 acronym: STA
 name: Servicios Tecnológicos Atlas
-industry: Managed Services
+industry: Servicios administrados
 type: Entorno ficticio de estudio de casos
-descriptor: A growing managed-service operation separating meaningful customer signals desde multi-tenant monitoring noise.
+descriptor: Operación creciente de servicios administrados que separa las señales relevantes de los clientes del ruido de monitoreo multiinquilino.
 headquarters: Santo Domingo
 branches: 1
 employees: 120
@@ -34,7 +34,7 @@ people:
   - { id: andres-guerrero, name: Andrés Guerrero, role: Líder del NOC, operationalImportance: Encuentra patrones relevantes dentro de la telemetría ruidosa de múltiples clientes., characteristic: Investigador experimentado de monitoreo, expuesto continuamente a la fatiga de alertas., question: ¿Esto es ruido o señal? }
   - { id: junior, name: Junior, role: Analista NOC L1, operationalImportance: Nota condiciones que los operadores experimentados quizá aprendieron a descartar., characteristic: Perspectiva nueva y curiosa, con poca confianza durante el escalamiento., question: Esto no debería verse así, ¿verdad? }
 incidentIds: []
-tags: [Managed services, Monitoreo, Alert fatigue, Multi-tenant operations]
+tags: [Servicios administrados, Monitoreo, Fatiga de alertas, Operaciones multiinquilino]
 topology:
   nodes:
     - { id: noc, domainId: monitoring, label: NOC, subtitle: OPERATIONS, status: healthy, variant: root, size: lg, selected: true }

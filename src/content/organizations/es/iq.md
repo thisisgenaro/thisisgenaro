@@ -7,7 +7,7 @@ acronym: IQ
 name: Industrias Quisqueya
 industry: Manufactura
 type: Entorno ficticio de estudio de casos
-descriptor: A food production y distribution operation where technology crosses directly into physical process control.
+descriptor: Operación de producción y distribución de alimentos donde la tecnología se cruza directamente con el control de los procesos físicos.
 headquarters: San Pedro de Macorís
 branches: 3
 employees: 900
@@ -34,7 +34,7 @@ people:
   - { id: ramon-castillo, name: Ramón Castillo, role: Administrador de infraestructura, operationalImportance: Entiende cómo los cambios en la tecnología corporativa pueden cruzarse con las operaciones de planta., characteristic: Investigador cuidadoso que trabaja dentro de ventanas de mantenimiento estrechas., question: ¿Esto puede afectar la producción? }
   - { id: dona-carmen, name: Doña Carmen, role: Supervisora de producción, operationalImportance: Detecta cambios en el comportamiento de la línea antes de que los paneles de infraestructura muestren una falla evidente., characteristic: Conserva un profundo conocimiento histórico del proceso, mayormente no documentado., question: La línea se siente extraña. }
 incidentIds: []
-tags: [Manufactura, Operational technology, Production, IT OT]
+tags: [Manufactura, Tecnología operativa, Producción, TI y OT]
 topology:
   nodes:
     - { id: production-line, domainId: ot, label: Production Line, subtitle: PHYSICAL PROCESS, status: healthy, variant: root, size: lg, selected: true }
