@@ -9,6 +9,6 @@
     },
     "dependencies": {
       "astro": "7.2.4",
-      "operational-topology": "0.0.12"
+      "operational-topology": "0.1.0"
     }
   }
