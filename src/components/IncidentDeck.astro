@@ -259,7 +259,7 @@ const serializedSlides = JSON.stringify(slides);
       import { getGridBounds } from "../../node_modules/operational-topology/src/topology/hex.ts";
       import { prepareTopologyRenderFrame } from "../../node_modules/operational-topology/src/topology/renderPipeline.ts";
       import { renderTopologyGridMarkup } from "../../node_modules/operational-topology/src/topology/TopologyGridRenderer.ts";
-      import { createSceneNavigationController } from "../../node_modules/operational-topology/src/topology/sceneNavigationController.ts";
+      import { createTopologyContentPageController } from "operational-topology/browser";
 
       const deck = document.querySelector(".incident-deck");
       const mobileTabs = document.querySelector("[data-incident-deck-mobile-tabs]");
@@ -299,6 +299,7 @@ const serializedSlides = JSON.stringify(slides);
       let liveSceneBounds = initialSceneBounds;
       let initialFitScheduled = false;
       let inspectorCollapsed = false;
+      let updateInspector = () => {};
 
       const setMobileMode = (mode) => {
         if (!deck || !mobileTabs) return;
@@ -316,23 +317,30 @@ const serializedSlides = JSON.stringify(slides);
         let activeSlide = slides[0];
         let transition = null;
         const activeNodeId = activeSlide.rootNodeId ?? activeSlide.topology.nodes[0]?.id ?? "";
-        const navigation = createSceneNavigationController({
-          shell,
+        const contentController = createTopologyContentPageController({
           scene: sceneHost,
-          nodes: activeSlide.topology.nodes,
-          worldRadius: deckRadius,
-          worldBounds: liveSceneBounds,
-          zoomStep: 0.08,
-          transitionDuration: 260,
-          selectedId: activeNodeId,
-          fitOnInit: false,
-          interactiveMiniMap: true,
-          enableSceneGestures: true,
-          enableSceneWheel: true,
-          resizeTargets: [shell, sceneHost],
+          initialId: activeNodeId,
+          relationships: activeSlide.topology.relationships ?? [],
+          navigation: {
+            shell,
+            nodes: activeSlide.topology.nodes,
+            worldRadius: deckRadius,
+            worldBounds: liveSceneBounds,
+            zoomStep: 0.08,
+            transitionDuration: 260,
+            fitOnInit: false,
+            interactiveMiniMap: true,
+            enableSceneGestures: true,
+            enableSceneWheel: true,
+            resizeTargets: [shell, sceneHost],
+          },
+          onSelection: (selection) => {
+            updateInspector(activeSlide, selection.entityId);
+          },
         });
+        const navigation = contentController.navigation;
 
-        const updateInspector = (slide, selectedNodeId = slide.rootNodeId) => {
+        updateInspector = (slide, selectedNodeId = slide.rootNodeId) => {
           const detail = slide.nodeDetails?.[selectedNodeId] ?? slide.nodeDetails?.root;
           if (!detail) return;
           const isRoot = selectedNodeId === slide.rootNodeId || !slide.nodeDetails?.[selectedNodeId];
@@ -460,7 +468,7 @@ const serializedSlides = JSON.stringify(slides);
         };
 
         const syncSceneGeometry = () => {
-          navigation.setTopology(activeSlide.topology.nodes, liveSceneBounds);
+          contentController.syncTopology(activeSlide.topology.nodes, activeSlide.topology.relationships ?? [], liveSceneBounds, activeSlide.rootNodeId ?? activeSlide.topology.nodes[0]?.id ?? "");
           updateMiniMap(activeSlide);
           navigation.viewport.updateViewport();
           rebuildTransition();
@@ -479,11 +487,7 @@ const serializedSlides = JSON.stringify(slides);
 
           activeSlide = nextSlide;
           const nextFocusId = nextSlide.rootNodeId ?? nextSlide.topology.nodes[0]?.id ?? "";
-          navigation.setTopology(nextSlide.topology.nodes, liveSceneBounds);
-          if (nextFocusId) {
-            navigation.select(nextFocusId);
-            navigation.ensureVisible(nextFocusId, true);
-          }
+          contentController.syncTopology(nextSlide.topology.nodes, nextSlide.topology.relationships ?? [], liveSceneBounds, nextFocusId);
           updateMiniMap(nextSlide);
           if (miniCaption) {
             miniCaption.textContent = nextSlide.label;
@@ -512,15 +516,6 @@ const serializedSlides = JSON.stringify(slides);
         select?.addEventListener("input", handleSelect);
         select?.addEventListener("change", handleSelect);
 
-        sceneHost.addEventListener("topology-node-selected", (event) => {
-          const detail = event.detail;
-          const nodeId = detail?.nodeId;
-          if (!nodeId) return;
-          navigation.select(nodeId);
-          navigation.ensureVisible(nodeId, true);
-          updateInspector(activeSlide, nodeId);
-        });
-
         // Dataset transitions replace the occupant nodes, so delegate selection
         // from the stable SVG root for every incoming slide node. Initial OTF-bound
         // nodes are skipped to avoid duplicate selection events.
@@ -531,22 +526,18 @@ const serializedSlides = JSON.stringify(slides);
           if (!target || target.getAttribute("data-bound") === "true" || target.getAttribute("data-incident-deck-bound") === "true") return;
           const nodeId = target.getAttribute("data-node-id");
           if (!nodeId) return;
-          navigation.select(nodeId);
-          navigation.ensureVisible(nodeId, true);
-          updateInspector(activeSlide, nodeId);
+          contentController.select(nodeId);
         };
         const handleDelegatedNodeKeydown = (event) => {
           if (!(event instanceof KeyboardEvent) || (event.key !== "Enter" && event.key !== " ")) return;
           const target = event.target instanceof Element
             ? event.target.closest(".grid-occupant[data-node-id]")
             : null;
-          if (!target || target.getAttribute("data-bound") === "true") return;
+          if (!target || target.getAttribute("data-bound") === "true" || target.getAttribute("data-incident-deck-bound") === "true") return;
           event.preventDefault();
           const nodeId = target.getAttribute("data-node-id");
           if (!nodeId) return;
-          navigation.select(nodeId);
-          navigation.ensureVisible(nodeId, true);
-          updateInspector(activeSlide, nodeId);
+          contentController.select(nodeId);
         };
         sceneHost.addEventListener("pointerup", handleDelegatedNodeClick);
         sceneHost.addEventListener("click", handleDelegatedNodeClick);
@@ -563,18 +554,14 @@ const serializedSlides = JSON.stringify(slides);
             node.addEventListener("click", () => {
               const nodeId = node.getAttribute("data-node-id");
               if (!nodeId) return;
-              navigation.select(nodeId);
-              navigation.ensureVisible(nodeId, true);
-              updateInspector(activeSlide, nodeId);
+              contentController.select(nodeId);
             });
             node.addEventListener("keydown", (event) => {
               if (!(event instanceof KeyboardEvent) || (event.key !== "Enter" && event.key !== " ")) return;
               event.preventDefault();
               const nodeId = node.getAttribute("data-node-id");
               if (!nodeId) return;
-              navigation.select(nodeId);
-              navigation.ensureVisible(nodeId, true);
-              updateInspector(activeSlide, nodeId);
+              contentController.select(nodeId);
             });
           });
         };
@@ -582,10 +569,7 @@ const serializedSlides = JSON.stringify(slides);
         transitionNodeObserver.observe(sceneHost, { childList: true, subtree: true });
         bindTransitionNodes();
 
-        navigation.setTopology(activeSlide.topology.nodes, liveSceneBounds);
-        if (activeNodeId) {
-          navigation.select(activeNodeId);
-        }
+        contentController.syncTopology(activeSlide.topology.nodes, activeSlide.topology.relationships ?? [], liveSceneBounds, activeNodeId);
 
         rebuildTransition();
         updateInspector(activeSlide, activeSlide.rootNodeId);
@@ -607,7 +591,7 @@ const serializedSlides = JSON.stringify(slides);
             sceneHost.removeEventListener("keydown", handleDelegatedNodeKeydown);
             transitionNodeObserver.disconnect();
             transition?.destroy?.();
-            navigation.destroy();
+            contentController.destroy();
           },
           { once: true },
         );
