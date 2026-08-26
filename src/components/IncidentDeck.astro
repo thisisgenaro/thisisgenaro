@@ -496,6 +496,37 @@ const serializedSlides = JSON.stringify(slides);
           updateInspector(activeSlide, nodeId);
         });
 
+        // Dataset transitions replace the occupant nodes, so delegate selection
+        // from the stable SVG root for every incoming slide node. Initial OTF-bound
+        // nodes are skipped to avoid duplicate selection events.
+        const handleDelegatedNodeClick = (event) => {
+          const target = event.target instanceof Element
+            ? event.target.closest(".grid-occupant[data-node-id]")
+            : null;
+          if (!target || target.getAttribute("data-bound") === "true") return;
+          const nodeId = target.getAttribute("data-node-id");
+          if (!nodeId) return;
+          navigation.select(nodeId);
+          navigation.ensureVisible(nodeId, true);
+          updateInspector(activeSlide, nodeId);
+        };
+        const handleDelegatedNodeKeydown = (event) => {
+          if (!(event instanceof KeyboardEvent) || (event.key !== "Enter" && event.key !== " ")) return;
+          const target = event.target instanceof Element
+            ? event.target.closest(".grid-occupant[data-node-id]")
+            : null;
+          if (!target || target.getAttribute("data-bound") === "true") return;
+          event.preventDefault();
+          const nodeId = target.getAttribute("data-node-id");
+          if (!nodeId) return;
+          navigation.select(nodeId);
+          navigation.ensureVisible(nodeId, true);
+          updateInspector(activeSlide, nodeId);
+        };
+        sceneHost.addEventListener("pointerup", handleDelegatedNodeClick);
+        sceneHost.addEventListener("click", handleDelegatedNodeClick);
+        sceneHost.addEventListener("keydown", handleDelegatedNodeKeydown);
+
         navigation.setTopology(activeSlide.topology.nodes, liveSceneBounds);
         if (activeNodeId) {
           navigation.select(activeNodeId);
@@ -516,6 +547,9 @@ const serializedSlides = JSON.stringify(slides);
         window.addEventListener(
           "pagehide",
           () => {
+            sceneHost.removeEventListener("pointerup", handleDelegatedNodeClick);
+            sceneHost.removeEventListener("click", handleDelegatedNodeClick);
+            sceneHost.removeEventListener("keydown", handleDelegatedNodeKeydown);
             transition?.destroy?.();
             navigation.destroy();
           },
@@ -776,7 +810,7 @@ const serializedSlides = JSON.stringify(slides);
 
   .incident-deck__inspector-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
     gap: 1rem;
     align-items: start;
   }
