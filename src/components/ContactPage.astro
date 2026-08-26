@@ -1,0 +1,41 @@
+---
+import type { Locale } from "../lib/i18n";
+
+interface Props { locale: Locale }
+const { locale } = Astro.props as Props;
+const isSpanish = locale === "es";
+---
+
+<main class="contact-page">
+  <section class="contact-hero">
+    <a class="contact-back" href={isSpanish ? "/es/" : "/en/"}>{isSpanish ? "← INICIO" : "← HOME"}</a>
+    <p class="contact-eyebrow">{isSpanish ? "CONTACTO" : "CONTACT"}</p>
+    <h1>{isSpanish ? "Empecemos por el trabajo." : "Start with the work."}</h1>
+    <p>{isSpanish ? "Si una entrada, un incidente o un patrón de sistemas te da algo útil para conversar, me encantaría continuar la conversación." : "If an entry, incident, or systems pattern gives you something useful to discuss, I’m glad to continue the conversation."}</p>
+  </section>
+
+  <section class="contact-options" aria-label={isSpanish ? "Opciones de contacto" : "Contact options"}>
+    <a href="mailto:genaro.hernandez@outlook.com">
+      <span>EMAIL</span>
+      <strong>genaro.hernandez@outlook.com</strong>
+      <i>→</i>
+    </a>
+    <a href="https://linkedin.com/in/thisisgenaro" rel="me noreferrer">
+      <span>LINKEDIN</span>
+      <strong>linkedin.com/in/thisisgenaro</strong>
+      <i>→</i>
+    </a>
+  </section>
+
+  <section class="contact-context">
+    <p class="contact-eyebrow">{isSpanish ? "CONTEXTO ÚTIL" : "USEFUL CONTEXT"}</p>
+    <div>
+      <article><h2>{isSpanish ? "Infraestructura y confiabilidad" : "Infrastructure & reliability"}</h2><p>{isSpanish ? "Arquitectura, continuidad, observabilidad, automatización y prácticas operativas que mantienen los sistemas comprensibles." : "Architecture, continuity, observability, automation, and the operational practices that keep systems understandable."}</p></article>
+      <article><h2>{isSpanish ? "Conocimiento y colaboración" : "Knowledge & collaboration"}</h2><p>{isSpanish ? "Preguntas, aprendizajes compartidos y conversaciones reflexivas a partir de La Bitácora, el Registro de Incidentes o El Mundo." : "Questions, shared lessons, and thoughtful conversations prompted by the Journal, Incident Library, or The World."}</p></article>
+    </div>
+  </section>
+</main>
+
+<style>
+  .contact-page { width: min(100%,84rem); margin:0 auto; padding:clamp(1.25rem,4vw,3.5rem); }.contact-page :where(h1,h2,p){margin:0}.contact-back,.contact-eyebrow,.contact-options span{font-family:var(--font-mono);letter-spacing:.14em;text-transform:uppercase}.contact-back{width:fit-content;color:var(--accent);font-size:.62rem;text-decoration:none}.contact-eyebrow{color:var(--accent);font-size:.68rem;font-weight:800}.contact-hero{display:grid;gap:.9rem;max-width:58rem;padding-block:clamp(3rem,9vw,8rem);border-bottom:1px solid var(--line)}.contact-hero h1{max-width:10ch;font-size:clamp(4rem,9vw,8rem);line-height:.86;letter-spacing:-.075em}.contact-hero>p:last-child{max-width:46rem;color:var(--muted);font-size:clamp(1rem,1.7vw,1.25rem);line-height:1.7}.contact-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-left:1px solid var(--line);margin-block:clamp(3rem,7vw,6rem)}.contact-options a{display:grid;grid-template-columns:1fr auto;gap:.65rem;padding:1.4rem;border-top:1px solid var(--line);border-right:1px solid var(--line);border-bottom:1px solid var(--line);color:var(--text);text-decoration:none;transition:background 180ms ease}.contact-options a:hover{background:color-mix(in srgb,var(--accent) 5%,transparent)}.contact-options span{grid-column:1/-1;color:var(--accent);font-size:.6rem}.contact-options strong{font-size:clamp(.9rem,1.8vw,1.2rem);overflow-wrap:anywhere}.contact-options i{color:var(--accent);font-style:normal}.contact-context{display:grid;gap:1.2rem;padding-bottom:4rem}.contact-context>div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:1px solid var(--line);border-left:1px solid var(--line)}.contact-context article{display:grid;gap:.65rem;min-height:11rem;padding:1.2rem;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}.contact-context h2{font-size:1.2rem}.contact-context article p{color:var(--muted);line-height:1.65}@media(max-width:700px){.contact-options,.contact-context>div{grid-template-columns:1fr}}
+</style>
