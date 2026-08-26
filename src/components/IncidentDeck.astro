@@ -143,6 +143,7 @@ const serializedSlides = JSON.stringify(slides);
         </div>
         <button type="button" class="incident-deck__inspector-toggle" data-incident-deck-inspector-toggle aria-expanded="true">Collapse</button>
       </div>
+      <div class="incident-deck__inspector-collapsed-mark" aria-hidden="true"><span>◇</span><small>Inspector</small></div>
       <div class="incident-deck__inspector-panel" data-incident-deck-inspector-panel>
         <div class="incident-deck__inspector-grid">
         <section class="incident-deck__identity">
@@ -527,7 +528,7 @@ const serializedSlides = JSON.stringify(slides);
           const target = event.target instanceof Element
             ? event.target.closest(".grid-occupant[data-node-id]")
             : null;
-          if (!target || target.getAttribute("data-bound") === "true") return;
+          if (!target || target.getAttribute("data-bound") === "true" || target.getAttribute("data-incident-deck-bound") === "true") return;
           const nodeId = target.getAttribute("data-node-id");
           if (!nodeId) return;
           navigation.select(nodeId);
@@ -550,6 +551,36 @@ const serializedSlides = JSON.stringify(slides);
         sceneHost.addEventListener("pointerup", handleDelegatedNodeClick);
         sceneHost.addEventListener("click", handleDelegatedNodeClick);
         sceneHost.addEventListener("keydown", handleDelegatedNodeKeydown);
+
+        // Dataset transitions inject new occupant groups after TopologyScene
+        // performs its initial interaction binding. Bind those incoming nodes
+        // directly so they remain selectable throughout the scene handoff.
+        const bindTransitionNodes = () => {
+          sceneHost.querySelectorAll(".grid-occupant[data-node-id]").forEach((node) => {
+            if (node.getAttribute("data-bound") === "true" || node.getAttribute("data-incident-deck-bound") === "true") return;
+            if (node.getAttribute("aria-disabled") === "true") return;
+            node.setAttribute("data-incident-deck-bound", "true");
+            node.addEventListener("click", () => {
+              const nodeId = node.getAttribute("data-node-id");
+              if (!nodeId) return;
+              navigation.select(nodeId);
+              navigation.ensureVisible(nodeId, true);
+              updateInspector(activeSlide, nodeId);
+            });
+            node.addEventListener("keydown", (event) => {
+              if (!(event instanceof KeyboardEvent) || (event.key !== "Enter" && event.key !== " ")) return;
+              event.preventDefault();
+              const nodeId = node.getAttribute("data-node-id");
+              if (!nodeId) return;
+              navigation.select(nodeId);
+              navigation.ensureVisible(nodeId, true);
+              updateInspector(activeSlide, nodeId);
+            });
+          });
+        };
+        const transitionNodeObserver = new MutationObserver(bindTransitionNodes);
+        transitionNodeObserver.observe(sceneHost, { childList: true, subtree: true });
+        bindTransitionNodes();
 
         navigation.setTopology(activeSlide.topology.nodes, liveSceneBounds);
         if (activeNodeId) {
@@ -574,6 +605,7 @@ const serializedSlides = JSON.stringify(slides);
             sceneHost.removeEventListener("pointerup", handleDelegatedNodeClick);
             sceneHost.removeEventListener("click", handleDelegatedNodeClick);
             sceneHost.removeEventListener("keydown", handleDelegatedNodeKeydown);
+            transitionNodeObserver.disconnect();
             transition?.destroy?.();
             navigation.destroy();
           },
@@ -845,6 +877,30 @@ const serializedSlides = JSON.stringify(slides);
     padding-inline: .45rem;
   }
 
+  .incident-deck.is-inspector-collapsed .incident-deck__inspector-collapsed-mark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    min-height: 0;
+    color: var(--accent);
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+  }
+
+  .incident-deck.is-inspector-collapsed .incident-deck__inspector-collapsed-mark span {
+    font-size: 1.15rem;
+    line-height: 1;
+  }
+
+  .incident-deck.is-inspector-collapsed .incident-deck__inspector-collapsed-mark small {
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
   .incident-deck.is-inspector-collapsed .incident-deck__inspector-toolbar {
     align-items: center;
     justify-content: center;
@@ -860,6 +916,10 @@ const serializedSlides = JSON.stringify(slides);
     padding: 0;
     font-size: 1.2rem;
     letter-spacing: 0;
+  }
+
+  .incident-deck__inspector-collapsed-mark {
+    display: none;
   }
 
   .incident-deck__inspector-panel {
