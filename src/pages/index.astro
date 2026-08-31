@@ -4,10 +4,10 @@ import { createPresentationTopology } from "operational-topology";
 import TopologyScene from "operational-topology/astro/TopologyScene";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { organizations } from "../data/organizations";
-import { createJournalEntryRecords } from "../lib/journal";
+import { createJournalEntryRecords, getJournalEntriesForLanguage } from "../lib/journal";
 import { createIncidentPreviewTopology, formatIncidentDate, getPublishedIncidents } from "../lib/incidents";
 
-const entries = await getCollection("entries", ({ data }) => data.language === "en");
+const entries = getJournalEntriesForLanguage(await getCollection("entries"), "en");
 const journalRecords = createJournalEntryRecords(entries);
 const latestEntry = journalRecords[0] ?? null;
 const incidents = getPublishedIncidents();

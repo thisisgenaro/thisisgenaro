@@ -128,12 +128,25 @@ export function getJournalEntryTopics(entry: JournalEntry) {
 export function getJournalEntryHref(entry: JournalEntry) {
   const [language, ...slugParts] = entry.id.split("/");
   const slug = stripExtension(slugParts.join("/"));
-  return `/journal/${language}/${slug}`;
+  return `/${language}/journal/entries/${slug}`;
 }
 
 export function getJournalEntrySlug(entry: JournalEntry) {
   const [, ...slugParts] = entry.id.split("/");
   return stripExtension(slugParts.join("/"));
+}
+
+export function findJournalEntryBySlug(entries: JournalEntry[], language: string, slug: string) {
+  const candidates = entries.filter((entry) =>
+    getJournalEntrySlug(entry) === slug
+    || entry.data.slug === slug
+    || entry.data.id === slug
+    || entry.data.translationKey === slug,
+  );
+  return candidates.find((entry) => entry.data.language === language && !entry.data.draft)
+    ?? candidates.find((entry) => entry.data.language === "en" && !entry.data.draft)
+    ?? candidates.find((entry) => !entry.data.draft)
+    ?? null;
 }
 
 export function formatJournalDate(date: Date) {
@@ -163,6 +176,13 @@ export function getPublishedJournalEntries(entries: JournalEntry[]) {
   return entries
     .filter((entry) => !entry.data.draft)
     .sort((left, right) => getJournalPublishedDate(right).getTime() - getJournalPublishedDate(left).getTime());
+}
+
+export function getJournalEntriesForLanguage(entries: JournalEntry[], language: string) {
+  const languagePrefix = `${language}/`;
+  const localized = entries.filter((entry) => entry.data.language === language || entry.id.startsWith(languagePrefix));
+  if (localized.length || language === "en") return localized;
+  return entries.filter((entry) => entry.data.language === "en" || entry.id.startsWith("en/"));
 }
 
 export function createJournalEntryRecord(entry: JournalEntry): JournalEntryRecord {

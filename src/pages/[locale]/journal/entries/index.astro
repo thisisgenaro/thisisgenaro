@@ -1,9 +1,9 @@
 ---
 import { getCollection } from "astro:content";
-import JournalIndex from "../../../components/JournalIndex.astro";
-import BaseLayout from "../../../layouts/BaseLayout.astro";
-import { getLocaleFromPath, type Locale, ui } from "../../../lib/i18n";
-import { getJournalEntriesForLanguage } from "../../../lib/journal";
+import JournalIndex from "../../../../components/JournalIndex.astro";
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import { getLocaleFromPath, type Locale, ui } from "../../../../lib/i18n";
+import { getJournalEntriesForLanguage } from "../../../../lib/journal";
 
 export function getStaticPaths() { return ["en", "es"].map((locale) => ({ params: { locale } })); }
 const locale = getLocaleFromPath(`/${Astro.params.locale}`) as Locale;
