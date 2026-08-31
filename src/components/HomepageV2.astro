@@ -5,7 +5,7 @@ import { createPresentationTopology } from "operational-topology";
 import TopologyScene from "operational-topology/astro/TopologyScene";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { organizations } from "../data/organizations";
-import { createJournalEntryRecords } from "../lib/journal";
+import { createJournalEntryRecords, getJournalEntriesForLanguage } from "../lib/journal";
 import { createIncidentPreviewTopology, formatIncidentDate, getLocalizedIncidentById, getPublishedIncidents } from "../lib/incidents";
 import { getLocaleFromPath, localePath, ui, type Locale } from "../lib/i18n";
 
@@ -15,7 +15,7 @@ const locale = requestedLocale ?? getLocaleFromPath(Astro.url.pathname) ?? "en";
 const strings = ui[locale];
 const t = (en: string, es: string) => locale === "es" ? es : en;
 
-const entries = await getCollection("entries", ({ data }) => data.language === locale);
+const entries = getJournalEntriesForLanguage(await getCollection("entries"), locale);
 const journalRecords = createJournalEntryRecords(entries);
 const latestEntry = journalRecords[0] ?? null;
 const incidents = getPublishedIncidents();

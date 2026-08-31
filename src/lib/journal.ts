@@ -165,6 +165,11 @@ export function getPublishedJournalEntries(entries: JournalEntry[]) {
     .sort((left, right) => getJournalPublishedDate(right).getTime() - getJournalPublishedDate(left).getTime());
 }
 
+export function getJournalEntriesForLanguage(entries: JournalEntry[], language: string) {
+  const languagePrefix = `${language}/`;
+  return entries.filter((entry) => entry.data.language === language || entry.id.startsWith(languagePrefix));
+}
+
 export function createJournalEntryRecord(entry: JournalEntry): JournalEntryRecord {
   const topicDefinitions = getJournalEntryTopics(entry);
   const publishedAt = getJournalPublishedDate(entry);
