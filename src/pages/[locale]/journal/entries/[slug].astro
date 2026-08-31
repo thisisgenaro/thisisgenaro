@@ -1,0 +1,26 @@
+---
+import { getCollection, render } from "astro:content";
+import JournalEntry from "../../../../components/JournalEntry.astro";
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import { getLocaleFromPath, SUPPORTED_LOCALES, type Locale, ui } from "../../../../lib/i18n";
+import {
+  createJournalEntryRecord,
+  findJournalEntryBySlug,
+  getJournalEntrySlug,
+  getPublishedJournalEntries,
+} from "../../../../lib/journal";
+
+export async function getStaticPaths() {
+  const entries = getPublishedJournalEntries(await getCollection("entries"));
+  const slugs = Array.from(new Set(entries.map(getJournalEntrySlug)));
+  return SUPPORTED_LOCALES.flatMap((locale) =>
+    slugs.map((slug) => ({ params: { locale, slug } })),
+  );
+}
+
+const locale = getLocaleFromPath(`/${Astro.params.locale}`) as Locale;
+const strings = ui[locale];
+const slug = Astro.params.slug ?? "";
+const entry = findJournalEntryBySlug(await getCollection("entries"), locale, slug);
+---
+{entry ? <JournalEntry locale={locale} entry={entry} record={createJournalEntryRecord(entry)} Content={(await render(entry)).Content} /> : <BaseLayout locale={locale} title={strings.nav.journal} description={strings.labels.unavailable}><p>{strings.labels.unavailable}</p></BaseLayout>}
