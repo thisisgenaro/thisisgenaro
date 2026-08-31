@@ -1,48 +1,78 @@
+# Genaro Hernández
 
-# Genaro Hernandez
-IT Infrastructure Specialist
+### Infrastructure · Observability · Reliability · Engineering
 
-- <genaro.hernandez@outlook.com>
-- 809.769.5621
-- Santo Domingo 🇩🇴
+Every incident leaves evidence.  
+Every system reveals patterns.  
+I build, operate, investigate, and document infrastructure so those patterns become useful engineering.
 
-## ThisIsGenaro
+---
 
-- [Twitter](https://twitter.com/thisisgenaro)
-- [Instagram](https://instagram.com/thisisgenaro)
-- [LinkedIn](https://linkedin.com/in/thisisgenaro)
-- [GitHub](https://github.com/thisisgenaro)
+## What you'll find here
 
-## Experience
+This profile is mostly about practical infrastructure work:
 
-### NOC TEAM LEAD
-*Junta Central Electoral*, **2026 - Current**
+- infrastructure architecture
+- monitoring and observability
+- incident investigation
+- dependency mapping
+- automation
+- hybrid enterprise systems
+- reliability and operational engineering
 
-### SERVERS ADMINISTRATOR
-*Junta Central Electoral*, **2023 - 2026**
+I prefer real-world systems over idealized diagrams: legacy dependencies, limited teams, incomplete documentation, operational constraints, and all.
 
-### LEAD IT INFRASTRUCTURE & CYBERSECURITY ENGINEER
-*DPWorld Dominican Republic*, **2021 - 2023**
+---
 
-### SERVER ANALYST & IT INFRASTRUCTURE ARCHITECT
-*Direccion General de Aduanas*, **2019 - 2021**
+## Current projects
 
-### SENIOR IT INFRASTRUCTURE SPECIALIST
-*Solvex*, **2017 - 2019**
+### OTF — Operational Topology Framework
+A visual system for representing operational state, dependencies, incident timelines, root cause, and lessons learned.
 
-### SYSTEMS ENGINEER LEVEL III
-*ERCBPO*, **2016 - 2017**
+### Incident Library
+Structured incident records built around:
 
-### SYSTEMS ADMINISTRATOR
-*Instituto Tecnologico de Santo Domingo*, **2013 - 2016**
+`Symptom → Evidence → Investigation → Root Cause → Resolution → Lessons`
 
-### IT Consultant, Trainer
-*Teknowlogic*, **2009 - 2013**
+### The Journal
+Longer-form technical thinking around infrastructure, observability, reliability, and engineering judgment.
 
-### Lab Support, Utilities intern
-*Teknowlogic*, **2008 - 2009**
+---
 
-<!---
-thisisgenaro/thisisgenaro is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
-You can click the Preview link to take a look at your changes.
---->
+## Main technical areas
+
+`Windows Server` `Active Directory` `DNS` `Microsoft 365` `Azure`
+
+`PowerShell` `Docker` `Git` `Nginx`
+
+`VMware` `Hyper-V` `Proxmox`
+
+`Zabbix` `OpManager` `PRTG` `Dynatrace`
+
+`FortiGate` `F5 BIG-IP`
+
+---
+
+## Engineering principles
+
+- Monitor services, not only servers.
+- Dependencies matter as much as components.
+- Evidence should drive action.
+- Reliability has to be operable, not just architecturally elegant.
+- Good incident records should preserve reasoning, not only outcomes.
+
+---
+
+## Around the web
+
+[**Website**](thisisgenaro.com)
+
+[**The Journal**](https://thisisgenaro.com/en/journal)
+
+[**Incident Library**](https://thisisgenaro.com/en/incident-library)
+
+[**LinkedIn**](https://linkedin.com/in/thisisgenaro)
+
+---
+
+> Building the record. Making the reasoning visible.
