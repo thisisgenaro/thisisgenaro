@@ -128,7 +128,7 @@ export function getJournalEntryTopics(entry: JournalEntry) {
 export function getJournalEntryHref(entry: JournalEntry) {
   const [language, ...slugParts] = entry.id.split("/");
   const slug = stripExtension(slugParts.join("/"));
-  return `/journal/${language}/${slug}`;
+  return `/${language}/journal/${slug}`;
 }
 
 export function getJournalEntrySlug(entry: JournalEntry) {
