@@ -1,0 +1,237 @@
+---
+import TopologyScene from "operational-topology/astro/TopologyScene";
+import SceneOnlyLayout from "../layouts/SceneOnlyLayout.astro";
+import type { Locale } from "../lib/i18n";
+
+interface Props {
+  locale: Locale;
+  canonicalUrl?: string;
+}
+
+const { locale, canonicalUrl } = Astro.props as Props;
+const copy = locale === "es"
+  ? {
+      title: "Origen",
+      description: "Una escena Viewport-Fit con la identidad GH anclada en la celda axial 0,0.",
+      sceneLabel: "Logotipo de Genaro Hernández centrado en la celda axial cero, cero",
+      status: "EN CONSTRUCCIÓN",
+    }
+  : {
+      title: "Origin",
+      description: "A Viewport-Fit scene with the GH identity anchored at axial cell 0,0.",
+      sceneLabel: "Genaro Hernández logo centered on axial cell zero, zero",
+      status: "UNDER CONSTRUCTION",
+    };
+
+const originNode = [{
+  id: "gh-origin",
+  label: "",
+  image: "/gh-logo.png",
+  imageScale: 0.82,
+  imageAlign: "center" as const,
+  q: 0,
+  r: 0,
+  variant: "root" as const,
+  size: "root" as const,
+  status: "healthy",
+  active: true,
+  selected: true,
+}];
+---
+
+<SceneOnlyLayout
+  locale={locale}
+  canonicalPath="/origin"
+  canonicalUrl={canonicalUrl}
+  title={`${copy.title} | thisisgenaro.com`}
+  description={copy.description}
+>
+  <main class="origin-subsite" aria-label={copy.sceneLabel} data-origin-bloom>
+    <TopologyScene
+      class="origin-subsite__scene"
+      nodes={originNode}
+      edges={[]}
+      layout="viewport-fit"
+      viewportFit={true}
+      topologyLayout="custom"
+      originQ={0}
+      originR={0}
+      radius={42}
+      showGridNodes={false}
+      gridActivity={false}
+      ambientSignals={false}
+      connectorRouting="straight"
+    />
+    <div class="origin-subsite__status" role="status">
+      <span aria-hidden="true"></span>
+      {copy.status}
+    </div>
+  </main>
+</SceneOnlyLayout>
+<script>
+  import type { HexCell } from "operational-topology";
+  import { getCenterBloomFrame, toGridCellStateMap } from "operational-topology/animations";
+
+  const bloomHosts = document.querySelectorAll("[data-origin-bloom]");
+
+  for (const host of bloomHosts) {
+    if (!(host instanceof HTMLElement) || host.dataset.bloomReady === "true") continue;
+
+    const gridHost = host.querySelector(".scene-grid");
+    if (!(gridHost instanceof HTMLElement)) continue;
+
+    host.dataset.bloomReady = "true";
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let intervalId = 0;
+    let bloomFrame = 0;
+
+    const readCells = (): HexCell[] => Array.from(gridHost.querySelectorAll<SVGPathElement>(".grid-hex"))
+      .map((element) => ({
+        id: element.dataset.cellId ?? "",
+        q: Number(element.dataset.q),
+        r: Number(element.dataset.r),
+        center: {
+          x: Number(element.dataset.cx),
+          y: Number(element.dataset.cy),
+        },
+        path: element.getAttribute("d") ?? "",
+      }))
+      .filter((cell) => cell.id && Number.isFinite(cell.q) && Number.isFinite(cell.r));
+
+    const clearBloom = () => {
+      gridHost.querySelectorAll<SVGPathElement>(".grid-hex").forEach((element) => {
+        element.dataset.cellState = "idle";
+        element.classList.remove("is-active", "is-trail", "is-converted");
+        element.style.setProperty("--cell-intensity", "0.24");
+      });
+    };
+
+    const renderBloom = () => {
+      const cells = readCells();
+      if (!cells.length) return;
+
+      const maxRadius = Math.max(...cells.map(({ q, r }) => (
+        Math.abs(q) + Math.abs(r) + Math.abs(q + r)
+      ) / 2));
+      const states = toGridCellStateMap(getCenterBloomFrame({
+        cells,
+        origin: { q: 0, r: 0 },
+        frame: bloomFrame,
+        maxRadius,
+        trail: 2.4,
+        wrap: true,
+      }));
+
+      gridHost.querySelectorAll<SVGPathElement>(".grid-hex").forEach((element) => {
+        const state = states[element.dataset.cellId ?? ""];
+        if (!state) return;
+
+        element.dataset.cellState = state.state;
+        element.classList.toggle("is-active", state.state === "active");
+        element.classList.toggle("is-trail", state.state === "trail");
+        element.classList.toggle("is-converted", state.state === "converted");
+        element.style.setProperty("--cell-intensity", String(state.intensity));
+      });
+    };
+
+    const stop = () => {
+      if (!intervalId) return;
+      window.clearInterval(intervalId);
+      intervalId = 0;
+    };
+
+    const start = () => {
+      stop();
+      if (reducedMotion.matches || document.hidden) {
+        clearBloom();
+        return;
+      }
+
+      renderBloom();
+      intervalId = window.setInterval(() => {
+        bloomFrame += 0.36;
+        renderBloom();
+      }, 100);
+    };
+
+    const handleVisibilityChange = () => start();
+    reducedMotion.addEventListener("change", start);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    start();
+
+    window.addEventListener("pagehide", () => {
+      stop();
+      reducedMotion.removeEventListener("change", start);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    }, { once: true });
+  }
+</script>
+
+<style>
+  .origin-subsite {
+    position: relative;
+    width: 100vw;
+    height: 100svh;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--accent) 7%, transparent), transparent 26%),
+      var(--ink);
+  }
+
+
+  .origin-subsite__scene {
+    width: 100%;
+    height: 100%;
+    min-height: 100svh;
+  }
+
+  .origin-subsite__scene :global(.scene-grid) {
+    opacity: 0.82;
+  }
+
+  .origin-subsite__status {
+    position: absolute;
+    z-index: 2;
+    top: calc(50% + clamp(4.75rem, 9svh, 6.25rem));
+    left: 50%;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.7rem 0.9rem;
+    transform: translateX(-50%);
+    border: 1px solid color-mix(in srgb, var(--accent) 38%, var(--line));
+    background: color-mix(in srgb, var(--surface-raised) 88%, transparent);
+    box-shadow: 0 0 24px color-mix(in srgb, var(--accent) 9%, transparent);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    line-height: 1;
+    text-transform: uppercase;
+    white-space: nowrap;
+    pointer-events: none;
+    backdrop-filter: blur(12px);
+  }
+
+  .origin-subsite__status span {
+    width: 0.42rem;
+    height: 0.42rem;
+    background: var(--accent);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 64%, transparent);
+    transform: rotate(45deg);
+  }
+
+  .origin-subsite__scene :global([data-node-id="gh-origin"] .grid-occupant-fill) {
+    fill: color-mix(in srgb, var(--surface-raised) 78%, transparent);
+    stroke: color-mix(in srgb, var(--accent) 76%, transparent);
+    filter: drop-shadow(0 0 18px color-mix(in srgb, var(--accent) 22%, transparent));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .origin-subsite__scene :global(*) {
+      animation: none !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>

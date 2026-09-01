@@ -1,0 +1,69 @@
+---
+import {
+  colorVisionStorageKey,
+  contrastStorageKey,
+  defaultTheme as frameworkDefaultTheme,
+  glowStorageKey,
+  themeNames,
+  themeStorageKey,
+} from "operational-topology";
+import { localePath, type Locale } from "../lib/i18n";
+
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description: string;
+  locale: Locale;
+  canonicalPath: string;
+  canonicalUrl?: string;
+}
+
+const { title, description, locale, canonicalPath, canonicalUrl: requestedCanonicalUrl } = Astro.props;
+const canonicalUrl = requestedCanonicalUrl ?? "https://thisisgenaro.com" + localePath(locale, canonicalPath);
+const themeBootstrap =
+  "(() => {" +
+  "const themes=" + JSON.stringify(themeNames) + ";" +
+  "const fallback=" + JSON.stringify(frameworkDefaultTheme) + ";" +
+  "try {" +
+  "const stored=localStorage.getItem(" + JSON.stringify(themeStorageKey) + ");" +
+  "document.documentElement.dataset.theme=themes.includes(stored)?stored:fallback;" +
+  "document.documentElement.dataset.glow=localStorage.getItem(" + JSON.stringify(glowStorageKey) + ")==='true'?'reduced':'standard';" +
+  "document.documentElement.dataset.contrast=localStorage.getItem(" + JSON.stringify(contrastStorageKey) + ")==='true'?'high':'standard';" +
+  "document.documentElement.dataset.colorVision=localStorage.getItem(" + JSON.stringify(colorVisionStorageKey) + ")==='true'?'safe':'standard';" +
+  "} catch {document.documentElement.dataset.theme=fallback;document.documentElement.dataset.glow='standard';document.documentElement.dataset.contrast='standard';document.documentElement.dataset.colorVision='standard';}" +
+  "})();";
+---
+
+<!doctype html>
+<html lang={locale} data-locale={locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#0b0f14" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="alternate" hreflang="en" href={"https://thisisgenaro.com" + localePath("en", canonicalPath)} />
+    <link rel="alternate" hreflang="es" href={"https://thisisgenaro.com" + localePath("es", canonicalPath)} />
+    <link rel="alternate" hreflang="x-default" href={"https://thisisgenaro.com" + localePath("en", canonicalPath)} />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <script is:inline set:html={themeBootstrap}></script>
+    <title>{title}</title>
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>
+
+<style is:global>
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+</style>
