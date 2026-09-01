@@ -5,7 +5,7 @@ translationStatus: complete
 language: en
 title: Welcome to my Personal Page
 date: 2026-09-01
-summary: A note to welcome and thank new visitors, while sharing small details about the page
+summary: A short welcome and thank-you to new visitors, with a brief introduction to what this site is, how it works, and what you can expect to find here.
 tags:
   - Infrastructure
   - Observability

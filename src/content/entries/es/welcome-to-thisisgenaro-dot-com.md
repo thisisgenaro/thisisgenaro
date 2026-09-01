@@ -5,7 +5,7 @@ translationStatus: complete
 language: es
 title: Bienvenidos a mi Página Personal
 date: 2026-09-01
-summary: Nota para dar bienvenida y agradecer a nuevos visitantes, y a la vez compartiendo detalles importantes sobre la página.
+summary: Una breve bienvenida y agradecimiento a quienes visitan el sitio por primera vez, junto con una introducción a qué es este espacio, cómo funciona y qué pueden esperar encontrar aquí.
 tags:
   - Infrastructure
   - Observability
