@@ -67,6 +67,33 @@ export const JOURNAL_TOPICS: JournalTopicDefinition[] = [
   },
 ];
 
+const JOURNAL_TOPIC_TRANSLATIONS_ES: Record<string, Pick<JournalTopicDefinition, "name" | "description">> = {
+  infrastructure: {
+    name: "Infraestructura",
+    description: "Sistemas, dependencias y la estructura que mantiene legibles los servicios.",
+  },
+  observability: {
+    name: "Observabilidad",
+    description: "Señales, diagnósticos y la práctica de observar el sistema con claridad.",
+  },
+  operations: {
+    name: "Operaciones",
+    description: "El trabajo cotidiano de mantener el cambio coordinado, seguro y responsable.",
+  },
+  reliability: {
+    name: "Confiabilidad",
+    description: "Cómo se gana la resiliencia mediante diseño, revisión y seguimiento.",
+  },
+  automation: {
+    name: "Automatización",
+    description: "Trabajo repetible, menor desviación y sistemas que mantienen el esfuerzo coherente.",
+  },
+  security: {
+    name: "Seguridad",
+    description: "Acceso, riesgo y las condiciones que mantienen confiable el modelo operativo.",
+  },
+};
+
 const journalTopicBySlug = new Map(JOURNAL_TOPICS.map((topic) => [topic.slug, topic]));
 
 function stripExtension(value: string) {
@@ -165,8 +192,8 @@ export function formatJournalLongDate(date: Date) {
   }).format(date).replace(/,/, "");
 }
 
-export function formatJournalMonthYear(date: Date) {
-  return new Intl.DateTimeFormat("en", {
+export function formatJournalMonthYear(date: Date, language = "en") {
+  return new Intl.DateTimeFormat(language === "es" ? "es-ES" : "en-US", {
     month: "short",
     year: "numeric",
   }).format(date);
@@ -240,13 +267,13 @@ export function getJournalTopicSummaries(entries: JournalEntry[]) {
   return [...canonical, ...discovered];
 }
 
-export function getJournalArchiveSummary(entries: JournalEntry[]) {
+export function getJournalArchiveSummary(entries: JournalEntry[], language = "en") {
   const publishedEntries = getPublishedJournalEntries(entries);
   if (!publishedEntries.length) {
     return {
       total: 0,
-      totalLabel: "0 entries",
-      fromLabel: "No entries yet",
+      totalLabel: language === "es" ? "0 entradas" : "0 entries",
+      fromLabel: language === "es" ? "Aún no hay entradas" : "No entries yet",
       toLabel: "",
     } satisfies JournalArchiveSummary;
   }
@@ -258,9 +285,9 @@ export function getJournalArchiveSummary(entries: JournalEntry[]) {
 
   return {
     total,
-    totalLabel: `${total} ${total === 1 ? "entry" : "entries"}`,
-    fromLabel: `From ${formatJournalMonthYear(earliest)}`,
-    toLabel: `to ${formatJournalMonthYear(latest)}`,
+    totalLabel: `${total} ${language === "es" ? (total === 1 ? "entrada" : "entradas") : (total === 1 ? "entry" : "entries")}`,
+    fromLabel: `${language === "es" ? "Desde" : "From"} ${formatJournalMonthYear(earliest, language)}`,
+    toLabel: `${language === "es" ? "hasta" : "to"} ${formatJournalMonthYear(latest, language)}`,
   } satisfies JournalArchiveSummary;
 }
 
@@ -308,4 +335,10 @@ export function buildPageNumbers(currentPage: number, totalPages: number) {
 
 export function getTopicBySlug(slug: string) {
   return journalTopicBySlug.get(normalizeJournalTopicSlug(slug)) ?? null;
+}
+
+export function localizeJournalTopic<T extends JournalTopicDefinition>(topic: T, language: string): T {
+  if (language !== "es") return topic;
+  const translation = JOURNAL_TOPIC_TRANSLATIONS_ES[topic.slug];
+  return translation ? { ...topic, ...translation } : topic;
 }

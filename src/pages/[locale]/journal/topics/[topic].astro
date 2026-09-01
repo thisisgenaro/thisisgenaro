@@ -1,0 +1,23 @@
+---
+import { getCollection } from "astro:content";
+import JournalTopicPage from "../../../../components/JournalTopicPage.astro";
+import { getLocaleFromPath, SUPPORTED_LOCALES, type Locale } from "../../../../lib/i18n";
+import {
+  getJournalEntriesForLanguage,
+  getJournalTopicSummaries,
+  normalizeJournalTopicSlug,
+} from "../../../../lib/journal";
+
+export async function getStaticPaths() {
+  const topics = getJournalTopicSummaries(await getCollection("entries"));
+  return SUPPORTED_LOCALES.flatMap((locale) =>
+    topics.map((topic) => ({ params: { locale, topic: topic.slug } })),
+  );
+}
+
+const locale = getLocaleFromPath(`/${Astro.params.locale}`) as Locale;
+const topicSlug = normalizeJournalTopicSlug(Astro.params.topic ?? "");
+const entries = getJournalEntriesForLanguage(await getCollection("entries"), locale);
+---
+
+<JournalTopicPage locale={locale} entries={entries} topicSlug={topicSlug} />
