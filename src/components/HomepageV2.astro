@@ -162,11 +162,23 @@ const severityCode = ["high", "alto"].includes(latestIncident?.severity.toLowerC
             <p><span>01</span> THE JOURNAL</p>
             <h3>{t("Ideas, reasoning, and patterns from the work.", "Ideas, razonamiento y patrones del trabajo.")}</h3>
           </header>
-          <div class="journal-preview" aria-hidden="true">
-            <span class="journal-preview__index">FIELD NOTE / {String(journalRecords.length).padStart(2, "0")}</span>
-            <div class="journal-preview__lines"><i></i><i></i><i></i><i></i></div>
-            <div class="journal-preview__signal"><span></span><span></span><span></span></div>
-          </div>
+          {latestEntry?.entry.data.image ? (
+            <div class="journal-preview journal-preview--image" aria-hidden="true">
+              <img
+                class="journal-preview__image"
+                src={latestEntry.entry.data.image}
+                alt=""
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+          ) : (
+            <div class="journal-preview" aria-hidden="true">
+              <span class="journal-preview__index">FIELD NOTE / {String(journalRecords.length).padStart(2, "0")}</span>
+              <div class="journal-preview__lines"><i></i><i></i><i></i><i></i></div>
+              <div class="journal-preview__signal"><span></span><span></span><span></span></div>
+            </div>
+          )}
           {latestEntry ? (
             <div class="knowledge-panel__content">
               <p class="home-meta">{t("LATEST ENTRY", "ÚLTIMA ENTRADA")} · {latestEntry.publishedLabel.toUpperCase()}{latestEntry.readTime ? ` · ${latestEntry.readTime} ${t("MIN READ", "MIN DE LECTURA")}` : ""}</p>
@@ -341,8 +353,9 @@ const severityCode = ["high", "alto"].includes(latestIncident?.severity.toLowerC
   .knowledge-panel__header p span { margin-right: 0.45rem; color: var(--muted-dim); }
   .knowledge-panel--incident .knowledge-panel__header p { color: color-mix(in srgb, var(--signal-blue) 75%, white); }
   .knowledge-panel__header h3 { max-width: 25ch; font-size: clamp(1.45rem, 2.5vw, 2.15rem); line-height: 1.12; }
-  .journal-preview { position: relative; display: grid; align-content: space-between; min-height: 19rem; padding: 1.5rem; overflow: hidden; border-block: 1px solid var(--line); background: linear-gradient(115deg, color-mix(in srgb, var(--accent) 9%, transparent), transparent 45%), repeating-linear-gradient(0deg, transparent 0 27px, rgba(255,255,255,.035) 28px), var(--ink-raised); }
-  .journal-preview::after { content: ""; position: absolute; width: 14rem; height: 14rem; right: -3rem; top: 2rem; border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent); transform: rotate(30deg); }
+  .journal-preview { position: relative; display: grid; align-content: space-between; width: 100%; max-width: 100%; min-height: 19rem; max-height: 24rem; padding: 1.5rem; overflow: hidden; border-block: 1px solid var(--line); background: linear-gradient(115deg, color-mix(in srgb, var(--accent) 9%, transparent), transparent 45%), repeating-linear-gradient(0deg, transparent 0 27px, rgba(255,255,255,.035) 28px), var(--ink-raised); }
+  .journal-preview--image { align-content: stretch; padding: 0; }
+  .journal-preview__image { display: block; width: 100%; height: 100%; max-width: 100%; max-height: 24rem; object-fit: cover; object-position: center; }
   .journal-preview__index { color: var(--muted-dim); font: 0.6rem/1 var(--font-mono); letter-spacing: 0.12em; }
   .journal-preview__lines { display: grid; gap: 0.7rem; width: min(72%, 24rem); }
   .journal-preview__lines i { height: 2px; background: linear-gradient(90deg, var(--text), transparent); opacity: 0.55; }
