@@ -27,7 +27,8 @@ const originNode = [{
   id: "gh-origin",
   label: "",
   image: "/gh-logo.png",
-  imageScale: 0.82,
+  imageScale: 1.05,
+  imageOffsetY: 0.08,
   imageAlign: "center" as const,
   q: 0,
   r: 0,
@@ -118,7 +119,7 @@ const originNode = [{
         origin: { q: 0, r: 0 },
         frame: bloomFrame,
         maxRadius,
-        trail: 2.4,
+        trail: 5.5,
         wrap: true,
       }));
 
@@ -186,7 +187,23 @@ const originNode = [{
   }
 
   .origin-subsite__scene :global(.scene-grid) {
-    opacity: 0.82;
+    opacity: 1;
+  }
+  .origin-subsite__scene :global(.grid-hex.is-active),
+  .origin-subsite__scene :global(.grid-hex.is-trail),
+  .origin-subsite__scene :global(.grid-hex.is-converted) {
+    stroke: color-mix(in srgb, var(--accent) 94%, white 6%);
+    stroke-width: 2.2;
+    opacity: calc((0.44 + var(--cell-intensity, 0.5) * 0.56) * var(--cell-edge-factor, 1));
+    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--accent) 68%, transparent));
+  }
+  .origin-subsite__scene :global(.grid-hex-signal.is-active),
+  .origin-subsite__scene :global(.grid-hex-signal.is-trail),
+  .origin-subsite__scene :global(.grid-hex-signal.is-converted) {
+    stroke: color-mix(in srgb, var(--accent) 96%, white 4%);
+    stroke-width: 2.4;
+    opacity: 1;
+    filter: drop-shadow(0 0 12px color-mix(in srgb, var(--accent) 76%, transparent));
   }
 
   .origin-subsite__status {
