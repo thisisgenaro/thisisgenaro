@@ -35,9 +35,17 @@ const originNode = [{
   variant: "root" as const,
   size: "root" as const,
   status: "healthy",
-  active: true,
-  selected: true,
+  active: false,
+  selected: false,
 }];
+const languageNodes = [
+  { id: "origin-language-en", label: "EN", q: -2, r: 0, variant: "anchor" as const, size: "sm" as const, status: "healthy", active: false, selected: false },
+  { id: "origin-language-es", label: "ES", q: 2, r: 0, variant: "anchor" as const, size: "sm" as const, status: "healthy", active: false, selected: false },
+];
+const originEdges = [
+  { from: "gh-origin", to: "origin-language-en", label: "language", active: false },
+  { from: "gh-origin", to: "origin-language-es", label: "language", active: false },
+];
 ---
 
 <SceneOnlyLayout
@@ -47,11 +55,11 @@ const originNode = [{
   title={`${copy.title} | thisisgenaro.com`}
   description={copy.description}
 >
-  <main class="origin-subsite" aria-label={copy.sceneLabel} data-origin-bloom>
+  <main class="origin-subsite is-settled" aria-label={copy.sceneLabel} data-origin-bloom data-origin-experience data-origin-root={(canonicalUrl === "https://thisisgenaro.com/").toString()}>
     <TopologyScene
       class="origin-subsite__scene"
       nodes={originNode}
-      edges={[]}
+      edges={originEdges}
       layout="viewport-fit"
       viewportFit={true}
       topologyLayout="custom"
@@ -63,10 +71,6 @@ const originNode = [{
       ambientSignals={false}
       connectorRouting="straight"
     />
-    <div class="origin-subsite__status" role="status">
-      <span aria-hidden="true"></span>
-      {copy.status}
-    </div>
   </main>
 </SceneOnlyLayout>
 <script>
@@ -108,6 +112,7 @@ const originNode = [{
     };
 
     const renderBloom = () => {
+      if (!host.classList.contains("is-settled")) return;
       const cells = readCells();
       if (!cells.length) return;
 
@@ -131,9 +136,12 @@ const originNode = [{
         element.classList.toggle("is-active", state.state === "active");
         element.classList.toggle("is-trail", state.state === "trail");
         element.classList.toggle("is-converted", state.state === "converted");
-        element.style.setProperty("--cell-intensity", String(state.intensity));
+        element.style.setProperty("--cell-intensity", String(Math.max(0.72, state.intensity)));
       });
     };
+
+    const gridObserver = new MutationObserver(() => renderBloom());
+    gridObserver.observe(gridHost, { childList: true, subtree: true });
 
     const stop = () => {
       if (!intervalId) return;
@@ -162,12 +170,57 @@ const originNode = [{
 
     window.addEventListener("pagehide", () => {
       stop();
+      gridObserver.disconnect();
       reducedMotion.removeEventListener("change", start);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     }, { once: true });
   }
 </script>
+<script>
+  import { createTopologyDatasetTransition } from "operational-topology/browser";
 
+  for (const host of document.querySelectorAll("[data-origin-experience]")) {
+    if (!(host instanceof HTMLElement)) continue;
+    const scene = host.querySelector(".topology-scene");
+    if (!(scene instanceof HTMLElement)) continue;
+    let expanded = false;
+    scene.addEventListener("click", (event) => {
+      if (expanded) return;
+      const target = event.target instanceof Element ? event.target.closest("[data-node-id=gh-origin]") : null;
+      if (!target) return;
+      const gridHost = scene.querySelector(".scene-grid");
+      const sceneGrid = scene.querySelector(".topology-grid");
+      if (!(gridHost instanceof HTMLElement) || !(sceneGrid instanceof SVGSVGElement)) return;
+      const cells = Array.from(gridHost.querySelectorAll(".grid-hex")).map((element) => ({
+        id: element.getAttribute("data-cell-id") ?? "",
+        q: Number(element.getAttribute("data-q")),
+        r: Number(element.getAttribute("data-r")),
+        center: { x: Number(element.getAttribute("data-cx")), y: Number(element.getAttribute("data-cy")) },
+        path: element.getAttribute("d") ?? "",
+      })).filter((cell) => cell.id && Number.isFinite(cell.q) && Number.isFinite(cell.r));
+      if (!cells.length) return;
+      expanded = true;
+      const transition = createTopologyDatasetTransition({
+        sceneGrid,
+        cells,
+        radius: Number(sceneGrid.getAttribute("data-radius") ?? 42),
+        duration: 1200,
+        transitionMode: "hex-iris",
+      });
+      void transition.transition({
+        nodes: [
+          { id: "gh-origin", label: "", image: "/gh-logo.png", imageScale: 1.15, imageOffsetY: 0.08, imageAlign: "center", q: 0, r: 0, variant: "root", size: "root", status: "healthy", active: false, selected: false },
+          { id: "origin-language-en", label: "EN", q: -2, r: 0, variant: "anchor", size: "sm", status: "healthy", active: false, selected: false },
+          { id: "origin-language-es", label: "ES", q: 2, r: 0, variant: "anchor", size: "sm", status: "healthy", active: false, selected: false },
+        ],
+        relationships: [
+          { from: "gh-origin", to: "origin-language-en", label: "language", active: false },
+          { from: "gh-origin", to: "origin-language-es", label: "language", active: false },
+        ],
+      }).then(() => host.classList.add("is-language-ready"));
+    });
+  }
+</script>
 <style>
   .origin-subsite {
     position: relative;
@@ -197,13 +250,17 @@ const originNode = [{
     opacity: calc((0.44 + var(--cell-intensity, 0.5) * 0.56) * var(--cell-edge-factor, 1));
     filter: drop-shadow(0 0 10px color-mix(in srgb, var(--accent) 68%, transparent));
   }
+  .origin-subsite:not(.is-settled) .origin-subsite__scene :global(.grid-hex.is-active),
+  .origin-subsite:not(.is-settled) .origin-subsite__scene :global(.grid-hex.is-trail),
+  .origin-subsite:not(.is-settled) .origin-subsite__scene :global(.grid-hex.is-converted),
   .origin-subsite__scene :global(.grid-hex-signal.is-active),
   .origin-subsite__scene :global(.grid-hex-signal.is-trail),
   .origin-subsite__scene :global(.grid-hex-signal.is-converted) {
     stroke: color-mix(in srgb, var(--accent) 96%, white 4%);
-    stroke-width: 2.4;
-    opacity: 1;
-    filter: drop-shadow(0 0 12px color-mix(in srgb, var(--accent) 76%, transparent));
+    fill: color-mix(in srgb, var(--accent) 18%, transparent) !important;
+    stroke-width: 3.2;
+    opacity: 1 !important;
+    filter: drop-shadow(0 0 18px color-mix(in srgb, var(--accent) 92%, transparent)) drop-shadow(0 0 34px color-mix(in srgb, var(--accent) 58%, transparent));
   }
 
   .origin-subsite__status {
@@ -243,6 +300,82 @@ const originNode = [{
     fill: color-mix(in srgb, var(--surface-raised) 78%, transparent);
     stroke: color-mix(in srgb, var(--accent) 76%, transparent);
     filter: drop-shadow(0 0 18px color-mix(in srgb, var(--accent) 22%, transparent));
+  }
+
+  .origin-subsite__scene :global(.grid-occupants),
+  .origin-subsite__scene :global(.grid-connectors) {
+    opacity: 0;
+    transition: opacity 900ms ease;
+  }
+
+  .origin-subsite.is-settled .origin-subsite__scene :global(.grid-occupants),
+  .origin-subsite.is-settled .origin-subsite__scene :global(.grid-connectors) {
+    opacity: 1;
+  }
+
+  .origin-subsite__scene :global(.grid-occupant),
+  .origin-subsite__scene :global(.grid-connector) {
+    opacity: 0;
+    transition: opacity 600ms ease;
+  }
+
+  .origin-subsite:not(.is-settled) .origin-subsite__scene :global(.grid-occupant),
+  .origin-subsite:not(.is-settled) .origin-subsite__scene :global(.grid-connector) {
+    opacity: 0 !important;
+    visibility: hidden;
+  }
+
+  .origin-subsite.is-settled .origin-subsite__scene :global(.grid-occupant),
+  .origin-subsite.is-settled .origin-subsite__scene :global(.grid-connector) {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .origin-subsite:not(.is-settled) .origin-subsite__scene :global([data-node-id="gh-origin"] .grid-occupant-image) {
+    opacity: 0;
+  }
+
+  .origin-subsite.is-settled .origin-subsite__scene :global([data-node-id="gh-origin"] .grid-occupant-image) {
+    opacity: 1;
+    transition: opacity 900ms ease, filter 900ms ease;
+  }
+
+  .origin-subsite.is-language-selected .origin-subsite__scene :global([data-node-id^="origin-language-"]) {
+    filter: drop-shadow(0 0 14px color-mix(in srgb, var(--accent) 72%, transparent));
+  }
+
+  .origin-subsite:not(.is-language-ready) .origin-subsite__scene :global([data-node-id^="origin-language-"]),
+  .origin-subsite:not(.is-language-ready) .origin-subsite__scene :global(.grid-connector) {
+    opacity: 0 !important;
+    visibility: hidden;
+  }
+
+  .origin-subsite.is-language-ready .origin-subsite__scene :global([data-node-id^="origin-language-"]),
+  .origin-subsite.is-language-ready .origin-subsite__scene :global(.grid-connector) {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 700ms ease;
+  }
+
+  .origin-subsite__scene :global([data-node-id="origin-language-en"]) {
+    transition-delay: 0ms;
+  }
+
+  .origin-subsite__scene :global([data-node-id="origin-language-es"]) {
+    transition-delay: 320ms;
+  }
+
+  .origin-subsite__scene :global(.grid-connector:nth-child(2)) {
+    transition-delay: 520ms;
+  }
+
+  .origin-subsite__scene :global(.grid-connector:nth-child(3)) {
+    transition-delay: 760ms;
+  }
+
+  .origin-subsite.is-exiting .origin-subsite__scene :global(.grid-occupants),
+  .origin-subsite.is-exiting .origin-subsite__scene :global(.grid-connectors) {
+    opacity: 0;
   }
 
   @media (prefers-reduced-motion: reduce) {
