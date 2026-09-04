@@ -1,5 +1,6 @@
 ---
 import TopologyScene from "operational-topology/astro/TopologyScene";
+import { createPresentationTopology } from "operational-topology";
 import SceneOnlyLayout from "../layouts/SceneOnlyLayout.astro";
 import type { Locale } from "../lib/i18n";
 
@@ -27,7 +28,7 @@ const originNode = [{
   id: "gh-origin",
   label: "",
   image: "/gh-logo.png",
-  imageScale: 1.15,
+  imageScale: 1.25,
   imageOffsetY: 0.08,
   imageAlign: "center" as const,
   q: 0,
@@ -38,9 +39,11 @@ const originNode = [{
   active: false,
   selected: false,
 }];
+const ringLayout = createPresentationTopology({ id: "origin-language", title: copy.title, topologyLayout: "ring", anchors: [{ id: "en", label: "EN", children: [] }, { id: "es", label: "ES", children: [] }] });
+const ringAnchorPositions = ringLayout.nodes.filter((node) => node.variant === "anchor");
 const languageNodes = [
-  { id: "origin-language-en", label: "EN", q: -2, r: 0, variant: "anchor" as const, size: "sm" as const, status: "healthy", active: false, selected: false },
-  { id: "origin-language-es", label: "ES", q: 2, r: 0, variant: "anchor" as const, size: "sm" as const, status: "healthy", active: false, selected: false },
+  { id: "origin-language-en", label: "EN", q: ringAnchorPositions[0]?.q ?? 0, r: ringAnchorPositions[0]?.r ?? -2, variant: "anchor" as const, size: "sm" as const, status: "healthy", active: false, selected: false },
+  { id: "origin-language-es", label: "ES", q: ringAnchorPositions[1]?.q ?? 2, r: ringAnchorPositions[1]?.r ?? -2, variant: "anchor" as const, size: "sm" as const, status: "healthy", active: false, selected: false },
 ];
 const originEdges = [
   { from: "gh-origin", to: "origin-language-en", label: "language", active: false },
@@ -62,14 +65,14 @@ const originEdges = [
       edges={originEdges}
       layout="viewport-fit"
       viewportFit={true}
-      topologyLayout="custom"
+      topologyLayout="ring"
       originQ={0}
       originR={0}
       radius={42}
       showGridNodes={false}
       gridActivity={false}
       ambientSignals={false}
-      connectorRouting="straight"
+      connectorRouting="obstacle-aware"
     />
   </main>
 </SceneOnlyLayout>
@@ -179,6 +182,15 @@ const originEdges = [
 <script>
   import { createTopologyDatasetTransition } from "operational-topology/browser";
 
+  const rootHost = document.querySelector("[data-origin-root=\"true\"]");
+  if (rootHost) {
+    try {
+      const storedLocale = window.localStorage.getItem("thisisgenaro.locale");
+      const savedRoute = storedLocale === "en" ? "/en/" : storedLocale === "es" ? "/es/" : "";
+      if (savedRoute) window.location.replace(savedRoute);
+    } catch {}
+  }
+
   for (const host of document.querySelectorAll("[data-origin-experience]")) {
     if (!(host instanceof HTMLElement)) continue;
     const scene = host.querySelector(".topology-scene");
@@ -205,13 +217,13 @@ const originEdges = [
         cells,
         radius: Number(sceneGrid.getAttribute("data-radius") ?? 42),
         duration: 1200,
-        transitionMode: "handoff",
+        transitionMode: "cascade",
       });
       void transition.transition({
         nodes: [
-          { id: "gh-origin", label: "", image: "/gh-logo.png", imageScale: 1.15, imageOffsetY: 0.08, imageAlign: "center", q: 0, r: 0, variant: "root", size: "root", status: "healthy", active: false, selected: false },
-          { id: "origin-language-en", label: "EN", q: -2, r: 0, variant: "anchor", size: "sm", status: "healthy", active: false, selected: false },
-          { id: "origin-language-es", label: "ES", q: 2, r: 0, variant: "anchor", size: "sm", status: "healthy", active: false, selected: false },
+          { id: "gh-origin", label: "", image: "/gh-logo.png", imageScale: 1.25, imageOffsetY: 0.08, imageAlign: "center", q: 0, r: 0, variant: "root", size: "root", status: "healthy", active: false, selected: false },
+          { id: "origin-language-en", label: "EN", q: 0, r: -2, variant: "anchor", size: "sm", status: "healthy", active: false, selected: false },
+          { id: "origin-language-es", label: "ES", q: 2, r: -2, variant: "anchor", size: "sm", status: "healthy", active: false, selected: false },
         ],
         relationships: [
           { from: "gh-origin", to: "origin-language-en", label: "language", active: false },
@@ -219,6 +231,21 @@ const originEdges = [
         ],
       }).then(() => host.classList.add("is-language-ready"));
     });
+    const navigateLanguage = (event) => {
+      if (!host.classList.contains("is-language-ready")) return;
+      const target = event.target instanceof Element ? event.target.closest("[data-node-id]") : null;
+      const nodeId = target?.getAttribute("data-node-id") ?? "";
+      const route = nodeId === "origin-language-en" ? "/en/" : nodeId === "origin-language-es" ? "/es/" : "";
+      if (!route) return;
+      event.preventDefault();
+      event.stopPropagation();
+      window.localStorage.setItem("thisisgenaro.locale", nodeId.endsWith("-es") ? "es" : "en");
+      window.location.assign(route);
+    };
+    scene.addEventListener("click", navigateLanguage, true);
+    scene.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") navigateLanguage(event);
+    }, true);
   }
 </script>
 <style>
@@ -298,7 +325,8 @@ const originEdges = [
 
   .origin-subsite__scene :global([data-node-id="gh-origin"] .grid-occupant-fill) {
     fill: color-mix(in srgb, var(--surface-raised) 78%, transparent);
-    stroke: color-mix(in srgb, var(--accent) 76%, transparent);
+    stroke: transparent !important;
+    stroke-width: 0;
     filter: drop-shadow(0 0 18px color-mix(in srgb, var(--accent) 22%, transparent));
   }
 
