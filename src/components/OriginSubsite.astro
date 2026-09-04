@@ -115,7 +115,7 @@ const originEdges = [
     };
 
     const renderBloom = () => {
-      if (!host.classList.contains("is-settled")) return;
+      if (!host.classList.contains("is-settled") || host.classList.contains("is-radial-signal")) return;
       const cells = readCells();
       if (!cells.length) return;
 
@@ -181,6 +181,7 @@ const originEdges = [
 </script>
 <script>
   import { createTopologyDatasetTransition } from "operational-topology/browser";
+  import { getRadialSignalFrame, toGridCellStateMap } from "operational-topology/animations";
 
   const rootHost = document.querySelector("[data-origin-root=\"true\"]");
   if (rootHost) {
@@ -231,6 +232,37 @@ const originEdges = [
         ],
       }).then(() => host.classList.add("is-language-ready"));
     });
+    const playRadialSignal = (route) => {
+      const gridHost = scene.querySelector(".scene-grid");
+      if (!(gridHost instanceof HTMLElement)) return;
+      const cells = Array.from(gridHost.querySelectorAll(".grid-hex")).map((element) => ({
+        id: element.getAttribute("data-cell-id") ?? "",
+        q: Number(element.getAttribute("data-q")),
+        r: Number(element.getAttribute("data-r")),
+        center: { x: Number(element.getAttribute("data-cx")), y: Number(element.getAttribute("data-cy")) },
+        path: element.getAttribute("d") ?? "",
+      })).filter((cell) => cell.id && Number.isFinite(cell.q) && Number.isFinite(cell.r));
+      if (!cells.length) { window.location.assign(route); return; }
+      host.classList.add("is-radial-signal");
+      const duration = 5260;
+      const startedAt = performance.now();
+      const render = (now) => {
+        const frame = Math.min(duration, now - startedAt);
+        const states = toGridCellStateMap(getRadialSignalFrame({ cells, origin: { q: 0, r: 0 }, frame, seed: "origin-language", sequence: "ascending", synchronizedPulse: true, returnToCenter: true, settle: true }));
+        gridHost.querySelectorAll(".grid-hex").forEach((element) => {
+          const state = states[element.getAttribute("data-cell-id") ?? ""];
+          if (!state) return;
+          element.dataset.cellState = state.state;
+          element.classList.toggle("is-active", state.state === "active");
+          element.classList.toggle("is-trail", state.state === "trail");
+          element.classList.toggle("is-converted", state.state === "converted");
+          element.style.setProperty("--cell-intensity", String(state.intensity));
+        });
+        if (frame < duration) window.requestAnimationFrame(render);
+        else window.location.assign(route);
+      };
+      window.requestAnimationFrame(render);
+    };
     const navigateLanguage = (event) => {
       if (!host.classList.contains("is-language-ready")) return;
       const target = event.target instanceof Element ? event.target.closest("[data-node-id]") : null;
@@ -240,7 +272,7 @@ const originEdges = [
       event.preventDefault();
       event.stopPropagation();
       window.localStorage.setItem("thisisgenaro.locale", nodeId.endsWith("-es") ? "es" : "en");
-      window.location.assign(route);
+      playRadialSignal(route);
     };
     scene.addEventListener("click", navigateLanguage, true);
     scene.addEventListener("keydown", (event) => {
