@@ -1,5 +1,6 @@
 import { createTransitionLifecycle, type TransitionLifecyclePhase, type TransitionLifecycleState } from "operational-topology";
 import { NAVIGATION_ANIMATIONS, type NavigationAnimationName } from "operational-topology/animations";
+import { getNavigationSceneAdapter } from "./navigationSceneAdapter";
 export type PageTransitionAnimation = NavigationAnimationName;
 export type NavigationTransitionAnimation = NavigationAnimationName;
 export type PageTransitionDirection = "forward" | "backward";
@@ -74,9 +75,13 @@ export function isEligiblePageHandoffLink(event: MouseEvent, anchor: HTMLAnchorE
 
 let activeNavigation: Promise<void> | null = null;
 
-const dispatchPageTransition = (phase: TransitionLifecyclePhase, animation: PageTransitionAnimation, direction: PageTransitionDirection) => {
+const dispatchPageTransition = (phase: TransitionLifecyclePhase, animation: PageTransitionAnimation, direction: PageTransitionDirection, destination?: string) => {
+  const adapter = getNavigationSceneAdapter();
+  const playback = { animation, phase, direction, destination };
+  const playbackResult = adapter?.playNavigation(playback);
   document.documentElement.dataset.pageTransition = phase;
-  window.dispatchEvent(new CustomEvent("navigation-transition", { detail: { phase, animation, direction } }));
+  window.dispatchEvent(new CustomEvent("navigation-transition", { detail: { phase, animation, direction, destination } }));
+  return playbackResult;
 };
 
 export async function pageHandoff({ destination, animation, direction, context }: PageTransitionIntent) {
@@ -89,11 +94,11 @@ export async function pageHandoff({ destination, animation, direction, context }
       return;
     }
     const lifecycle = createTransitionLifecycle({
-      playNavigation: (phase) => dispatchPageTransition(phase, resolved.animation, resolved.direction),
-      playPresentation: (phase) => dispatchPageTransition(phase, resolved.animation, resolved.direction),
-      setAmbientEnabled: (enabled) => window.dispatchEvent(new CustomEvent("navigation-ambient", { detail: enabled })),
-      setSignalsEnabled: (enabled) => window.dispatchEvent(new CustomEvent("navigation-signals", { detail: enabled })),
-      setOccupantsVisible: (visible) => window.dispatchEvent(new CustomEvent("navigation-occupants", { detail: visible })),
+      playNavigation: (phase) => dispatchPageTransition(phase, resolved.animation, resolved.direction, target.pathname),
+      playPresentation: (phase) => { const adapter = getNavigationSceneAdapter(); return adapter?.playPresentation?.({ animation: resolved.animation, phase, direction: resolved.direction, destination: target.pathname }); },
+      setAmbientEnabled: (enabled) => { getNavigationSceneAdapter()?.setAmbientEnabled?.(enabled); window.dispatchEvent(new CustomEvent("navigation-ambient", { detail: enabled })); },
+      setSignalsEnabled: (enabled) => { getNavigationSceneAdapter()?.setSignalsEnabled?.(enabled); window.dispatchEvent(new CustomEvent("navigation-signals", { detail: enabled })); },
+      setOccupantsVisible: (visible) => { getNavigationSceneAdapter()?.setOccupantsVisible?.(visible); window.dispatchEvent(new CustomEvent("navigation-occupants", { detail: visible })); },
       onStateChange: (state: TransitionLifecycleState) => {
         if (state === "complete" || state === "cancelled") delete document.documentElement.dataset.pageTransition;
         window.dispatchEvent(new CustomEvent("navigation-transition-state", { detail: state }));
