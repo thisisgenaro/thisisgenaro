@@ -56,7 +56,11 @@ const themeBootstrap =
   </head>
   <body>
     <slot />
-  </body>
+      <script>
+      import { installPageHandoff } from "../lib/pageHandoff";
+      installPageHandoff();
+    </script>
+</body>
 </html>
 
 <style is:global>

@@ -179,7 +179,7 @@ const railBootstrap =
     <script>
       document.querySelectorAll("[data-locale-choice]").forEach((link) => {
         link.addEventListener("click", () => {
-          try { localStorage.setItem("siteLocale", link.getAttribute("data-locale-choice") || "en"); } catch {}
+          try { localStorage.setItem("siteLocale", link.getAttribute("data-locale-choice") || "en"); localStorage.setItem("thisisgenaro.locale", link.getAttribute("data-locale-choice") || "en"); } catch {}
         });
       });
     </script>
@@ -368,7 +368,11 @@ const railBootstrap =
       mobileQuery.addEventListener("change", syncMobileState);
       syncMobileState();
     </script>
-  </body>
+      <script>
+      import { installPageHandoff } from "../lib/pageHandoff";
+      installPageHandoff();
+    </script>
+</body>
 </html>
 
 <style>
