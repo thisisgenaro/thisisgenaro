@@ -74,6 +74,7 @@ export function isEligiblePageHandoffLink(event: MouseEvent, anchor: HTMLAnchorE
 }
 
 let activeNavigation: Promise<void> | null = null;
+const diagnostic = (...args: unknown[]) => { if (import.meta.env.DEV) console.debug("[pageHandoff]", ...args); };
 
 const dispatchPageTransition = (phase: TransitionLifecyclePhase, animation: PageTransitionAnimation, direction: PageTransitionDirection, destination?: string) => {
   const adapter = getNavigationSceneAdapter();
@@ -88,7 +89,9 @@ export async function pageHandoff({ destination, animation, direction, context }
   if (activeNavigation) return activeNavigation;
   activeNavigation = (async () => {
     const target = new URL(destination, window.location.href);
+    diagnostic("destination=" + target.pathname);
     const resolved = animation ? { animation, direction: direction ?? "forward" } : getPageTransition({ currentRoute: window.location.pathname, destinationRoute: target.pathname, navigationContext: context });
+    diagnostic("transition=" + resolved.animation, "direction=" + resolved.direction);
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       window.location.assign(target.href);
       return;
@@ -106,6 +109,7 @@ export async function pageHandoff({ destination, animation, direction, context }
     });
 
     try {
+      diagnostic("OTF lifecycle exit complete; route boundary");
       await lifecycle.exit();
       sessionStorage.setItem("thisisgenaro.pageHandoff", JSON.stringify({ ...resolved, destination: target.pathname, context }));
       if (context?.origin === true || resolved.animation === "originArrival") sessionStorage.setItem("thisisgenaro.originHandoff", "1");
