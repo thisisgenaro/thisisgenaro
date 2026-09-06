@@ -307,7 +307,35 @@ const severityCode = ["high", "alto"].includes(latestIncident?.severity.toLowerC
   </main>
 </BaseLayout>
 
+<script>
+  const homepage = document.querySelector(".home-v2");
+  if (homepage instanceof HTMLElement) {
+    const locale = document.documentElement.dataset.locale || "en";
+    const key = "thisisgenaro.homepageIntro." + locale;
+    let shouldIntro = false;
+    let handoffPending = false;
+    try {
+      handoffPending = sessionStorage.getItem("thisisgenaro.pageHandoff") !== null || sessionStorage.getItem("thisisgenaro.originHandoff") === "1";
+      shouldIntro = handoffPending && sessionStorage.getItem(key) !== "1";
+      if (shouldIntro) sessionStorage.setItem(key, "1");
+    } catch {}
+    if (shouldIntro || (handoffPending && document.documentElement.dataset.originHandoff === "true")) {
+      homepage.dataset.homepageIntro = "true";
+      const finish = (event) => {
+        if (event instanceof CustomEvent && event.detail === "complete") {
+          homepage.removeAttribute("data-homepage-intro");
+          window.removeEventListener("navigation-transition-state", finish);
+        }
+      };
+      window.addEventListener("navigation-transition-state", finish);
+      if (document.documentElement.dataset.originHandoff === "true") delete document.documentElement.dataset.originHandoff;
+    }
+  }
+</script>
 <style>
+  .home-v2[data-homepage-intro] .home-hero__copy,
+  .home-v2[data-homepage-intro] .home-section,
+  .home-v2[data-homepage-intro] .home-footer { opacity: 0; transition: opacity 220ms ease; }
   .home-v2 { width: min(100%, 96rem); margin: 0 auto; padding: clamp(1.25rem, 3.5vw, 3.25rem); }
   .home-v2 :where(h1, h2, h3, h4, p) { margin: 0; }
   .home-eyebrow, .home-meta { font-family: var(--font-mono); letter-spacing: 0.14em; text-transform: uppercase; }

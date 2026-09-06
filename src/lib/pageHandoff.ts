@@ -103,6 +103,7 @@ export async function pageHandoff({ destination, animation, direction, context }
     try {
       await lifecycle.exit();
       sessionStorage.setItem("thisisgenaro.pageHandoff", JSON.stringify({ ...resolved, destination: target.pathname, context }));
+      if (context?.origin === true || resolved.animation === "originArrival") sessionStorage.setItem("thisisgenaro.originHandoff", "1");
       window.location.assign(target.href);
     } catch {
       delete document.documentElement.dataset.pageTransition;
@@ -136,7 +137,13 @@ export function installPageHandoff() {
   }, true);
 
   let marker: string | null = null;
-  try { marker = sessionStorage.getItem("thisisgenaro.pageHandoff"); } catch { return; }
+  let originMarker = false;
+  try {
+    marker = sessionStorage.getItem("thisisgenaro.pageHandoff");
+    originMarker = sessionStorage.getItem("thisisgenaro.originHandoff") === "1";
+    if (originMarker) sessionStorage.removeItem("thisisgenaro.originHandoff");
+  } catch { return; }
+  if (originMarker) document.documentElement.dataset.originHandoff = "true";
   if (!marker) return;
   try { sessionStorage.removeItem("thisisgenaro.pageHandoff"); } catch {}
   try {
@@ -149,6 +156,7 @@ export function installPageHandoff() {
       setOccupantsVisible: (visible) => window.dispatchEvent(new CustomEvent("navigation-occupants", { detail: visible })),
       onStateChange: (state) => {
         if (state === "complete" || state === "cancelled") delete document.documentElement.dataset.pageTransition;
+        window.dispatchEvent(new CustomEvent("navigation-transition-state", { detail: state }));
       },
     });
     void lifecycle.enter().catch(() => document.documentElement.removeAttribute("data-page-transition"));
