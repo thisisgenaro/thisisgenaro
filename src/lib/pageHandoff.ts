@@ -22,7 +22,7 @@ export interface PageTransitionResolution {
   direction: PageTransitionDirection;
 }
 
-const collectionRoots = ["/journal", "/incident-library", "/world"];
+const collectionRoots = ["/journal", "/incident-library", "/incidents", "/world"];
 
 const trimTrailingSlash = (path: string) => {
   while (path.length > 1 && path.endsWith("/")) path = path.slice(0, -1);
