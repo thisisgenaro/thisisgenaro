@@ -1,6 +1,7 @@
 import { createTransitionLifecycle, type TransitionLifecyclePhase, type TransitionLifecycleState } from "operational-topology";
 import { NAVIGATION_ANIMATIONS, type NavigationAnimationName } from "operational-topology/animations";
-import { getNavigationSceneAdapter } from "./navigationSceneAdapter";
+import type { NavigationSceneAdapter, NavigationScenePlayback } from "./navigationSceneAdapter";
+import { getNavigationSceneAdapter, registerNavigationSceneAdapter } from "./navigationSceneAdapter";
 export type PageTransitionAnimation = NavigationAnimationName;
 export type NavigationTransitionAnimation = NavigationAnimationName;
 export type PageTransitionDirection = "forward" | "backward";
@@ -134,9 +135,29 @@ export function onNavigationTransitionState(listener: (state: TransitionLifecycl
   return () => window.removeEventListener(PAGE_HANDOFF_EVENTS.state, handler);
 }
 
+function installOtfSceneAdapter() {
+  void import("operational-topology/browser").then((api) => {
+    const createAdapter = (api as { createTopologySceneAnimationAdapter?: (options: { scene: HTMLElement; reducedMotion: () => boolean }) => NavigationSceneAdapter }).createTopologySceneAnimationAdapter;
+    if (typeof createAdapter !== "function") return;
+    const scenes = Array.from(document.querySelectorAll<HTMLElement>(".topology-scene"));
+    if (!scenes.length) return;
+    const adapters = scenes.map((scene) => createAdapter({ scene, reducedMotion: () => window.matchMedia("(prefers-reduced-motion: reduce)").matches }));
+    const adapter = {
+      playNavigation: (playback: NavigationScenePlayback) => Promise.all(adapters.map((entry) => entry.playNavigation(playback))).then(() => undefined),
+      playPresentation: (playback: NavigationScenePlayback) => Promise.all(adapters.map((entry) => entry.playPresentation?.(playback))).then(() => undefined),
+      setAmbientEnabled: (enabled: boolean) => adapters.forEach((entry) => entry.setAmbientEnabled?.(enabled)),
+      setSignalsEnabled: (enabled: boolean) => adapters.forEach((entry) => entry.setSignalsEnabled?.(enabled)),
+      setOccupantsVisible: (visible: boolean) => adapters.forEach((entry) => entry.setOccupantsVisible?.(visible)),
+    };
+    const unregister = registerNavigationSceneAdapter(adapter);
+    window.addEventListener("pagehide", () => { unregister(); adapters.forEach((entry) => (entry as NavigationSceneAdapter & { destroy?: () => void }).destroy?.()); }, { once: true });
+  }).catch(() => {});
+}
+
 export function installPageHandoff() {
   if (typeof window === "undefined" || window.__thisisgenaroPageHandoff) return;
   window.__thisisgenaroPageHandoff = true;
+  installOtfSceneAdapter();
   document.addEventListener("click", (event) => {
     if (!(event instanceof MouseEvent)) return;
     const anchor = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>("a[href]") : null;
