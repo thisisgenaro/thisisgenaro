@@ -4,6 +4,9 @@ export type PageTransitionAnimation = NavigationAnimationName;
 export type NavigationTransitionAnimation = NavigationAnimationName;
 export type PageTransitionDirection = "forward" | "backward";
 export const navigationAnimations = NAVIGATION_ANIMATIONS;
+export const PAGE_HANDOFF_EVENTS = { transition: "navigation-transition", state: "navigation-transition-state", ambient: "navigation-ambient", signals: "navigation-signals", occupants: "navigation-occupants" } as const;
+
+export interface NavigationTransitionEventDetail { phase: TransitionLifecyclePhase; animation: PageTransitionAnimation; direction: PageTransitionDirection; transitionId?: string; source: string; destination?: string; }
 
 /** Website adapter intent; OTF owns Navigation Transition lifecycle execution. */
 
@@ -36,8 +39,8 @@ const normalizePath = (value: string) => {
 
 const stripLocale = (path: string) => path.replace(/^\/(?:en|es)(?=\/|$)/, "") || "/";
 
-const isCollection = (path: string) => collectionRoots.some((root) => path === root || path === root + "/entries");
-const isDetail = (path: string) => collectionRoots.some((root) => path.startsWith(root + "/") && path !== root && path !== root + "/entries");
+const isCollection = (path: string) => collectionRoots.some((root) => path === root || path === root + "/entries" || path === root + "/topics");
+const isDetail = (path: string) => collectionRoots.some((root) => path.startsWith(root + "/") && path !== root && path !== root + "/entries" && path !== root + "/topics");
 
 export function getPageTransition({
   currentRoute,
@@ -102,10 +105,23 @@ export async function pageHandoff({ destination, animation, direction, context }
       sessionStorage.setItem("thisisgenaro.pageHandoff", JSON.stringify({ ...resolved, destination: target.pathname, context }));
       window.location.assign(target.href);
     } catch {
+      delete document.documentElement.dataset.pageTransition;
       window.location.assign(target.href);
     }
   })();
   return activeNavigation;
+}
+
+export function onNavigationTransition(listener: (event: CustomEvent<NavigationTransitionEventDetail>) => void) {
+  const handler = (event: Event) => listener(event as CustomEvent<NavigationTransitionEventDetail>);
+  window.addEventListener(PAGE_HANDOFF_EVENTS.transition, handler);
+  return () => window.removeEventListener(PAGE_HANDOFF_EVENTS.transition, handler);
+}
+
+export function onNavigationTransitionState(listener: (state: TransitionLifecycleState) => void) {
+  const handler = (event: Event) => listener((event as CustomEvent<TransitionLifecycleState>).detail);
+  window.addEventListener(PAGE_HANDOFF_EVENTS.state, handler);
+  return () => window.removeEventListener(PAGE_HANDOFF_EVENTS.state, handler);
 }
 
 export function installPageHandoff() {
