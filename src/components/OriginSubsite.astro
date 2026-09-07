@@ -1,6 +1,5 @@
 ---
 import TopologyScene from "operational-topology/astro/TopologyScene";
-import { createPresentationTopology } from "operational-topology";
 import SceneOnlyLayout from "../layouts/SceneOnlyLayout.astro";
 import type { Locale } from "../lib/i18n";
 
@@ -39,11 +38,9 @@ const originNode = [{
   active: false,
   selected: false,
 }];
-const fanLayout = createPresentationTopology({ id: "origin-language", title: copy.title, topologyLayout: "fan", fanDirection: "E", fanChildLinkMode: "direct", anchors: [{ id: "en", label: "EN", children: [] }, { id: "es", label: "ES", children: [] }] });
-const fanAnchorPositions = fanLayout.nodes.filter((node) => node.variant === "anchor");
 const languageNodes = [
-  { id: "origin-language-en", label: "EN", q: fanAnchorPositions[0]?.q ?? 4, r: fanAnchorPositions[0]?.r ?? -4, variant: "anchor" as const, size: "sm" as const, status: "healthy", active: false, selected: false },
-  { id: "origin-language-es", label: "ES", q: fanAnchorPositions[1]?.q ?? 0, r: fanAnchorPositions[1]?.r ?? 4, variant: "anchor" as const, size: "sm" as const, status: "healthy", active: false, selected: false },
+  { id: "origin-language-en", label: "EN", q: -2, r: 0, variant: "anchor" as const, size: "sm" as const, status: "healthy", active: false, selected: false },
+  { id: "origin-language-es", label: "ES", q: 2, r: 0, variant: "anchor" as const, size: "sm" as const, status: "healthy", active: false, selected: false },
 ];
 const RADIAL_SIGNAL = { innerRadius: 4, outerRadius: 8, endpointCount: 12, seed: "origin-language" } as const;
 const originEdges = [

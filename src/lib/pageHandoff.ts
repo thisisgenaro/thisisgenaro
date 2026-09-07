@@ -75,11 +75,13 @@ export function isEligiblePageHandoffLink(event: MouseEvent, anchor: HTMLAnchorE
 }
 
 let activeNavigation: Promise<void> | null = null;
+let sceneAdapterReady: Promise<void> = Promise.resolve();
 const diagnostic = (...args: unknown[]) => { if (import.meta.env.DEV) console.debug("[pageHandoff]", ...args); };
 
 const dispatchPageTransition = (phase: TransitionLifecyclePhase, animation: PageTransitionAnimation, direction: PageTransitionDirection, destination?: string) => {
   const adapter = getNavigationSceneAdapter();
   const playback = { animation, phase, direction, destination };
+  diagnostic("phase=" + phase, "animation=" + animation, destination ? "destination=" + destination : "");
   const playbackResult = adapter?.playNavigation(playback);
   document.documentElement.dataset.pageTransition = phase;
   window.dispatchEvent(new CustomEvent("navigation-transition", { detail: { phase, animation, direction, destination } }));
@@ -97,6 +99,7 @@ export async function pageHandoff({ destination, animation, direction, context }
       window.location.assign(target.href);
       return;
     }
+    await sceneAdapterReady;
     const lifecycle = createTransitionLifecycle({
       playNavigation: (phase) => dispatchPageTransition(phase, resolved.animation, resolved.direction, target.pathname),
       playPresentation: (phase) => { const adapter = getNavigationSceneAdapter(); return adapter?.playPresentation?.({ animation: resolved.animation, phase, direction: resolved.direction, destination: target.pathname }); },
@@ -104,6 +107,7 @@ export async function pageHandoff({ destination, animation, direction, context }
       setSignalsEnabled: (enabled) => { getNavigationSceneAdapter()?.setSignalsEnabled?.(enabled); window.dispatchEvent(new CustomEvent("navigation-signals", { detail: enabled })); },
       setOccupantsVisible: (visible) => { getNavigationSceneAdapter()?.setOccupantsVisible?.(visible); window.dispatchEvent(new CustomEvent("navigation-occupants", { detail: visible })); },
       onStateChange: (state: TransitionLifecycleState) => {
+        diagnostic("state=" + state);
         if (state === "complete" || state === "cancelled") delete document.documentElement.dataset.pageTransition;
         window.dispatchEvent(new CustomEvent("navigation-transition-state", { detail: state }));
       },
@@ -136,10 +140,11 @@ export function onNavigationTransitionState(listener: (state: TransitionLifecycl
 }
 
 function installOtfSceneAdapter() {
-  void import("operational-topology/browser").then((api) => {
+  sceneAdapterReady = import("operational-topology/browser").then((api) => {
     const createAdapter = (api as { createTopologySceneAnimationAdapter?: (options: { scene: HTMLElement; reducedMotion: () => boolean }) => NavigationSceneAdapter }).createTopologySceneAnimationAdapter;
     if (typeof createAdapter !== "function") return;
-    const scenes = Array.from(document.querySelectorAll<HTMLElement>(".topology-scene"));
+    const scopedScenes = Array.from(document.querySelectorAll<HTMLElement>("[data-navigation-scene]"));
+    const scenes = scopedScenes.length ? scopedScenes : Array.from(document.querySelectorAll<HTMLElement>(".topology-scene"));
     if (!scenes.length) return;
     const adapters = scenes.map((scene) => createAdapter({ scene, reducedMotion: () => window.matchMedia("(prefers-reduced-motion: reduce)").matches }));
     const adapter = {
@@ -150,6 +155,7 @@ function installOtfSceneAdapter() {
       setOccupantsVisible: (visible: boolean) => adapters.forEach((entry) => entry.setOccupantsVisible?.(visible)),
     };
     const unregister = registerNavigationSceneAdapter(adapter);
+    diagnostic("OTF scene adapter registered", scenes.length);
     window.addEventListener("pagehide", () => { unregister(); adapters.forEach((entry) => (entry as NavigationSceneAdapter & { destroy?: () => void }).destroy?.()); }, { once: true });
   }).catch(() => {});
 }
@@ -158,6 +164,27 @@ export function installPageHandoff() {
   if (typeof window === "undefined" || window.__thisisgenaroPageHandoff) return;
   window.__thisisgenaroPageHandoff = true;
   installOtfSceneAdapter();
+  const runHomepageIntro = (animation: PageTransitionAnimation = "flow") => {
+    const lifecycle = createTransitionLifecycle({
+      playNavigation: (phase) => dispatchPageTransition(phase, animation, "forward", window.location.pathname),
+      playPresentation: (phase) => { const adapter = getNavigationSceneAdapter(); return adapter?.playPresentation?.({ animation, phase, direction: "forward", destination: window.location.pathname }); },
+      setAmbientEnabled: (enabled) => { getNavigationSceneAdapter()?.setAmbientEnabled?.(enabled); window.dispatchEvent(new CustomEvent("navigation-ambient", { detail: enabled })); },
+      setSignalsEnabled: (enabled) => { getNavigationSceneAdapter()?.setSignalsEnabled?.(enabled); window.dispatchEvent(new CustomEvent("navigation-signals", { detail: enabled })); },
+      setOccupantsVisible: (visible) => { getNavigationSceneAdapter()?.setOccupantsVisible?.(visible); window.dispatchEvent(new CustomEvent("navigation-occupants", { detail: visible })); },
+      onStateChange: (state) => window.dispatchEvent(new CustomEvent("navigation-transition-state", { detail: state })),
+    });
+    void sceneAdapterReady.then(() => lifecycle.enter()).catch(() => undefined);
+  };
+  window.__thisisgenaroRequestHomepageIntro = runHomepageIntro;
+  window.addEventListener("request-homepage-intro", (event) => {
+    const animation = event instanceof CustomEvent && event.detail?.animation ? event.detail.animation : "flow";
+    runHomepageIntro(animation);
+  });
+  if (window.__thisisgenaroHomepageIntroPending) {
+    delete window.__thisisgenaroHomepageIntroPending;
+    runHomepageIntro("flow");
+  }
+
   document.addEventListener("click", (event) => {
     if (!(event instanceof MouseEvent)) return;
     const anchor = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>("a[href]") : null;
@@ -189,12 +216,12 @@ export function installPageHandoff() {
         window.dispatchEvent(new CustomEvent("navigation-transition-state", { detail: state }));
       },
     });
-    void lifecycle.enter().catch(() => document.documentElement.removeAttribute("data-page-transition"));
+    void sceneAdapterReady.then(() => lifecycle.enter()).catch(() => document.documentElement.removeAttribute("data-page-transition"));
   } catch {
     // A malformed marker must never prevent the destination page from rendering.
   }
 }
 
 declare global {
-  interface Window { __thisisgenaroPageHandoff?: boolean; }
+  interface Window { __thisisgenaroPageHandoff?: boolean; __thisisgenaroHomepageIntroPending?: boolean; __thisisgenaroRequestHomepageIntro?: (animation?: PageTransitionAnimation) => void; }
 }

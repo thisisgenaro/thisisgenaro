@@ -103,6 +103,21 @@ const severityCode = ["high", "alto"].includes(latestIncident?.severity.toLowerC
   description={locale === "es" ? strings.pages.homeStatement : "Engineering ideas, incident investigations, and the connected world of systems and dependencies behind them."}
 >
   <main class="home-v2">
+    <div class="home-v2__background" data-navigation-scene="home-background" aria-hidden="true">
+      <TopologyScene
+        class="home-v2__background-scene"
+        nodes={[]}
+        edges={[]}
+        layout="viewport-fit"
+        viewportFit={true}
+        topologyLayout="ring"
+        radius={36}
+        showGridNodes={false}
+        gridActivity={false}
+        ambientSignals={false}
+        connectorRouting="obstacle-aware"
+      />
+    </div>
     <section class="home-hero" aria-labelledby="home-title">
       <div class="home-hero__copy">
         <p class="home-eyebrow">{strings.pages.homeEyebrow}</p>
@@ -316,10 +331,10 @@ const severityCode = ["high", "alto"].includes(latestIncident?.severity.toLowerC
     let handoffPending = false;
     try {
       handoffPending = sessionStorage.getItem("thisisgenaro.pageHandoff") !== null || sessionStorage.getItem("thisisgenaro.originHandoff") === "1";
-      shouldIntro = handoffPending && sessionStorage.getItem(key) !== "1";
+      shouldIntro = sessionStorage.getItem(key) !== "1";
       if (shouldIntro) sessionStorage.setItem(key, "1");
     } catch {}
-    if (shouldIntro || (handoffPending && document.documentElement.dataset.originHandoff === "true")) {
+    if (shouldIntro || handoffPending) {
       homepage.dataset.homepageIntro = "true";
       const finish = (event) => {
         if (event instanceof CustomEvent && event.detail === "complete") {
@@ -333,16 +348,21 @@ const severityCode = ["high", "alto"].includes(latestIncident?.severity.toLowerC
   }
 </script>
 <style>
+  html[data-page-transition="pending"] .home-v2 > :not(.home-v2__background),
   .home-v2[data-homepage-intro] .home-hero__copy,
   .home-v2[data-homepage-intro] .home-section,
   .home-v2[data-homepage-intro] .home-footer { opacity: 0; transition: opacity 220ms ease; }
-  .home-v2 { width: min(100%, 96rem); margin: 0 auto; padding: clamp(1.25rem, 3.5vw, 3.25rem); }
+  .home-v2 { position: relative; z-index: 1; width: min(100%, 96rem); margin: 0 auto; padding: clamp(1.25rem, 3.5vw, 3.25rem); }
+  .home-v2__background { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; opacity: 0.42; }
+  .home-v2__background-scene { width: 100%; height: 100%; min-height: 100%; }
+  .home-v2__background :global(.topology-grid) { color: color-mix(in srgb, var(--accent) 6%, transparent); }
+
   .home-v2 :where(h1, h2, h3, h4, p) { margin: 0; }
   .home-eyebrow, .home-meta { font-family: var(--font-mono); letter-spacing: 0.14em; text-transform: uppercase; }
   .home-eyebrow { color: var(--accent); font-size: 0.68rem; font-weight: 800; }
   .home-meta { color: var(--muted-dim); font-size: 0.6rem; }
-  .home-hero { position: relative; display: block; min-height: min(52rem, calc(100svh - 2rem)); padding-block: clamp(2rem, 6vw, 5rem); border-bottom: 1px solid var(--line); }
-  .home-hero__copy { position: relative; z-index: 2; display: grid; gap: 1.35rem; max-width: 52rem; min-height: min(46rem, calc(100svh - 8rem)); align-content: center; }
+  .home-hero { display: grid; grid-template-columns: minmax(0, 1.03fr) minmax(28rem, 0.97fr); gap: clamp(2rem, 5vw, 5.5rem); align-items: center; min-height: min(52rem, calc(100svh - 2rem)); padding-block: clamp(2rem, 6vw, 5rem); border-bottom: 1px solid var(--line); }
+  .home-hero__copy { position: relative; z-index: 2; display: grid; gap: 1.35rem; }
   .home-hero h1 { max-width: 10ch; font-size: clamp(4rem, 8vw, 7.8rem); line-height: 0.86; letter-spacing: -0.075em; }
   .home-domains { display: flex; flex-wrap: wrap; align-items: center; gap: 0.55rem; color: var(--muted); font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.11em; text-transform: uppercase; }
   .home-domains i { width: 3px; height: 3px; border-radius: 50%; background: var(--accent); }
@@ -352,9 +372,9 @@ const severityCode = ["high", "alto"].includes(latestIncident?.severity.toLowerC
   .home-button span { color: var(--accent); }
   .home-button:hover, .home-button:focus-visible { transform: translateY(-2px); border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); background: var(--accent-soft); }
   .home-button--primary { border-color: color-mix(in srgb, var(--accent) 58%, var(--line)); background: color-mix(in srgb, var(--accent) 13%, var(--surface)); }
-  .home-hero__topology { position: absolute; inset: 0; z-index: 0; min-width: 0; height: 100%; min-height: 100%; margin: 0; overflow: hidden; border-block: 0; background: radial-gradient(circle at 50% 48%, color-mix(in srgb, var(--signal-blue) 7%, transparent), transparent 38%); pointer-events: none; }
+  .home-hero__topology { position: relative; min-width: 0; height: clamp(30rem, 48vw, 43rem); min-height: clamp(30rem, 48vw, 43rem); margin: 0; overflow: hidden; border-block: 1px solid var(--line); background: radial-gradient(circle at 50% 48%, color-mix(in srgb, var(--signal-blue) 7%, transparent), transparent 38%); }
   .home-hero__topology::before { content: "OTF / KNOWLEDGE WORLD"; position: absolute; inset: 0.8rem auto auto 0.8rem; z-index: 2; color: var(--muted-dim); font: 0.56rem/1 var(--font-mono); letter-spacing: 0.14em; }
-  .home-hero__scene { width: 100%; height: 100%; min-height: 100%; }
+  .home-hero__scene { width: 100%; min-height: clamp(30rem, 48vw, 43rem); }
   .home-hero__topology figcaption { position: absolute; inset: auto 0.8rem 0.8rem; z-index: 2; display: flex; justify-content: flex-end; gap: 0.8rem; color: var(--muted-dim); font: 0.55rem/1 var(--font-mono); letter-spacing: 0.1em; pointer-events: none; }
   .home-hero__topology :global(.topology-grid) { color: color-mix(in srgb, var(--accent) 8%, transparent); }
   .home-hero__topology :global(.grid-connector) { color: color-mix(in srgb, var(--signal-blue) 48%, var(--text)); stroke-width: 1.25; stroke-opacity: 0.46; opacity: 0.72; }
@@ -425,7 +445,7 @@ const severityCode = ["high", "alto"].includes(latestIncident?.severity.toLowerC
   .home-footer { display: flex; justify-content: space-between; gap: 2rem; padding-block: 2rem; }.home-footer > div { display: grid; gap: 0.5rem; }.home-footer > div > p:last-child { color: var(--muted); }.home-footer nav { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 1rem; }.home-footer a { color: var(--text); font: 0.62rem/1 var(--font-mono); letter-spacing: 0.1em; text-decoration: none; text-transform: uppercase; }
 
   @media (max-width: 1120px) { .home-hero { grid-template-columns: minmax(0, 1fr) minmax(24rem, .8fr); }.home-featured__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }.evidence-card--world { grid-column: 1 / -1; min-height: 16rem; }.perspective-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  @media (max-width: 860px) { .home-v2 { padding-top: 1rem; }.home-hero { grid-template-columns: 1fr; min-height: 0; padding-top: 2rem; }.home-hero__topology { height: 100%; min-height: 100%; }.home-hero__scene { min-height: 100%; }.home-section__header--split, .home-about { grid-template-columns: 1fr; }.home-knowledge__grid { grid-template-columns: 1fr; }.knowledge-panel { grid-template-rows: auto minmax(18rem, 22rem) auto; }.home-about { gap: 2.5rem; } }
-  @media (max-width: 640px) { .home-v2 { padding-inline: 1rem; }.home-hero h1 { font-size: clamp(3.25rem, 17vw, 5rem); }.home-domains { gap: 0.42rem; }.home-hero__statement { font-size: 1.08rem; }.home-hero__actions { display: grid; }.home-button { width: 100%; }.home-hero__topology { height: 100%; min-height: 100%; }.home-hero__scene { min-height: 100%; }.home-hero__topology figcaption { justify-content: flex-start; }.home-path { grid-template-columns: 1fr; }.home-path > i { display: none; }.home-path a + a { border-top: 1px solid var(--line); }.home-featured__grid, .perspective-grid { grid-template-columns: 1fr; }.evidence-card--world { grid-column: auto; }.home-metrics { grid-template-columns: 1fr 1fr; }.home-footer { align-items: flex-start; flex-direction: column; }.home-footer nav { justify-content: flex-start; } }
+  @media (max-width: 860px) { .home-v2 { padding-top: 1rem; }.home-hero { grid-template-columns: 1fr; min-height: 0; padding-top: 2rem; }.home-hero__topology { height: 30rem; min-height: 30rem; }.home-hero__scene { min-height: 30rem; }.home-section__header--split, .home-about { grid-template-columns: 1fr; }.home-knowledge__grid { grid-template-columns: 1fr; }.knowledge-panel { grid-template-rows: auto minmax(18rem, 22rem) auto; }.home-about { gap: 2.5rem; } }
+  @media (max-width: 640px) { .home-v2 { padding-inline: 1rem; }.home-hero h1 { font-size: clamp(3.25rem, 17vw, 5rem); }.home-domains { gap: 0.42rem; }.home-hero__statement { font-size: 1.08rem; }.home-hero__actions { display: grid; }.home-button { width: 100%; }.home-hero__topology { height: 25rem; min-height: 25rem; }.home-hero__scene { min-height: 25rem; }.home-hero__topology figcaption { justify-content: flex-start; }.home-path { grid-template-columns: 1fr; }.home-path > i { display: none; }.home-path a + a { border-top: 1px solid var(--line); }.home-featured__grid, .perspective-grid { grid-template-columns: 1fr; }.evidence-card--world { grid-column: auto; }.home-metrics { grid-template-columns: 1fr 1fr; }.home-footer { align-items: flex-start; flex-direction: column; }.home-footer nav { justify-content: flex-start; } }
   @media (prefers-reduced-motion: reduce) { .home-button, .perspective-card { transition: none; } }
 </style>
