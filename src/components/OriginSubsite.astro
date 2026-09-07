@@ -273,6 +273,8 @@ const originEdges = [
         sceneGrid.insertBefore(radialGroup, occupantsLayer ?? sceneGrid.firstChild);
       }
       const duration = 5260;
+      const signalSpeed = 2;
+      const playbackDuration = 2500;
       let navigated = false;
       const finish = () => {
         if (navigated) return;
@@ -281,10 +283,10 @@ const originEdges = [
         void pageHandoff({ destination: route, animation: "originArrival", context: { origin: true } });
       };
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { finish(); return; }
-      window.setTimeout(finish, duration + 250);
+      window.setTimeout(finish, playbackDuration + 250);
       const startedAt = performance.now();
       const render = (now) => {
-        const frame = Math.min(duration, now - startedAt);
+        const frame = Math.min(duration, (now - startedAt) * signalSpeed);
         const states = toGridCellStateMap(getRadialSignalFrame({ cells, origin: { q: 0, r: 0 }, frame, innerRadius: Number(host.dataset.radialInnerRadius ?? 4), outerRadius: Number(host.dataset.radialOuterRadius ?? 8), seed: host.dataset.radialSeed ?? "origin-language", sequence: "random", synchronizedPulse: true, returnToCenter: true, settle: true }));
         for (const { line, length } of connectorLines) {
           const constructionProgress = frame >= 380 ? Math.min(1, (frame - 380) / 680) : 0;
@@ -327,7 +329,7 @@ const originEdges = [
             element.style.setProperty("opacity", "0.82", "important");
           }
         });
-        if (frame < duration) window.requestAnimationFrame(render);
+        if (now - startedAt < playbackDuration) window.requestAnimationFrame(render);
         else finish();
       };
       window.requestAnimationFrame(render);
