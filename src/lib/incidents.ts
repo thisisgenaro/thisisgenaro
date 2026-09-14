@@ -91,7 +91,7 @@ Object.assign(spanishSceneText, {
 });
 
 Object.assign(spanishSceneText, {
-  "Santiago WMS Unavailability Following WAN Failover": "Indisponibilidad del WMS en Santiago tras la conmutación WAN",
+  "Santiago WMS Unavailability Following WAN Failover": "Indisponibilidad del WMS en Santiago tras el cambio al enlace WAN de respaldo",
   "Major Operational Degradation": "Degradación Operacional Mayor",
   "SEV-2 — Major Operational Degradation": "SEV-2 — Degradación Operacional Mayor",
   "Application reachability": "Accesibilidad de la aplicación",
