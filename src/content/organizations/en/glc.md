@@ -95,7 +95,7 @@ people:
     characteristic: Traditional, protective, pragmatic, and cautious about cloud dependency.
     question: Why did this not happen before?
 incidentIds:
-  - inc-2026-0001
+  - glc-inc-0104
 tags:
   - Logistics
   - Hybrid identity

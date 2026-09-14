@@ -8,13 +8,15 @@ import {
   findJournalEntryBySlug,
   getJournalEntrySlug,
   getPublishedJournalEntries,
+  getJournalEntriesForLanguage,
 } from "../../../../lib/journal";
 
 export async function getStaticPaths() {
-  const entries = getPublishedJournalEntries(await getCollection("entries"));
-  const slugs = Array.from(new Set(entries.map(getJournalEntrySlug)));
+  const entries = await getCollection("entries");
   return SUPPORTED_LOCALES.flatMap((locale) =>
-    slugs.map((slug) => ({ params: { locale, slug } })),
+    getPublishedJournalEntries(getJournalEntriesForLanguage(entries, locale)).map((entry) => ({
+      params: { locale, slug: getJournalEntrySlug(entry) },
+    })),
   );
 }
 

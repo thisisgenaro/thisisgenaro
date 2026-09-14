@@ -1,7 +1,7 @@
 ---
 id: journal-glc-inc-0104-opening-en
 translationKey: journal-glc-inc-0104-opening
-translationStatus: draft
+translationStatus: complete
 language: en
 title: The Backup Link Took Over
 date: 2026-09-14
@@ -17,14 +17,14 @@ tags:
   - WAN Failover
   - WMS
 organizationIds:
-  - GLC
+  - glc
 incidentIds:
   - GLC-INC-0104
 personIds:
   - yessenia
   - laura-santana
 relatedEntries: []
-draft: true
+draft: false
 slug: the-backup-link-took-over
 readingTime: 4
 ---

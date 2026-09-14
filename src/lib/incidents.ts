@@ -12,7 +12,7 @@ function parseIncidentDate(value: string) {
 }
 
 export function getPublishedIncidents() {
-  return [...incidentRecords].sort((left, right) => parseIncidentDate(right.created).getTime() - parseIncidentDate(left.created).getTime());
+  return incidentRecords.filter((incident) => incident.published).sort((left, right) => parseIncidentDate(right.created).getTime() - parseIncidentDate(left.created).getTime());
 }
 
 export function getIncidentById(id: string) {
@@ -90,6 +90,56 @@ Object.assign(spanishSceneText, {
   "Restoration included user-path validation.": "La restauración incluyó la validación de la ruta del usuario.",
 });
 
+Object.assign(spanishSceneText, {
+  "Santiago WMS Unavailability Following WAN Failover": "Indisponibilidad del WMS en Santiago tras la conmutación WAN",
+  "Major Operational Degradation": "Degradación Operacional Mayor",
+  "SEV-2 — Major Operational Degradation": "SEV-2 — Degradación Operacional Mayor",
+  "Application reachability": "Accesibilidad de la aplicación",
+  "Warehouse Operations": "Operaciones de almacén",
+  "Ongoing": "En curso",
+  "MPLS WAN": "WAN MPLS",
+  "IPsec Backup": "Respaldo IPsec",
+  "Warehouse Picking": "Picking del almacén",
+  "Dispatch Processing": "Procesamiento de despachos",
+  "Open Investigation": "Investigación abierta",
+  "Business-Service Reachability": "Accesibilidad del servicio empresarial",
+  "Failover Validation": "Validación de la conmutación",
+  "General datacenter connectivity recovered over the backup connection after a primary WAN failure, but the Santiago warehouse remains unable to access the WMS.": "La conectividad general hacia el datacenter se recuperó mediante el enlace de respaldo después de una falla de la WAN primaria, pero el almacén de Santiago continúa sin acceso al WMS.",
+  "Picking and dispatch operations at the Santiago warehouse remain degraded. New WMS-dependent work and transaction processing cannot proceed normally.": "Las operaciones de picking y despacho del almacén de Santiago permanecen degradadas. El nuevo trabajo y el procesamiento de transacciones que dependen del WMS no pueden continuar con normalidad.",
+  "Primary MPLS connectivity from Santiago is unavailable.": "La conectividad MPLS primaria desde Santiago no está disponible.",
+  "Backup IPsec connectivity is active.": "La conectividad IPsec de respaldo está activa.",
+  "General datacenter access from Santiago has recovered.": "El acceso general al datacenter desde Santiago se ha recuperado.",
+  "The WMS remains unavailable from Santiago.": "El WMS continúa sin estar disponible desde Santiago.",
+  "Other GLC locations can access the same centralized WMS.": "Otras ubicaciones de GLC pueden acceder al mismo WMS centralizado.",
+  "Warehouse picking and dispatch remain degraded.": "Las operaciones de picking y despacho permanecen degradadas.",
+  "Under investigation": "Bajo investigación",
+  "To be determined after investigation.": "Se determinará después de la investigación.",
+  "Open Incident Overview": "Resumen del incidente abierto",
+  "The WMS remains unavailable to Santiago while the backup path and general datacenter connectivity are active.": "El WMS continúa sin estar disponible en Santiago mientras la ruta de respaldo y la conectividad general al datacenter están activas.",
+  "UNAVAILABLE": "NO DISPONIBLE",
+  "Open": "Abierto",
+  "MAJOR DEGRADATION": "DEGRADACIÓN MAYOR",
+  "Santiago Warehouse": "Almacén de Santiago",
+  "Picking and Dispatch": "Picking y despachos",
+  "DEGRADED": "DEGRADADO",
+  "Backup IPsec": "Respaldo IPsec",
+  "ACTIVE": "ACTIVO",
+  "Investigation": "Investigación",
+  "IN PROGRESS": "EN CURSO",
+  "General connectivity recovered over the backup path.": "La conectividad general se recuperó mediante la ruta de respaldo.",
+  "WMS access from Santiago remains unavailable.": "El acceso al WMS desde Santiago continúa no disponible.",
+  "The cause is still under investigation.": "La causa aún está bajo investigación.",
+  "Investigation in progress": "Investigación en curso",
+  "The incident remains open. The available evidence confirms a Santiago-specific access failure, but not yet the reason the WMS did not follow the recovered backup path.": "El incidente permanece abierto. La evidencia disponible confirma una falla de acceso específica de Santiago, pero todavía no la razón por la que el WMS no siguió la ruta de respaldo recuperada.",
+  "Status: Open": "Estado: Abierto",
+  "Severity: SEV-2": "Severidad: SEV-2",
+  "Affected service: WMS": "Servicio afectado: WMS",
+  "Opened: 09:18": "Apertura: 09:18",
+  "Technical Lead": "Responsable técnico",
+  "Operational Lead": "Responsable operacional",
+  "Warehouse Supervisor / First Observer": "Supervisora de almacén / primera observadora",
+});
+
 const spanishIncidentCopy: Record<string, Partial<IncidentRecord>> = {
   "inc-2026-0001": {
     organization: "Grupo Logístico del Caribe",
@@ -118,6 +168,7 @@ export function getLocalizedIncidentById(id: string, locale: "en" | "es" = "en")
 }
 
 export function formatIncidentDate(value: string) {
+  if (!value || Number.isNaN(parseIncidentDate(value).getTime())) return "—";
   return new Intl.DateTimeFormat("en", {
     year: "numeric",
     month: "short",
@@ -126,6 +177,7 @@ export function formatIncidentDate(value: string) {
 }
 
 export function formatIncidentDateTime(value: string) {
+  if (!value || Number.isNaN(parseIncidentDate(value).getTime())) return "—";
   return new Intl.DateTimeFormat("en", {
     year: "numeric",
     month: "short",
