@@ -221,3 +221,28 @@ a {
     scroll-behavior: auto !important;
   }
 }
+
+/* Website content participates in OTF's navigation lifecycle via pageHandoff. */
+[data-page-transition="out"] .shell__stage,
+[data-page-transition="out"] > body > main {
+  opacity: 0.84;
+  transform: translateY(5px);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+[data-page-transition="in"] .shell__stage,
+[data-page-transition="in"] > body > main {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 220ms ease, transform 220ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-page-transition="out"] .shell__stage,
+  [data-page-transition="out"] > body > main,
+  [data-page-transition="in"] .shell__stage,
+  [data-page-transition="in"] > body > main {
+    transform: none;
+    transition: opacity 0.01ms linear;
+  }
+}

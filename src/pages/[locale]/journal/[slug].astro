@@ -7,7 +7,7 @@ import { createJournalEntryRecord } from "../../../lib/journal";
 import { render } from "astro:content";
 
 export async function getStaticPaths() {
-  const entries = await getCollection("entries", ({ data }) => data.language === "en");
+  const entries = await getCollection("entries", ({ data }) => data.language === "en" && !data.draft);
   return entries.flatMap((entry) => {
     const slug = entry.id.split("/").slice(1).join("/").replace(/\.mdx?$/, "");
     return ["en", "es"].map((locale) => ({ params: { locale, slug }, props: { slug } }));

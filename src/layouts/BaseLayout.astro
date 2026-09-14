@@ -88,6 +88,19 @@ const themeBootstrap =
   "} catch {document.documentElement.dataset.theme=fallback;document.documentElement.dataset.glow='standard';document.documentElement.dataset.contrast='standard';document.documentElement.dataset.colorVision='standard';}" +
   "})();";
 
+const transitionGateBootstrap =
+  "(() => {" +
+  "try {" +
+  "const path = window.location.pathname.replace(/\\\/$/, \"\") || \"/\";" +
+  "const locale = document.documentElement.dataset.locale || \"en\";" +
+  "const home = path === \"/\" + locale;" +
+  "const handoff = sessionStorage.getItem(\"thisisgenaro.pageHandoff\") || sessionStorage.getItem(\"thisisgenaro.originHandoff\");" +
+  "const firstHome = home && sessionStorage.getItem(\"thisisgenaro.homepageIntro.\" + locale) !== \"1\";" +
+  "if (firstHome) window.__thisisgenaroHomepageIntroPending = true;" +
+  "if (handoff || firstHome) document.documentElement.dataset.pageTransition = \"pending\";" +
+  "} catch {}" +
+  "})();";
+
 const railBootstrap =
   "(() => {" +
   "try {" +
@@ -114,6 +127,7 @@ const railBootstrap =
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <script is:inline set:html={themeBootstrap}></script>
     <script is:inline set:html={railBootstrap}></script>
+    <script is:inline set:html={transitionGateBootstrap}></script>
     <title>{title}</title>
     <slot name="head" />
   </head>
@@ -179,7 +193,7 @@ const railBootstrap =
     <script>
       document.querySelectorAll("[data-locale-choice]").forEach((link) => {
         link.addEventListener("click", () => {
-          try { localStorage.setItem("siteLocale", link.getAttribute("data-locale-choice") || "en"); } catch {}
+          try { localStorage.setItem("siteLocale", link.getAttribute("data-locale-choice") || "en"); localStorage.setItem("thisisgenaro.locale", link.getAttribute("data-locale-choice") || "en"); } catch {}
         });
       });
     </script>
@@ -368,7 +382,11 @@ const railBootstrap =
       mobileQuery.addEventListener("change", syncMobileState);
       syncMobileState();
     </script>
-  </body>
+      <script>
+      import { installPageHandoff } from "../lib/pageHandoff";
+      installPageHandoff();
+    </script>
+</body>
 </html>
 
 <style>

@@ -103,6 +103,21 @@ const severityCode = ["high", "alto"].includes(latestIncident?.severity.toLowerC
   description={locale === "es" ? strings.pages.homeStatement : "Engineering ideas, incident investigations, and the connected world of systems and dependencies behind them."}
 >
   <main class="home-v2">
+    <div class="home-v2__background" data-navigation-scene="home-background" aria-hidden="true">
+      <TopologyScene
+        class="home-v2__background-scene"
+        nodes={[]}
+        edges={[]}
+        layout="viewport-fit"
+        viewportFit={true}
+        topologyLayout="ring"
+        radius={36}
+        showGridNodes={false}
+        gridActivity={false}
+        ambientSignals={false}
+        connectorRouting="obstacle-aware"
+      />
+    </div>
     <section class="home-hero" aria-labelledby="home-title">
       <div class="home-hero__copy">
         <p class="home-eyebrow">{strings.pages.homeEyebrow}</p>
@@ -307,8 +322,41 @@ const severityCode = ["high", "alto"].includes(latestIncident?.severity.toLowerC
   </main>
 </BaseLayout>
 
+<script>
+  const homepage = document.querySelector(".home-v2");
+  if (homepage instanceof HTMLElement) {
+    const locale = document.documentElement.dataset.locale || "en";
+    const key = "thisisgenaro.homepageIntro." + locale;
+    let shouldIntro = false;
+    let handoffPending = false;
+    try {
+      handoffPending = sessionStorage.getItem("thisisgenaro.pageHandoff") !== null || sessionStorage.getItem("thisisgenaro.originHandoff") === "1";
+      shouldIntro = sessionStorage.getItem(key) !== "1";
+      if (shouldIntro) sessionStorage.setItem(key, "1");
+    } catch {}
+    if (shouldIntro || handoffPending) {
+      homepage.dataset.homepageIntro = "true";
+      const finish = (event) => {
+        if (event instanceof CustomEvent && event.detail === "complete") {
+          homepage.removeAttribute("data-homepage-intro");
+          window.removeEventListener("navigation-transition-state", finish);
+        }
+      };
+      window.addEventListener("navigation-transition-state", finish);
+      if (document.documentElement.dataset.originHandoff === "true") delete document.documentElement.dataset.originHandoff;
+    }
+  }
+</script>
 <style>
-  .home-v2 { width: min(100%, 96rem); margin: 0 auto; padding: clamp(1.25rem, 3.5vw, 3.25rem); }
+  html[data-page-transition="pending"] .home-v2 > :not(.home-v2__background),
+  .home-v2[data-homepage-intro] .home-hero__copy,
+  .home-v2[data-homepage-intro] .home-section,
+  .home-v2[data-homepage-intro] .home-footer { opacity: 0; transition: opacity 220ms ease; }
+  .home-v2 { position: relative; z-index: 1; width: min(100%, 96rem); margin: 0 auto; padding: clamp(1.25rem, 3.5vw, 3.25rem); }
+  .home-v2__background { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; opacity: 0.42; }
+  .home-v2__background-scene { width: 100%; height: 100%; min-height: 100%; }
+  .home-v2__background :global(.topology-grid) { color: color-mix(in srgb, var(--accent) 6%, transparent); }
+
   .home-v2 :where(h1, h2, h3, h4, p) { margin: 0; }
   .home-eyebrow, .home-meta { font-family: var(--font-mono); letter-spacing: 0.14em; text-transform: uppercase; }
   .home-eyebrow { color: var(--accent); font-size: 0.68rem; font-weight: 800; }
