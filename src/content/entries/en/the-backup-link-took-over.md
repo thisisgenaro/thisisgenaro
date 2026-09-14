@@ -23,6 +23,7 @@ incidentIds:
 personIds:
   - yessenia
   - laura-santana
+image: /images/journal/entry-1/wan-failover-wms.jpg
 relatedEntries: []
 draft: false
 slug: the-backup-link-took-over
