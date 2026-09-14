@@ -12,11 +12,12 @@ export async function getStaticPaths() {
   const published = getPublishedJournalEntries(entries);
 
   return published.map((entry) => {
-    const [language, ...slugParts] = entry.id.split("/");
+    const language = entry.data.language;
+    const slug = entry.data.slug ?? entry.id.split("/").slice(1).join("/").replace(/\.mdx?$/, "");
     return {
       params: {
         language,
-        slug: slugParts.join("/").replace(/\.mdx?$/, ""),
+        slug,
       },
       props: { entryId: entry.id },
     };

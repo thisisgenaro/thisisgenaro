@@ -153,14 +153,14 @@ export function getJournalEntryTopics(entry: JournalEntry) {
 }
 
 export function getJournalEntryHref(entry: JournalEntry) {
-  const [language, ...slugParts] = entry.id.split("/");
-  const slug = stripExtension(slugParts.join("/"));
-  return `/${language}/journal/entries/${slug}`;
+  const language = entry.data.language;
+  return `/${language}/journal/entries/${getJournalEntrySlug(entry)}`;
 }
 
 export function getJournalEntrySlug(entry: JournalEntry) {
+  if (entry.data.slug) return entry.data.slug;
   const [, ...slugParts] = entry.id.split("/");
-  return stripExtension(slugParts.join("/"));
+  return stripExtension(slugParts.join("/")) || stripExtension(entry.data.id);
 }
 
 export function findJournalEntryBySlug(entries: JournalEntry[], language: string, slug: string) {

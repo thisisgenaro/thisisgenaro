@@ -95,7 +95,7 @@ people:
     characteristic: Tradicional, protector, pragmático y prudente ante la dependencia de la nube.
     question: ¿Por qué esto no ocurrió antes?
 incidentIds:
-  - inc-2026-0001
+  - glc-inc-0104
 tags:
   - Logística
   - Hybrid identity
