@@ -7,9 +7,9 @@ title: The Backup Link Took Over
 date: 2026-09-14
 summary: A WAN failover appeared successful in Santiago, but one critical warehouse service never followed the backup path.
 topics:
-  - Infrastructure Operations
-  - Incident Analysis
-  - Network Reliability
+  - infrastructure-operations
+  - incident-analysis
+  - network-reliability
 tags:
   - GLC
   - MPLS
@@ -31,6 +31,10 @@ readingTime: 4
 ---
 
 At 9:10 in the morning, the primary connection between GLC’s Santiago warehouse and the Santo Domingo datacenter stopped working. The branch was designed for that possibility, so the network reacted almost immediately: the primary MPLS path became unavailable and the backup connection took over.
+
+> **About GLC**
+>
+> Grupo Logístico del Caribe (GLC) is a multi-site logistics company whose warehouse operations depend heavily on centralized systems hosted from its Santo Domingo datacenter. The Santiago warehouse relies on the central WMS for picking, inventory confirmation, and dispatch.
 
 The first signs were encouraging. The IPsec tunnel was active, a representative server in the datacenter was responding again, Active Directory and DNS were reachable, and Internet connectivity from the warehouse was available. Latency was higher than usual, but still within what we expected from the backup path.
 

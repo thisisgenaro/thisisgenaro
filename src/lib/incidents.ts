@@ -127,7 +127,7 @@ Object.assign(spanishSceneText, {
   "Investigation": "Investigación",
   "IN PROGRESS": "EN CURSO",
   "General connectivity recovered over the backup path.": "La conectividad general se recuperó mediante la ruta de respaldo.",
-  "WMS access from Santiago remains unavailable.": "El acceso al WMS desde Santiago continúa no disponible.",
+  "WMS access from Santiago remains unavailable.": "El acceso al WMS desde Santiago continúa sin estar disponible.",
   "The cause is still under investigation.": "La causa aún está bajo investigación.",
   "Investigation in progress": "Investigación en curso",
   "The incident remains open. The available evidence confirms a Santiago-specific access failure, but not yet the reason the WMS did not follow the recovered backup path.": "El incidente permanece abierto. La evidencia disponible confirma una falla de acceso específica de Santiago, pero todavía no la razón por la que el WMS no siguió la ruta de respaldo recuperada.",
@@ -167,31 +167,33 @@ export function getLocalizedIncidentById(id: string, locale: "en" | "es" = "en")
   return incident ? translateIncidentStrings({ ...incident, ...spanishIncidentCopy[incident.id] }) : null;
 }
 
-export function formatIncidentDate(value: string) {
+export function formatIncidentDate(value: string, locale: "en" | "es" = "en") {
   if (!value || Number.isNaN(parseIncidentDate(value).getTime())) return "—";
-  return new Intl.DateTimeFormat("en", {
+  return new Intl.DateTimeFormat(locale === "es" ? "es-ES" : "en-US", {
     year: "numeric",
     month: "short",
     day: "2-digit",
+    timeZone: "America/Santo_Domingo",
   }).format(parseIncidentDate(value));
 }
 
-export function formatIncidentDateTime(value: string) {
+export function formatIncidentDateTime(value: string, locale: "en" | "es" = "en") {
   if (!value || Number.isNaN(parseIncidentDate(value).getTime())) return "—";
-  return new Intl.DateTimeFormat("en", {
+  return new Intl.DateTimeFormat(locale === "es" ? "es-ES" : "en-US", {
     year: "numeric",
     month: "short",
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: "America/Santo_Domingo",
   }).format(parseIncidentDate(value));
 }
 
 export function getIncidentStatusTone(status: string) {
   const normalized = status.trim().toLowerCase();
-  if (["closed", "resolved"].includes(normalized)) return "resolved";
-  if (["investigating", "monitoring"].includes(normalized)) return "watching";
-  if (["open", "new"].includes(normalized)) return "open";
+  if (["closed", "resolved", "cerrado", "cerrada", "resuelto", "resuelta"].includes(normalized)) return "resolved";
+  if (["investigating", "monitoring", "investigación", "investigando", "monitoreando"].includes(normalized)) return "watching";
+  if (["open", "new", "abierto", "abierta", "abiertas", "abiertos"].includes(normalized)) return "open";
   return "identified";
 }
 

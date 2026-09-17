@@ -88,9 +88,9 @@ const serializedSlides = JSON.stringify(slides);
   description={incident.summary}
 >
   <main class="incident-deck">
-    <div class="incident-deck__mobile-tabs" data-incident-deck-mobile-tabs role="tablist" aria-label="Incident workspace">
-      <button type="button" class="incident-deck__mobile-tab is-active" data-incident-deck-mobile-tab="visual" role="tab" aria-selected="true">Visual</button>
-      <button type="button" class="incident-deck__mobile-tab" data-incident-deck-mobile-tab="inspector" role="tab" aria-selected="false">Inspector</button>
+    <div class="incident-deck__mobile-tabs" data-incident-deck-mobile-tabs role="tablist" aria-label={locale === "es" ? "Espacio de trabajo del incidente" : "Incident workspace"}>
+      <button type="button" class="incident-deck__mobile-tab is-active" data-incident-deck-mobile-tab="visual" role="tab" aria-selected="true">{locale === "es" ? "Visual" : "Visual"}</button>
+      <button type="button" class="incident-deck__mobile-tab" data-incident-deck-mobile-tab="inspector" role="tab" aria-selected="false">{locale === "es" ? "Inspector" : "Inspector"}</button>
     </div>
     <section class="incident-deck__scene-shell" data-incident-deck-shell>
       <div
@@ -119,18 +119,18 @@ const serializedSlides = JSON.stringify(slides);
       <div class="incident-deck__scene-map surface surface-pad" data-incident-deck-map>
         <div class="incident-deck__scene-map-head">
           <div>
-            <p class="incident-deck__inspector-label mono">World map</p>
-            <strong data-topology-mini-map-readout>Ready</strong>
+            <p class="incident-deck__inspector-label mono">{locale === "es" ? "Mapa mundial" : "World map"}</p>
+            <strong data-topology-mini-map-readout>{locale === "es" ? "Listo" : "Ready"}</strong>
             <span class="incident-deck__scene-map-caption" data-incident-deck-mini-caption>{activeSlide.label}</span>
           </div>
-          <span class="incident-deck__scene-map-hint mono">Camera</span>
+          <span class="incident-deck__scene-map-hint mono">{locale === "es" ? "Cámara" : "Camera"}</span>
         </div>
         <div class="incident-deck__scene-map-frame" set:html={miniMapMarkup}></div>
-        <div class="incident-deck__scene-map-actions" aria-label="Camera controls">
-          <button type="button" class="incident-deck__scene-map-action" data-topology-mini-map-action="zoom-out" aria-label="Zoom out">−</button>
-          <button type="button" class="incident-deck__scene-map-action" data-topology-mini-map-action="fit" aria-label="Fit camera">Fit</button>
-          <button type="button" class="incident-deck__scene-map-action" data-topology-mini-map-action="center" aria-label="Center on selection">Center</button>
-          <button type="button" class="incident-deck__scene-map-action" data-topology-mini-map-action="zoom-in" aria-label="Zoom in">+</button>
+        <div class="incident-deck__scene-map-actions" aria-label={locale === "es" ? "Controles de cámara" : "Camera controls"}>
+          <button type="button" class="incident-deck__scene-map-action" data-topology-mini-map-action="zoom-out" aria-label={locale === "es" ? "Alejar" : "Zoom out"}>−</button>
+          <button type="button" class="incident-deck__scene-map-action" data-topology-mini-map-action="fit" aria-label={locale === "es" ? "Ajustar cámara" : "Fit camera"}>{locale === "es" ? "Ajustar" : "Fit"}</button>
+          <button type="button" class="incident-deck__scene-map-action" data-topology-mini-map-action="center" aria-label={locale === "es" ? "Centrar en la selección" : "Center on selection"}>{locale === "es" ? "Centrar" : "Center"}</button>
+          <button type="button" class="incident-deck__scene-map-action" data-topology-mini-map-action="zoom-in" aria-label={locale === "es" ? "Acercar" : "Zoom in"}>+</button>
         </div>
       </div>
 
@@ -139,11 +139,11 @@ const serializedSlides = JSON.stringify(slides);
     <aside class="incident-deck__inspector surface surface-pad" data-incident-deck-inspector data-inspector-collapsed="false">
       <div class="incident-deck__inspector-toolbar">
         <div>
-          <p class="incident-deck__inspector-label mono">Incident inspector</p>
+          <p class="incident-deck__inspector-label mono">{locale === "es" ? "Inspector del incidente" : "Incident inspector"}</p>
         </div>
-        <button type="button" class="incident-deck__inspector-toggle" data-incident-deck-inspector-toggle aria-expanded="true">Collapse</button>
+        <button type="button" class="incident-deck__inspector-toggle" data-incident-deck-inspector-toggle data-collapse-label={locale === "es" ? "Contraer" : "Collapse"} aria-expanded="true">{locale === "es" ? "Contraer" : "Collapse"}</button>
       </div>
-      <div class="incident-deck__inspector-collapsed-mark" aria-hidden="true"><span>◇</span><small>Inspector</small></div>
+      <div class="incident-deck__inspector-collapsed-mark" aria-hidden="true"><span>◇</span><small>{locale === "es" ? "Inspector" : "Inspector"}</small></div>
       <div class="incident-deck__inspector-panel" data-incident-deck-inspector-panel>
         <div class="incident-deck__inspector-grid">
         <section class="incident-deck__identity">
@@ -161,11 +161,11 @@ const serializedSlides = JSON.stringify(slides);
             </div>
             <div>
               <span>{locale === "es" ? "Inicio" : "Started"}</span>
-              <strong>{formatIncidentDateTime(incident.opened ?? incident.created)}</strong>
+              <strong>{formatIncidentDateTime(incident.opened ?? incident.created, locale)}</strong>
             </div>
             <div>
               <span>{locale === "es" ? "Restaurado" : "Restored"}</span>
-              <strong>{incident.restored ? formatIncidentDateTime(incident.restored) : (incident.closed ? formatIncidentDateTime(incident.closed) : (locale === "es" ? "Abierto" : "Open"))}</strong>
+              <strong>{incident.restored ? formatIncidentDateTime(incident.restored, locale) : (incident.closed ? formatIncidentDateTime(incident.closed, locale) : (locale === "es" ? "Abierto" : "Open"))}</strong>
             </div>
             <div>
               <span>{locale === "es" ? "Organización" : "Organization"}</span>
@@ -219,20 +219,20 @@ const serializedSlides = JSON.stringify(slides);
       </div>
     </aside>
 
-      <div class="incident-deck__scene-controls" aria-label="Incident scene navigation">
+      <div class="incident-deck__scene-controls" aria-label={locale === "es" ? "Navegación de escenas del incidente" : "Incident scene navigation"}>
         <button
           type="button"
           class="incident-deck__scene-step"
           data-incident-deck-step="previous"
-          aria-label="Previous scene"
+          aria-label={locale === "es" ? "Escena anterior" : "Previous scene"}
         >
           <span aria-hidden="true">←</span>
-          <span>Previous</span>
+          <span>{locale === "es" ? "Anterior" : "Previous"}</span>
         </button>
 
         <label class="incident-deck__scene-select-wrap">
-          <span class="mono">Scene</span>
-          <select class="incident-deck__scene-select" data-incident-deck-select aria-label="Select incident scene">
+          <span class="mono">{locale === "es" ? "Escena" : "Scene"}</span>
+          <select class="incident-deck__scene-select" data-incident-deck-select aria-label={locale === "es" ? "Seleccionar escena del incidente" : "Select incident scene"}>
             {slides.map((slide) => (
               <option value={slide.id} selected={slide.id === activeSlide.id}>
                 {slide.label}
@@ -245,9 +245,9 @@ const serializedSlides = JSON.stringify(slides);
           type="button"
           class="incident-deck__scene-step"
           data-incident-deck-step="next"
-          aria-label="Next scene"
+          aria-label={locale === "es" ? "Escena siguiente" : "Next scene"}
         >
-          <span>Next</span>
+          <span>{locale === "es" ? "Siguiente" : "Next"}</span>
           <span aria-hidden="true">→</span>
         </button>
       </div>
@@ -300,6 +300,7 @@ const serializedSlides = JSON.stringify(slides);
       let liveSceneBounds = initialSceneBounds;
       let initialFitScheduled = false;
       let inspectorCollapsed = false;
+      const collapseLabel = inspectorToggle?.getAttribute("data-collapse-label") || "Collapse";
       let updateInspector = () => {};
 
       const setMobileMode = (mode) => {
@@ -432,7 +433,7 @@ const serializedSlides = JSON.stringify(slides);
           inspector?.setAttribute("data-inspector-collapsed", String(inspectorCollapsed));
           if (inspectorToggle) {
             inspectorToggle.setAttribute("aria-expanded", String(!inspectorCollapsed));
-            inspectorToggle.textContent = inspectorCollapsed ? "›" : "Collapse";
+            inspectorToggle.textContent = inspectorCollapsed ? "›" : collapseLabel;
           }
           requestAnimationFrame(() => navigation.viewport.updateViewport());
         };

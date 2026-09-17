@@ -9,6 +9,7 @@ import {
   getJournalEntrySlug,
   getPublishedJournalEntries,
   getJournalEntriesForLanguage,
+  getJournalEntryAlternatePaths,
 } from "../../../../lib/journal";
 
 export async function getStaticPaths() {
@@ -23,6 +24,8 @@ export async function getStaticPaths() {
 const locale = getLocaleFromPath(`/${Astro.params.locale}`) as Locale;
 const strings = ui[locale];
 const slug = Astro.params.slug ?? "";
-const entry = findJournalEntryBySlug(await getCollection("entries"), locale, slug);
+const allEntries = await getCollection("entries");
+const entry = findJournalEntryBySlug(allEntries, locale, slug);
+const alternatePaths = entry ? getJournalEntryAlternatePaths(allEntries, entry) : undefined;
 ---
-{entry ? <JournalEntry locale={locale} entry={entry} record={createJournalEntryRecord(entry)} Content={(await render(entry)).Content} /> : <BaseLayout locale={locale} title={strings.nav.journal} description={strings.labels.unavailable}><p>{strings.labels.unavailable}</p></BaseLayout>}
+{entry ? <JournalEntry locale={locale} entry={entry} alternatePaths={alternatePaths} record={createJournalEntryRecord(entry)} Content={(await render(entry)).Content} /> : <BaseLayout locale={locale} title={strings.nav.journal} description={strings.labels.unavailable}><p>{strings.labels.unavailable}</p></BaseLayout>}

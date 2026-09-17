@@ -230,7 +230,7 @@ const severityCode = ["high", "alto"].includes(latestIncident?.severity.toLowerC
           </div>
           {latestIncident ? (
             <div class="knowledge-panel__content">
-              <p class="home-meta">{t("FEATURED INCIDENT", "INCIDENTE DESTACADO")} · {formatIncidentDate(latestIncident.created).toUpperCase()} · {latestOrganization?.acronym}</p>
+              <p class="home-meta">{t("FEATURED INCIDENT", "INCIDENTE DESTACADO")} · {formatIncidentDate(latestIncident.created, locale).toUpperCase()} · {latestOrganization?.acronym}</p>
               <h4>{latestIncident.title}</h4>
               <p>{latestIncident.summary}</p>
               <div class="home-tags">
@@ -260,7 +260,7 @@ const severityCode = ["high", "alto"].includes(latestIncident?.severity.toLowerC
         <article class="evidence-card evidence-card--incident">
           <p class="evidence-card__label">{t("LATEST INCIDENT", "INCIDENTE MÁS RECIENTE")}</p>
           <h3>{latestIncident?.title ?? t("Incident record forthcoming", "Próximo registro de incidente")}</h3>
-          <p class="home-meta">{latestIncident ? formatIncidentDate(latestIncident.created).toUpperCase() : ""}{latestOrganization ? ` · ${latestOrganization.acronym}` : ""}</p>
+          <p class="home-meta">{latestIncident ? formatIncidentDate(latestIncident.created, locale).toUpperCase() : ""}{latestOrganization ? ` · ${latestOrganization.acronym}` : ""}</p>
           <p>{latestIncident?.symptom ?? t("Structured investigations preserve the evidence and operational context behind failures.", "Las investigaciones estructuradas preservan la evidencia y el contexto operativo detrás de los fallos.")}</p>
           <a href={latestIncident ? localePath(locale, `/incident-library/${latestIncident.id}`) : localePath(locale, "/incident-library")}>{t("OPEN INCIDENT →", "VER INCIDENTE →")}</a>
         </article>

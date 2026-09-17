@@ -7,9 +7,9 @@ title: El enlace de respaldo tomó el control
 date: 2026-09-14
 summary: El cambio de la WAN parecía haber funcionado en Santiago, pero un servicio crítico del almacén nunca siguió la ruta de respaldo.
 topics:
-  - Operaciones de Infraestructura
-  - Análisis de Incidentes
-  - Confiabilidad de Redes
+  - infrastructure-operations
+  - incident-analysis
+  - network-reliability
 tags:
   - GLC
   - MPLS
@@ -32,6 +32,10 @@ readingTime: 4
 
 A las 9:10 de la mañana, la conexión primaria entre el almacén de GLC en Santiago y el datacenter de Santo Domingo dejó de funcionar. La sucursal estaba diseñada para esa posibilidad, así que la red reaccionó casi de inmediato: la ruta MPLS primaria quedó fuera de servicio y el enlace de respaldo tomó el control.
 
+> **Sobre GLC**
+>
+> Grupo Logístico del Caribe (GLC) es una empresa logística con múltiples localidades cuyas operaciones de almacén dependen en gran medida de sistemas centralizados alojados desde su datacenter en Santo Domingo. El almacén de Santiago depende del WMS central para picking, confirmaciones de inventario y despacho.
+
 Las primeras señales eran alentadoras. El túnel IPsec estaba activo, un servidor representativo en el datacenter respondía nuevamente, Active Directory y DNS estaban disponibles, y el almacén tenía acceso a Internet. La latencia era mayor de lo habitual, pero seguía dentro de lo esperado para la ruta de respaldo.
 
 Desde el punto de vista de la red, la conmutación parecía haber funcionado.
@@ -40,7 +44,7 @@ Unos minutos después, el NOC informó que la conectividad había sido restablec
 
 El problema era que el almacén todavía no podía trabajar.
 
-Alrededor de las 9:18, Yessenia, la supervisora del almacén en Santiago, reportó que el Warehouse Management System seguía agotando el tiempo de espera. Algunos operadores podían continuar con información que ya habían cargado o impreso antes de la interrupción, pero las nuevas tareas de picking no estaban llegando, las confirmaciones de inventario no podían completarse y las transacciones de despacho no estaban pasando.
+Alrededor de las 9:18, Yessenia, la supervisora del almacén en Santiago, reportó que el Warehouse Management System seguía sin responder. Algunos operadores podían continuar con información que ya habían cargado o impreso antes de la interrupción, pero las nuevas tareas de picking no estaban llegando, las confirmaciones de inventario no podían completarse y las transacciones de despacho no se procesaban.
 
 Su resumen fue mucho más simple:
 
