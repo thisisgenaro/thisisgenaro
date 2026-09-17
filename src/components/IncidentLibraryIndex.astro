@@ -47,7 +47,7 @@ const featuredTopology = latest ? createIncidentPreviewTopology(latest) : null;
           </div>
           <div>
             <dt>{t("Latest record", "Registro más reciente")}</dt>
-            <dd>{formatIncidentDate(latest.created)}</dd>
+            <dd>{formatIncidentDate(latest.created, locale)}</dd>
           </div>
           <div>
             <dt>{t("Closed", "Cerrados")}</dt>
@@ -227,7 +227,7 @@ const featuredTopology = latest ? createIncidentPreviewTopology(latest) : null;
                 <div class="incident-card__status">
                   <span class:list={["incident-status-pill", `is-${getIncidentStatusTone(incident.status)}`]}>{incident.status}</span>
                   <span>{formatDuration(incident.duration)}</span>
-                  <span>{formatIncidentDate(incident.created)}</span>
+                  <span>{formatIncidentDate(incident.created, locale)}</span>
                 </div>
 
                 <p class="incident-card__description">{incident.summary}</p>

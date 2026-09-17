@@ -17,6 +17,7 @@ interface Props {
   description?: string;
   locale?: Locale;
   canonicalPath?: string;
+  alternatePaths?: Partial<Record<Locale, string>>;
 }
 
 const {
@@ -24,12 +25,14 @@ const {
   description = "Design, automate, and keep things running.",
   locale: requestedLocale,
   canonicalPath,
+  alternatePaths,
 } = Astro.props;
 
 const pathname = Astro.url.pathname;
 const locale = requestedLocale ?? getLocaleFromPath(pathname) ?? "en";
 const strings = ui[locale];
 const localeAwarePath = canonicalPath ?? stripLocale(pathname);
+const alternatePath = (targetLocale: Locale) => alternatePaths?.[targetLocale] ?? localeAwarePath;
 const canonicalUrl = "https://thisisgenaro.com" + localePath(locale, localeAwarePath);
 const railStateStorageKey = "thisisgenaro:shell-rail-collapsed";
 const homeHref = localePath(locale, "/");
@@ -120,9 +123,9 @@ const railBootstrap =
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <link rel="canonical" href={canonicalUrl} />
-    <link rel="alternate" hreflang="en" href={"https://thisisgenaro.com" + localePath("en", localeAwarePath)} />
-    <link rel="alternate" hreflang="es" href={"https://thisisgenaro.com" + localePath("es", localeAwarePath)} />
-    <link rel="alternate" hreflang="x-default" href={"https://thisisgenaro.com" + localePath("en", localeAwarePath)} />
+    <link rel="alternate" hreflang="en" href={"https://thisisgenaro.com" + localePath("en", alternatePath("en"))} />
+    <link rel="alternate" hreflang="es" href={"https://thisisgenaro.com" + localePath("es", alternatePath("es"))} />
+    <link rel="alternate" hreflang="x-default" href={"https://thisisgenaro.com" + localePath("en", alternatePath("en"))} />
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <script is:inline set:html={themeBootstrap}></script>
@@ -176,9 +179,9 @@ const railBootstrap =
             </a>
             <nav class="shell__language" aria-label={strings.language.label}>
               <span>{strings.language.label}</span>
-              <a href={localePath("en", localeAwarePath)} data-locale-choice="en" aria-current={locale === "en" ? "true" : undefined}>EN</a>
+              <a href={localePath("en", alternatePath("en"))} data-locale-choice="en" aria-current={locale === "en" ? "true" : undefined}>EN</a>
               <span aria-hidden="true">|</span>
-              <a href={localePath("es", localeAwarePath)} data-locale-choice="es" aria-current={locale === "es" ? "true" : undefined}>ES</a>
+              <a href={localePath("es", alternatePath("es"))} data-locale-choice="es" aria-current={locale === "es" ? "true" : undefined}>ES</a>
             </nav>
             <div class="shell__utility-mount" data-theme-switcher-mount></div>
           </section>

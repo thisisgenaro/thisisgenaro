@@ -1,4 +1,5 @@
 import type { CollectionEntry } from "astro:content";
+import { SUPPORTED_LOCALES, type Locale } from "./i18n";
 
 export type JournalEntry = CollectionEntry<"entries">;
 
@@ -65,6 +66,9 @@ export const JOURNAL_TOPICS: JournalTopicDefinition[] = [
     slug: "security",
     description: "Access, risk, and the conditions that keep the operating model trustworthy.",
   },
+  { name: "Infrastructure Operations", slug: "infrastructure-operations", description: "The systems and operational practices that keep infrastructure dependable." },
+  { name: "Incident Analysis", slug: "incident-analysis", description: "Evidence, hypotheses, and reasoning used to understand operational failure." },
+  { name: "Network Reliability", slug: "network-reliability", description: "The paths, dependencies, and controls that keep connectivity dependable." },
 ];
 
 const JOURNAL_TOPIC_TRANSLATIONS_ES: Record<string, Pick<JournalTopicDefinition, "name" | "description">> = {
@@ -92,6 +96,9 @@ const JOURNAL_TOPIC_TRANSLATIONS_ES: Record<string, Pick<JournalTopicDefinition,
     name: "Seguridad",
     description: "Acceso, riesgo y las condiciones que mantienen confiable el modelo operativo.",
   },
+  "infrastructure-operations": { name: "Operaciones de infraestructura", description: "Los sistemas y prácticas operativas que mantienen confiable la infraestructura." },
+  "incident-analysis": { name: "Análisis de incidentes", description: "La evidencia, las hipótesis y el razonamiento para entender una falla operativa." },
+  "network-reliability": { name: "Confiabilidad de redes", description: "Las rutas, dependencias y controles que mantienen confiable la conectividad." },
 };
 
 const journalTopicBySlug = new Map(JOURNAL_TOPICS.map((topic) => [topic.slug, topic]));
@@ -150,6 +157,14 @@ export function getJournalEntryTopics(entry: JournalEntry) {
   }
 
   return topics;
+}
+
+export function getJournalEntryAlternatePaths(entries: JournalEntry[], entry: JournalEntry): Partial<Record<Locale, string>> {
+  const key = entry.data.translationKey ?? entry.data.id;
+  return Object.fromEntries(SUPPORTED_LOCALES.map((locale) => {
+    const candidate = entries.find((item) => item.data.language === locale && (item.data.translationKey ?? item.data.id) === key && !item.data.draft);
+    return [locale, candidate ? `/journal/entries/${getJournalEntrySlug(candidate)}` : `/journal/entries/${getJournalEntrySlug(entry)}`];
+  }));
 }
 
 export function getJournalEntryHref(entry: JournalEntry) {

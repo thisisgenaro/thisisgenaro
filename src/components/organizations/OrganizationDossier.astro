@@ -221,7 +221,7 @@ const dossierTopology = createOrganizationDossierTopology(organization);
               <span class:list={["dossier-status", `is-${getIncidentStatusTone(incident.status)}`]}>{incident.status}</span>
             </header>
             <dl>
-              <div><dt>{t("Date", "Fecha")}</dt><dd>{formatIncidentDate(incident.created)}</dd></div>
+              <div><dt>{t("Date", "Fecha")}</dt><dd>{formatIncidentDate(incident.created, locale)}</dd></div>
               <div><dt>{t("Service", "Servicio")}</dt><dd>{incident.service}</dd></div>
               <div><dt>{t("Duration", "Duración")}</dt><dd>{incident.duration}</dd></div>
               <div><dt>{t("Severity", "Severidad")}</dt><dd>{incident.severity}</dd></div>

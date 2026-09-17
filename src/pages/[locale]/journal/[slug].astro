@@ -1,18 +1,18 @@
 ---
 import { getCollection } from "astro:content";
-import JournalEntry from "../../../components/JournalEntry.astro";
-import BaseLayout from "../../../layouts/BaseLayout.astro";
-import { getLocaleFromPath, type Locale, ui } from "../../../lib/i18n";
-import { createJournalEntryRecord } from "../../../lib/journal";
-import { render } from "astro:content";
+import { SUPPORTED_LOCALES } from "../../../lib/i18n";
+import { getJournalEntriesForLanguage, getJournalEntrySlug, getPublishedJournalEntries } from "../../../lib/journal";
 
-export function getStaticPaths() {
-  return [];
+export async function getStaticPaths() {
+  const entries = await getCollection("entries");
+  return SUPPORTED_LOCALES.flatMap((locale) =>
+    getPublishedJournalEntries(getJournalEntriesForLanguage(entries, locale)).map((entry) => ({
+      params: { locale, slug: getJournalEntrySlug(entry) },
+      props: { destination: "/" + locale + "/journal/entries/" + getJournalEntrySlug(entry) },
+    })),
+  );
 }
-const locale = getLocaleFromPath(`/${Astro.params.locale}`) as Locale;
-const strings = ui[locale];
-const slug = Astro.params.slug ?? "";
-const entries = await getCollection("entries", ({ data }) => data.language === locale);
-const entry = entries.find((candidate) => candidate.id.split("/").slice(1).join("/").replace(/\.mdx?$/, "") === slug);
+
+const { destination } = Astro.props as { destination: string };
+return Astro.redirect(destination, 301);
 ---
-{entry ? <JournalEntry locale={locale} entry={entry} record={createJournalEntryRecord(entry)} Content={(await render(entry)).Content} /> : <BaseLayout locale={locale} title={strings.nav.journal} description={strings.labels.unavailable}><p>{strings.labels.unavailable}</p></BaseLayout>}

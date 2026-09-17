@@ -9,9 +9,9 @@ import {
 } from "../../../../lib/journal";
 
 export async function getStaticPaths() {
-  const topics = getJournalTopicSummaries(await getCollection("entries"));
+  const entries = await getCollection("entries");
   return SUPPORTED_LOCALES.flatMap((locale) =>
-    topics.map((topic) => ({ params: { locale, topic: topic.slug } })),
+    getJournalTopicSummaries(getJournalEntriesForLanguage(entries, locale)).map((topic) => ({ params: { locale, topic: topic.slug } })),
   );
 }
 

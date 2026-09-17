@@ -6,21 +6,23 @@ import { localePath, ui, type Locale } from "../lib/i18n";
 import {
   createJournalEntryRecord,
   getPublishedJournalEntries,
+  getJournalEntryAlternatePaths,
 } from "../lib/journal";
 
-interface Props { entry: CollectionEntry<"entries">; record: ReturnType<typeof createJournalEntryRecord>; Content: any; locale: Locale; }
-const { entry, record, Content, locale } = Astro.props as Props;
+interface Props { entry: CollectionEntry<"entries">; record: ReturnType<typeof createJournalEntryRecord>; Content: any; locale: Locale; alternatePaths?: Partial<Record<Locale, string>>; }
+const { entry, record, Content, locale, alternatePaths } = Astro.props as Props;
 const strings = ui[locale];
 const t = (en: string, es: string) => locale === "es" ? es : en;
 ---
 <BaseLayout locale={locale}
   title={`${record.title} | ${strings.nav.journal} | thisisgenaro.com`}
   description={record.excerpt}
+  alternatePaths={alternatePaths}
 >
   <JournalTopology class="journal-topology--entry" />
   <main class="journal-entry-page">
     <header class="journal-entry-page__header">
-      <a class="journal-entry-page__back mono" href={localePath(locale, "/journal/entries")}>← {t("BACK TO ENTRIES", "← VOLVER A LAS ENTRADAS")}</a>
+      <a class="journal-entry-page__back mono" href={localePath(locale, "/journal/entries")}>← {t("BACK TO ENTRIES", "VOLVER A LAS ENTRADAS")}</a>
       <p class="journal-entry-page__eyebrow">{t("JOURNAL ENTRY", "ENTRADA DE LA BITÁCORA")}</p>
       <h1 class="journal-entry-page__title">{record.title}</h1>
       <p class="journal-entry-page__summary">{record.excerpt}</p>
