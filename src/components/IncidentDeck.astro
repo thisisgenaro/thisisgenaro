@@ -672,6 +672,17 @@ const serializedSlides = JSON.stringify(slides);
     letter-spacing: 0.18em;
   }
 
+  .incident-deck :global(.grid-connector[data-edge-target-operational-state="failed"]),
+  .incident-deck :global(.grid-connector[data-edge-source-operational-state="failed"]) {
+    color: color-mix(in srgb, var(--signal-red) 68%, var(--accent) 32%);
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-opacity: 0.86 !important;
+    opacity: 0.92 !important;
+    stroke-dasharray: 0.22 0.14;
+    filter: drop-shadow(0 0 5px color-mix(in srgb, var(--signal-red) 24%, transparent));
+  }
+
   .incident-deck__scene-map {
     position: absolute;
     top: 1rem;
