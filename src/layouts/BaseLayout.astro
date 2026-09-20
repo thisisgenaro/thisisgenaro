@@ -194,6 +194,9 @@ const railBootstrap =
     </div>
     <ThemeSwitcher />
     <script>
+      document.querySelectorAll(".theme-switcher__gallery").forEach((gallery) => gallery.remove());
+    </script>
+    <script>
       document.querySelectorAll("[data-locale-choice]").forEach((link) => {
         link.addEventListener("click", () => {
           try { localStorage.setItem("siteLocale", link.getAttribute("data-locale-choice") || "en"); localStorage.setItem("thisisgenaro.locale", link.getAttribute("data-locale-choice") || "en"); } catch {}
@@ -1258,6 +1261,10 @@ const railBootstrap =
     html[data-shell-rail="collapsed"] .shell__rail-topology {
       opacity: 0;
       animation: none;
+    }
+
+    .shell .theme-switcher__gallery {
+      display: none !important;
     }
 
     html[data-shell-rail="collapsed"] .shell__utility-mount {

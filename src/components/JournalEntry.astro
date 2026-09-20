@@ -1,4 +1,5 @@
 ---
+import { getCollection } from "astro:content";
 import type { CollectionEntry } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import JournalTopology from "./journal/JournalTopology.astro";
@@ -8,11 +9,19 @@ import {
   getPublishedJournalEntries,
   getJournalEntryAlternatePaths,
 } from "../lib/journal";
+import { getLocalizedIncidentById } from "../lib/incidents";
 
 interface Props { entry: CollectionEntry<"entries">; record: ReturnType<typeof createJournalEntryRecord>; Content: any; locale: Locale; alternatePaths?: Partial<Record<Locale, string>>; }
 const { entry, record, Content, locale, alternatePaths } = Astro.props as Props;
 const strings = ui[locale];
 const t = (en: string, es: string) => locale === "es" ? es : en;
+const organizations = await getCollection("organizations", ({ data }) => data.language === locale);
+const relatedOrganizations = entry.data.organizationIds
+  .map((organizationId) => organizations.find((organization) => organization.data.id === organizationId))
+  .filter((organization): organization is (typeof organizations)[number] => Boolean(organization));
+const relatedIncidents = entry.data.incidentIds
+  .map((incidentId) => getLocalizedIncidentById(incidentId, locale))
+  .filter(Boolean);
 ---
 <BaseLayout locale={locale}
   title={`${record.title} | ${strings.nav.journal} | thisisgenaro.com`}
@@ -56,6 +65,35 @@ const t = (en: string, es: string) => locale === "es" ? es : en;
               </a>
             )) : <p class="journal-rail-card__body">{t("No topics assigned.", "No hay temas asignados.")}</p>}
           </div>
+        </section>
+
+        <section class="journal-rail-card surface surface-pad">
+          <p class="journal-rail-card__label">{t("RELATED CONTEXT", "CONTEXTO RELACIONADO")}</p>
+          {relatedOrganizations.length ? (
+            <div class="journal-entry-page__related-group">
+              <p class="journal-entry-page__related-label mono">{t("ORGANIZATION", "ORGANIZACIÓN")}</p>
+              {relatedOrganizations.map((organization) => (
+                <a class="journal-rail-card__link journal-entry-page__related-link" href={localePath(locale, "/world/" + organization.data.id)}>
+                  <strong>{organization.data.name}</strong>
+                  <span>{organization.data.acronym}</span>
+                </a>
+              ))}
+            </div>
+          ) : null}
+          {relatedIncidents.length ? (
+            <div class="journal-entry-page__related-group">
+              <p class="journal-entry-page__related-label mono">{t("INCIDENT", "INCIDENTE")}</p>
+              {relatedIncidents.map((incident) => (
+                <a class="journal-rail-card__link journal-entry-page__related-link" href={localePath(locale, "/incident-library/" + incident.id)}>
+                  <strong>{incident.title}</strong>
+                  <span>{incident.incidentId}</span>
+                </a>
+              ))}
+            </div>
+          ) : null}
+          {!relatedOrganizations.length && !relatedIncidents.length ? (
+            <p class="journal-rail-card__body">{t("No related context recorded.", "No hay contexto relacionado registrado.")}</p>
+          ) : null}
         </section>
 
         <section class="journal-rail-card surface surface-pad">
@@ -223,6 +261,37 @@ const t = (en: string, es: string) => locale === "es" ? es : en;
     font-size: 0.66rem;
     text-decoration: none;
     transition: border-color 180ms ease, color 180ms ease, background 180ms ease;
+  }
+
+  .journal-entry-page__related-group + .journal-entry-page__related-group {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid color-mix(in srgb, var(--line-strong) 42%, transparent);
+  }
+
+  .journal-entry-page__related-label {
+    margin: 0 0 0.45rem;
+    color: var(--muted);
+    font-size: 0.64rem;
+    letter-spacing: 0.12em;
+  }
+
+  .journal-entry-page__related-link {
+    display: grid;
+    gap: 0.18rem;
+  }
+
+  .journal-entry-page__related-link strong {
+    color: var(--text);
+    font-family: var(--font-title);
+    font-size: 0.92rem;
+  }
+
+  .journal-entry-page__related-link span {
+    color: var(--muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
 
   .journal-entry-page__topic:hover,
