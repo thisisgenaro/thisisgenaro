@@ -146,6 +146,27 @@ Object.assign(spanishSceneText, {
   "Warehouse Supervisor / First Observer": "Supervisora de almacén / primera observadora",
 });
 
+Object.assign(spanishSceneText, {
+  "Santiago WMS App": "Aplicación WMS de Santiago",
+  "Santiago Warehouse": "Almacén de Santiago",
+  "Main Link": "Enlace principal",
+  "Backup Link": "Enlace de respaldo",
+  "Santo Domingo Datacenter": "Datacenter de Santo Domingo",
+  "WMS Server 01": "Servidor WMS 01",
+  "WMS Server 02": "Servidor WMS 02",
+  "WMS Server 03": "Servidor WMS 03",
+  "The Santiago WMS application is unavailable because the primary link failed, even though the backup path and WMS server farm remain operational.": "La aplicación WMS de Santiago no está disponible porque el enlace principal falló, aunque la ruta de respaldo y la granja de servidores WMS permanecen operativas.",
+  "The primary link from Santiago is unavailable.": "El enlace principal desde Santiago no está disponible.",
+  "The backup link reaches the Santo Domingo datacenter.": "El enlace de respaldo alcanza el datacenter de Santo Domingo.",
+  "All three WMS servers remain operational, but the application is still unavailable from Santiago.": "Los tres servidores WMS permanecen operativos, pero la aplicación todavía no está disponible desde Santiago.",
+  "The map separates path availability from application reachability: the main link failed, the backup link is active, and the WMS farm remains healthy while Santiago still cannot use the application.": "El mapa separa la disponibilidad de las rutas de la accesibilidad de la aplicación: el enlace principal falló, el enlace de respaldo está activo y la granja WMS permanece saludable mientras Santiago todavía no puede utilizar la aplicación.",
+  "primary path": "ruta principal",
+  "backup path": "ruta de respaldo",
+  "unavailable": "no disponible",
+  "active": "activo",
+  "service pool": "granja de servicios",
+});
+
 const spanishIncidentCopy: Record<string, Partial<IncidentRecord>> = {
   "inc-2026-0001": {
     organization: "Grupo Logístico del Caribe",
@@ -209,6 +230,8 @@ interface IncidentTopologyNode {
   subtitle?: string;
   role: string;
   selected?: boolean;
+  status?: "failed" | "degraded" | "healthy";
+  position?: { q: number; r: number };
 }
 
 interface IncidentTopologyConnector {
@@ -255,6 +278,25 @@ function mergeGeneratedNode(
     size: generated.size,
     active: generated.active ?? true,
     selected: source.selected ?? false,
+  };
+}
+
+function createCustomIncidentTopology(scene: IncidentScene) {
+  const nodes = getSceneNodes(scene);
+  const rootId = (scene as IncidentScene & { rootNodeId?: string }).rootNodeId;
+
+  return {
+    nodes: nodes.map((node) => ({
+      ...node,
+      q: node.position?.q ?? 0,
+      r: node.position?.r ?? 0,
+      variant: node.id === rootId ? "root" : node.role === "service" ? "entity" : "anchor",
+      size: node.id === rootId ? "root" : node.role === "service" ? "md" : "lg",
+      active: true,
+      selected: node.id === rootId,
+    })),
+    relationships: getIncidentSceneEdges(scene),
+    connectorRouting: "obstacle-aware" as const,
   };
 }
 
@@ -451,6 +493,10 @@ export function createIncidentSceneTopology(scene: IncidentScene, incidentId = s
     return createMatrixIncidentTopology(scene);
   }
 
+  if (scene.topologyLayout === "custom") {
+    return createCustomIncidentTopology(scene);
+  }
+
   if (scene.topologyLayout === "territories") {
     return createTerritoriesIncidentTopology(scene);
   }
@@ -508,21 +554,25 @@ export function createIncidentPreviewTopology(incident: IncidentRecord) {
   }
 
   const topology = createIncidentSceneTopology(scene);
-  const previewScale = 0.4;
+  const qValues = topology.nodes.map((node) => node.q);
+  const rValues = topology.nodes.map((node) => node.r);
+  const previewQOffset = -Math.round((Math.min(...qValues) + Math.max(...qValues)) / 2);
+  const previewROffset = -Math.round((Math.min(...rValues) + Math.max(...rValues)) / 2);
 
   return {
     ...topology,
     topologyLayout: scene.topologyLayout,
     nodes: topology.nodes.map((node) => ({
       ...node,
-      q: Math.round(node.q * previewScale),
-      r: Math.round(node.r * previewScale),
-      status:
+      q: node.q + previewQOffset,
+      r: node.r + previewROffset,
+      status: node.status ?? (
         node.role === "affected-service"
           ? "failed"
           : ["affected-services", "requester", "severity", "category"].includes(node.role)
             ? "degraded"
-            : "healthy",
+            : "healthy"
+      ),
     })),
   };
 }
