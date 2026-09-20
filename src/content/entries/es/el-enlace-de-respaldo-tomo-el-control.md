@@ -4,7 +4,7 @@ translationKey: journal-glc-inc-0104-opening
 translationStatus: complete
 language: es
 title: El enlace de respaldo tomó el control
-date: 2026-09-14
+date: 2026-09-17
 summary: El cambio de la WAN parecía haber funcionado en Santiago, pero un servicio crítico del almacén nunca siguió la ruta de respaldo.
 topics:
   - infrastructure-operations

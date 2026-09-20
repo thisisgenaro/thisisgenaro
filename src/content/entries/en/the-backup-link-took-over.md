@@ -4,7 +4,7 @@ translationKey: journal-glc-inc-0104-opening
 translationStatus: complete
 language: en
 title: The Backup Link Took Over
-date: 2026-09-14
+date: 2026-09-17
 summary: A WAN failover appeared successful in Santiago, but one critical warehouse service never followed the backup path.
 topics:
   - infrastructure-operations

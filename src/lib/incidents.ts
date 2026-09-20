@@ -7,8 +7,14 @@ export type IncidentScene = IncidentRecord["scenes"][number];
 
 function parseIncidentDate(value: string) {
   const normalized = value.includes("T") ? value : value.replace(" ", "T");
-  const parsed = new Date(normalized.endsWith("Z") ? normalized : `${normalized}Z`);
-  return Number.isNaN(parsed.getTime()) ? new Date(`${value}Z`) : parsed;
+  const hasExplicitTimezone = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(normalized);
+  const dateValue = /^\d{4}-\d{2}-\d{2}$/.test(normalized)
+    ? normalized + "T00:00:00Z"
+    : hasExplicitTimezone
+      ? normalized
+      : normalized + "Z";
+  const parsed = new Date(dateValue);
+  return Number.isNaN(parsed.getTime()) ? new Date(value + "Z") : parsed;
 }
 
 export function getPublishedIncidents() {
