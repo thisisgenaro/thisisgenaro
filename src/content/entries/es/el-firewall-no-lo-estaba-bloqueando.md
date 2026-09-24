@@ -24,7 +24,8 @@ incidentIds:
   - GLC-INC-0104
 personIds: []
 image: /images/journal/entry-2/firewall-wasnt-blocking-it.png
-relatedEntries: []
+relatedEntries:
+  - journal-glc-inc-0104-opening
 draft: false
 slug: el-firewall-no-lo-estaba-bloqueando
 readingTime: 5
