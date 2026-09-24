@@ -8,6 +8,7 @@ import {
   createJournalEntryRecord,
   getPublishedJournalEntries,
   getJournalEntryAlternatePaths,
+  getJournalEntrySlug,
 } from "../lib/journal";
 import { getLocalizedIncidentById } from "../lib/incidents";
 
@@ -22,6 +23,13 @@ const relatedOrganizations = entry.data.organizationIds
 const relatedIncidents = entry.data.incidentIds
   .map((incidentId) => getLocalizedIncidentById(incidentId, locale))
   .filter(Boolean);
+const publishedEntries = await getCollection("entries", ({ data }) => data.language === locale && !data.draft);
+const relatedJournalEntries = publishedEntries
+  .filter((candidate) => candidate.id !== entry.id && (
+    entry.data.relatedEntries.includes(candidate.data.id)
+    || (candidate.data.translationKey && entry.data.relatedEntries.includes(candidate.data.translationKey))
+  ))
+  .map((candidate) => ({ entry: candidate, record: createJournalEntryRecord(candidate) }));
 ---
 <BaseLayout locale={locale}
   title={`${record.title} | ${strings.nav.journal} | thisisgenaro.com`}
@@ -91,7 +99,18 @@ const relatedIncidents = entry.data.incidentIds
               ))}
             </div>
           ) : null}
-          {!relatedOrganizations.length && !relatedIncidents.length ? (
+          {relatedJournalEntries.length ? (
+            <div class="journal-entry-page__related-group">
+              <p class="journal-entry-page__related-label mono">{t("JOURNAL", "BITÁCORA")}</p>
+              {relatedJournalEntries.map(({ entry: relatedEntry, record: relatedRecord }) => (
+                <a class="journal-rail-card__link journal-entry-page__related-link" href={localePath(locale, `/journal/entries/${getJournalEntrySlug(relatedEntry)}`)}>
+                  <strong>{relatedRecord.title}</strong>
+                  <span>{relatedRecord.publishedLabel}</span>
+                </a>
+              ))}
+            </div>
+          ) : null}
+          {!relatedOrganizations.length && !relatedIncidents.length && !relatedJournalEntries.length ? (
             <p class="journal-rail-card__body">{t("No related context recorded.", "No hay contexto relacionado registrado.")}</p>
           ) : null}
         </section>

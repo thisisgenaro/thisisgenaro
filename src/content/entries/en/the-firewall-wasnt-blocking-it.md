@@ -23,7 +23,8 @@ organizationIds:
 incidentIds:
   - GLC-INC-0104
 personIds: []
-relatedEntries: []
+relatedEntries:
+  - journal-glc-inc-0104-opening
 draft: false
 slug: the-firewall-wasnt-blocking-it
 image: /images/journal/entry-2/firewall-wasnt-blocking-it.png

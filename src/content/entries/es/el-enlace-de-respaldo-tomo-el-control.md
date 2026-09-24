@@ -24,7 +24,8 @@ personIds:
   - yessenia
   - laura-santana
 image: /images/journal/entry-1/wan-failover-wms.jpg
-relatedEntries: []
+relatedEntries:
+  - journal-glc-inc-0104-routing
 draft: false
 slug: el-enlace-de-respaldo-tomo-el-control
 readingTime: 4
